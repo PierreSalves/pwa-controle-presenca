@@ -40,6 +40,21 @@ describe('migrações', () => {
     }
   });
 
+  test('0002 preserva os quadros de aulas já cadastrados', () => {
+    const banco = new DatabaseSync(':memory:');
+    banco.exec('PRAGMA foreign_keys = ON;');
+    banco.exec(readFileSync(join(pastaMigracoes, '0001_inicial.sql'), 'utf8'));
+    inserir(banco, 'tenants', { id: 't1', nome: 'Academia' });
+    inserir(banco, 'turmas', { id: 'tu1', tenant_id: 't1', nome: 'Adulto' });
+    inserir(banco, 'quadros_aulas', {
+      id: 'q1', tenant_id: 't1', turma_id: 'tu1', vigencia_inicio: '2026-02-01', terca: 1, quinta: 1, server_version: 7,
+    });
+    banco.exec(readFileSync(join(pastaMigracoes, '0002_quadro_reposicao_e_identidade.sql'), 'utf8'));
+    const quadro = banco.prepare("SELECT terca, quinta, sabado, server_version FROM quadros_aulas WHERE id = 'q1'").get();
+    assert.deepEqual({ ...quadro }, { terca: 1, quinta: 1, sabado: 0, server_version: 7 });
+    assert.equal(banco.prepare('PRAGMA foreign_key_check').all().length, 0);
+  });
+
   test('integridade das chaves estrangeiras e do banco', () => {
     const banco = criarBancoMigrado();
     assert.equal(banco.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
@@ -126,6 +141,20 @@ describe('restrições do modelo', () => {
     assert.throws(() => inserir(banco, 'regras', { id: 'r2', ...regra }));
     assert.throws(() => inserir(banco, 'regras', { id: 'r3', ...regra, vigencia_inicio: '2026-07-01', parametros: 'nao-json' }));
     assert.throws(() => inserir(banco, 'regras', { id: 'r4', ...regra, escopo_id: 'tu1', vigencia_inicio: '2026-07-01' }));
+  });
+
+  test('quadro de aulas aceita 0 (sem aula), 1 (regular) e 2 (reposição)', () => {
+    inserir(banco, 'quadros_aulas', {
+      id: 'q1', tenant_id: 't1', turma_id: 'tu1', vigencia_inicio: '2026-02-01',
+      terca: 1, quarta: 1, quinta: 1, sabado: 2,
+    });
+    assert.throws(() =>
+      inserir(banco, 'quadros_aulas', { id: 'q2', tenant_id: 't1', turma_id: 'tu1', vigencia_inicio: '2026-02-01', sabado: 3 }));
+  });
+
+  test('tenant: nome curto do app entre 1 e 15 caracteres', () => {
+    banco.prepare("UPDATE tenants SET nome_curto = 'Equipe Junião', logotipo_key = 'logos/t1.png' WHERE id = 't1'").run();
+    assert.throws(() => banco.prepare("UPDATE tenants SET nome_curto = 'Nome curto grande demais' WHERE id = 't1'").run());
   });
 
   test('cursor de sincronização começa em zero e incrementa', () => {

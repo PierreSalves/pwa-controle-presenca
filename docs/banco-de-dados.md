@@ -1,6 +1,11 @@
 # Banco de dados — MER e dicionário de dados
 
-Descreve o esquema do servidor (Cloudflare D1 / SQLite) criado por [`db/migrations/0001_inicial.sql`](../db/migrations/0001_inicial.sql).
+Descreve o esquema do servidor (Cloudflare D1 / SQLite) criado pelas migrações em [`db/migrations/`](../db/migrations/):
+
+| Migração | O que faz |
+|---|---|
+| `0001_inicial.sql` | esquema inicial da Fase 1 |
+| `0002_quadro_reposicao_e_identidade.sql` | quadro de aulas com dia de reposição (0/1/2); logotipo, nome curto e ícones da academia |
 
 > **Este documento acompanha as migrações.** Toda migração nova que mudar tabelas, colunas, chaves ou índices atualiza este arquivo no mesmo PR.
 
@@ -54,6 +59,8 @@ erDiagram
         TEXT nome
         TEXT subdominio UK "opcional"
         TEXT cabecalho_impressao "opcional"
+        TEXT nome_curto "nome do app instalado"
+        TEXT logotipo_key "R2"
         INTEGER ativo
     }
     usuarios {
@@ -119,7 +126,7 @@ erDiagram
         TEXT turma_id FK
         TEXT vigencia_inicio
         TEXT vigencia_fim
-        INTEGER domingo_a_sabado "7 colunas 0/1"
+        INTEGER domingo_a_sabado "7 colunas: 0 sem aula, 1 regular, 2 reposição"
     }
     aulas {
         TEXT id PK
@@ -186,6 +193,10 @@ Academia ou equipe. Cada tenant tem seus próprios dados, isolados dos outros. S
 | `nome` | TEXT | sim | — | nome da academia; não pode ser vazio |
 | `subdominio` | TEXT | não | — | subdomínio próprio (futuro), ex.: `equipejuniao`; único sem diferenciar maiúsculas |
 | `cabecalho_impressao` | TEXT | não | — | texto extra no cabeçalho dos relatórios impressos (ex.: nome do professor) |
+| `nome_curto` | TEXT | não | — | nome que aparece embaixo do ícone do app instalado; 1 a 15 caracteres (0002) |
+| `logotipo_key` | TEXT | não | — | chave do logotipo original no R2; aparece no app após o login e nos relatórios (0002) |
+| `icone_192_key` | TEXT | não | — | chave no R2 do ícone 192×192 gerado do logotipo, com margem de segurança (0002) |
+| `icone_512_key` | TEXT | não | — | chave no R2 do ícone 512×512 gerado do logotipo, com margem de segurança (0002) |
 | `ativo` | INTEGER | sim | 1 | 0 = tenant desativado |
 | `created_at`, `updated_at`, `excluido`, `created_by`, `updated_by` | | | | *padrão* (sem `server_version`) |
 
@@ -318,7 +329,7 @@ Vínculo do aluno com uma turma, com período. A presença só pode ser marcada 
 
 ### quadros_aulas
 
-Dias da semana em que a turma tem aula, com período de vigência. Uma turma pode ter vários quadros em ordem cronológica. Aula regular só pode ser lançada em dia habilitado pelo quadro vigente. **Sincronizada.**
+Dias da semana em que a turma tem aula, com período de vigência. Uma turma pode ter vários quadros em ordem cronológica. Cada dia vale `0` (sem aula), `1` (regular) ou `2` (reposição fixa, desde a 0002). Aula regular só em dia `1` do quadro vigente; o dia `2` aparece no lançamento como aula de reposição. **Sincronizada.**
 
 | Coluna | Tipo | Obrigatória | Padrão | Descrição / restrições |
 |---|---|---|---|---|
@@ -327,13 +338,13 @@ Dias da semana em que a turma tem aula, com período de vigência. Uma turma pod
 | `turma_id` | TEXT | sim | — | **FK** → `turmas.id` |
 | `vigencia_inicio` | TEXT | sim | — | início da vigência, `AAAA-MM-DD` |
 | `vigencia_fim` | TEXT | não | — | fim da vigência, `AAAA-MM-DD`; nulo = vigente sem prazo; não pode ser anterior ao início |
-| `domingo` | INTEGER | sim | 0 | 1 = tem aula no domingo |
-| `segunda` | INTEGER | sim | 0 | 1 = tem aula na segunda |
-| `terca` | INTEGER | sim | 0 | 1 = tem aula na terça |
-| `quarta` | INTEGER | sim | 0 | 1 = tem aula na quarta |
-| `quinta` | INTEGER | sim | 0 | 1 = tem aula na quinta |
-| `sexta` | INTEGER | sim | 0 | 1 = tem aula na sexta |
-| `sabado` | INTEGER | sim | 0 | 1 = tem aula no sábado |
+| `domingo` | INTEGER | sim | 0 | domingo: 0 sem aula, 1 regular, 2 reposição |
+| `segunda` | INTEGER | sim | 0 | segunda: 0 sem aula, 1 regular, 2 reposição |
+| `terca` | INTEGER | sim | 0 | terça: 0 sem aula, 1 regular, 2 reposição |
+| `quarta` | INTEGER | sim | 0 | quarta: 0 sem aula, 1 regular, 2 reposição |
+| `quinta` | INTEGER | sim | 0 | quinta: 0 sem aula, 1 regular, 2 reposição |
+| `sexta` | INTEGER | sim | 0 | sexta: 0 sem aula, 1 regular, 2 reposição |
+| `sabado` | INTEGER | sim | 0 | sábado: 0 sem aula, 1 regular, 2 reposição |
 | `created_at`, `updated_at`, `excluido`, `server_version`, `created_by`, `updated_by` | | | | *padrão* |
 
 Índices: `ix_quadros_aulas_turma` (`turma_id`, `vigencia_inicio`), `ix_quadros_aulas_sync`.

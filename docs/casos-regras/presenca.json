@@ -1,0 +1,181 @@
+{
+  "descricao": "Casos de teste das regras de presença. Os mesmos casos rodam na API (TypeScript) e no app (Dart), para as regras nunca divergirem.",
+  "dia_da_semana": [
+    {
+      "data": "2026-11-08",
+      "esperado": "domingo"
+    },
+    {
+      "data": "2026-11-09",
+      "esperado": "segunda"
+    },
+    {
+      "data": "2026-11-10",
+      "esperado": "terca"
+    },
+    {
+      "data": "2026-11-11",
+      "esperado": "quarta"
+    },
+    {
+      "data": "2026-11-12",
+      "esperado": "quinta"
+    },
+    {
+      "data": "2026-11-13",
+      "esperado": "sexta"
+    },
+    {
+      "data": "2026-11-14",
+      "esperado": "sabado"
+    },
+    {
+      "data": "2024-02-29",
+      "esperado": "quinta"
+    }
+  ],
+  "data_futura": [
+    {
+      "data": "2026-11-12",
+      "hoje": "2026-11-12",
+      "esperado": false
+    },
+    {
+      "data": "2026-11-11",
+      "hoje": "2026-11-12",
+      "esperado": false
+    },
+    {
+      "data": "2026-11-13",
+      "hoje": "2026-11-12",
+      "esperado": true
+    },
+    {
+      "data": "2027-01-01",
+      "hoje": "2026-12-31",
+      "esperado": true
+    }
+  ],
+  "hoje_em_sao_paulo": [
+    {
+      "instante_utc": "2026-11-12T02:59:00.000Z",
+      "esperado": "2026-11-11"
+    },
+    {
+      "instante_utc": "2026-11-12T03:00:00.000Z",
+      "esperado": "2026-11-12"
+    },
+    {
+      "instante_utc": "2026-11-12T23:30:00.000Z",
+      "esperado": "2026-11-12"
+    }
+  ],
+  "matricula_vigente": [
+    {
+      "data": "2026-03-10",
+      "data_inicio": "2026-02-05",
+      "data_fim": null,
+      "esperado": true
+    },
+    {
+      "data": "2026-02-05",
+      "data_inicio": "2026-02-05",
+      "data_fim": "2026-12-18",
+      "esperado": true
+    },
+    {
+      "data": "2026-12-18",
+      "data_inicio": "2026-02-05",
+      "data_fim": "2026-12-18",
+      "esperado": true
+    },
+    {
+      "data": "2026-02-04",
+      "data_inicio": "2026-02-05",
+      "data_fim": null,
+      "esperado": false
+    },
+    {
+      "data": "2026-12-19",
+      "data_inicio": "2026-02-05",
+      "data_fim": "2026-12-18",
+      "esperado": false
+    }
+  ],
+  "tipo_do_dia_no_quadro": {
+    "quadros": [
+      {
+        "vigencia_inicio": "2026-02-01",
+        "vigencia_fim": "2026-06-30",
+        "dias": {
+          "domingo": 0,
+          "segunda": 1,
+          "terca": 0,
+          "quarta": 1,
+          "quinta": 0,
+          "sexta": 0,
+          "sabado": 0
+        }
+      },
+      {
+        "vigencia_inicio": "2026-07-01",
+        "vigencia_fim": null,
+        "dias": {
+          "domingo": 0,
+          "segunda": 0,
+          "terca": 1,
+          "quarta": 1,
+          "quinta": 1,
+          "sexta": 0,
+          "sabado": 2
+        }
+      }
+    ],
+    "casos": [
+      {
+        "data": "2026-03-02",
+        "esperado": "regular",
+        "obs": "segunda no 1º quadro"
+      },
+      {
+        "data": "2026-03-03",
+        "esperado": "sem_aula",
+        "obs": "terça no 1º quadro"
+      },
+      {
+        "data": "2026-11-10",
+        "esperado": "regular",
+        "obs": "terça no 2º quadro"
+      },
+      {
+        "data": "2026-11-14",
+        "esperado": "reposicao",
+        "obs": "sábado no 2º quadro"
+      },
+      {
+        "data": "2026-11-09",
+        "esperado": "sem_aula",
+        "obs": "segunda no 2º quadro"
+      },
+      {
+        "data": "2026-01-15",
+        "esperado": "sem_aula",
+        "obs": "antes de qualquer quadro"
+      }
+    ]
+  },
+  "id_aula_regular": [
+    {
+      "turma_id": "0190f5a0-0000-7000-8000-000000000001",
+      "data_aula": "2026-11-10",
+      "tipo": "regular",
+      "esperado": "c142eddd-4739-5688-a3ab-e9e1d9448856"
+    },
+    {
+      "turma_id": "0190f5a0-0000-7000-8000-000000000001",
+      "data_aula": "2026-11-14",
+      "tipo": "reposicao",
+      "esperado": "90f85f13-651c-590b-9333-788d950eebd8"
+    }
+  ]
+}

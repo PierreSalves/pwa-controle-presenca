@@ -71,6 +71,13 @@ Detalhes em `docs/arquitetura/README.md`.
 - Hospedagem do app: Cloudflare Pages ou Workers Static Assets (a decidir)
 
 ## Convenções
+**Regras de desenvolvimento completas em `docs/desenvolvimento.md` — seguir sempre.** Resumo:
+- Nomes do domínio em português, sem acentos em identificadores (`frequencia_minima`, `calcularFrequencia`); termos técnicos do framework em inglês.
+- Funções: um verbo no infinitivo, uma responsabilidade; sem "e"/"ou" nem verbos genéricos (`processar`, `gerenciar`). Prefixos: `obter` (local), `buscar` (remoto), `definir`, `eh`/`esta`/`tem`/`pode` (booleanos), `calcular`, `validar`.
+- Git: branch por tarefa (`feat/`, `fix/`, `docs/`…) + Pull Request para a `main`; squash merge.
+- Commits: Conventional Commits em português (`feat(app): adiciona …`).
+- Testes obrigatórios para regras de negócio (casos compartilhados entre Dart e TS), sync e permissões/isolamento de tenant na API.
+- Datas de calendário `AAAA-MM-DD` sem fuso; timestamps em UTC; dinheiro em centavos.
 - Idioma da interface: português (Brasil)
 - Datas no formato dd/mm/aaaa; fuso America/Sao_Paulo; moeda em R$
 - Interface mobile-first e simples (o usuário não é técnico)

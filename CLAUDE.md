@@ -89,3 +89,18 @@ Detalhes em `docs/arquitetura/README.md`.
 - Relatórios nunca guardam totais: sempre calculados a partir das presenças
 
 ## Comandos
+Rodar a partir da raiz do repositório (Git Bash ou PowerShell). Pré-requisitos: Node.js LTS e Flutter stable no PATH.
+
+| O quê | Comando |
+|---|---|
+| Testar migrações | `node --test db/` |
+| API: instalar | `cd api && npm ci` |
+| API: testes / lint / tipos / formato | `npm test` · `npm run lint` · `npm run tipos` · `npm run formatar` |
+| API: regenerar tipos após mudar `wrangler.jsonc` | `npm run cf-typegen` |
+| Banco local: aplicar migrações | `cd api && npm run db:migrar:local` |
+| App: testes / análise / formato | `cd app && flutter test` · `flutter analyze` · `dart format lib test` |
+| App: rodar em desenvolvimento | `cd app && flutter run -d edge` |
+| Tudo junto (app + API no Worker local) | `cd app && flutter build web` e depois `cd api && npm run dev` → http://localhost:8787 |
+| Imagens dos wireframes | `bash docs/telas/gerar-imagens.sh` |
+
+O CI (`.github/workflows/ci.yml`) roda tudo isso em cada PR.

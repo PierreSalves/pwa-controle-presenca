@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "controle-presenca",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-12",
+  "upload_source_maps": true,
+  "observability": { "enabled": true },
+
+  // App Flutter (build web) servido como Static Assets; só /api/* passa pelo Worker.
+  "assets": {
+    "directory": "../app/build/web",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
+  },
+
+  // Banco D1. O database_id é preenchido quando o banco remoto for criado
+  // (para desenvolvimento local e testes, qualquer valor serve).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "controle-presenca",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "../db/migrations",
+    },
+  ],
+
+  // Endereço público (custom domain criado pelo Wrangler no deploy).
+  "routes": [{ "pattern": "controlepresenca.tghservices.com.br", "custom_domain": true }],
+}

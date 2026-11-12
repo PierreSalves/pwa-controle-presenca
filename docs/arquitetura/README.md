@@ -219,7 +219,7 @@ Decisões de modelagem:
 - Unicidades de negócio valem só para registros não excluídos (índices parciais), exceto `presencas`, que reaproveita a mesma linha.
 - Não existe cadastro de professor separado: professor é um usuário e não aparece nos relatórios por padrão.
 - Coerência entre tenants (ex.: aluno e turma do mesmo tenant) é garantida pela API.
-- **Próxima migração (`0002`), aprovada junto com os wireframes:**
+- **Migração `0002_quadro_reposicao_e_identidade.sql`**, aprovada junto com os wireframes:
   - `quadros_aulas`: cada dia da semana passa de 0/1 para `0` sem aula, `1` regular, `2` reposição (dia fixo de reposição);
   - aula de reposição fixa também ganha id determinístico (UUID v5 de `turma_id` + `data_aula` + `reposicao`);
   - `tenants`: `logotipo_key`, `nome_curto` e as chaves dos ícones gerados (R2).

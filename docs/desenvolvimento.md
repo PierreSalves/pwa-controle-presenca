@@ -134,6 +134,8 @@ Correção de bug vem com um teste que falhava antes da correção.
 
 ## 10. Interface
 
+- **Wireframe antes de código:** tela nova ou mudança visual relevante só é implementada depois de wireframe **aprovado** e registrado em [`docs/telas/`](telas/README.md) (imagem, objetivo, quem acessa, regras e linha na tabela de aprovação).
+- A tela implementada segue o wireframe aprovado; se precisar mudar, atualiza-se o wireframe e pede-se nova aprovação.
 - Mobile-first: pensada primeiro para celular em pé, uma mão.
 - Áreas de toque de no mínimo 48 px; textos simples, sem jargão técnico.
 - Toda ação que depende de internet avisa claramente quando não há conexão.
@@ -141,6 +143,7 @@ Correção de bug vem com um teste que falhava antes da correção.
 
 ## 11. Pronto para o PR (checklist)
 
+- [ ] Tela segue o wireframe aprovado em `docs/telas/`
 - [ ] Funciona no celular (testado em tela estreita)
 - [ ] Testes obrigatórios escritos e passando
 - [ ] Formatação e análise sem avisos

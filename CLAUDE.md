@@ -24,7 +24,11 @@ Objetivo geral:
 - **Aula de reposição**: aula extra lançada fora do quadro, com `tipo = reposição`
 - Relatórios calculados: semanal, mensal, anual, por aluno e por período
 - **Regras configuráveis**; a primeira é a frequência mínima para graduação: % de presença sobre as aulas regulares já lançadas no semestre (jan–jun, jul–dez), consultada na graduação do início de junho e de dezembro; aulas de reposição contam (limite de 100%)
+- **Reposição fixa** no quadro de aulas (cada dia: sem aula, regular ou reposição) + reposição avulsa
+- **Lista do lançamento por frequência** (só frequentes; pouco frequentes na busca) e aviso de **alunos sumidos** para encerrar matrícula
+- Logotipo da academia (app e relatórios) e **ícone do app instalado** da academia, com instalação oferecida só após o login
 - Importação da lista de alunos das planilhas, com relatório de códigos duplicados
+- **Telas aprovadas:** `docs/telas/README.md` (wireframes v1, 12/11/2026). Tela nova só com wireframe aprovado e registrado lá.
 
 ### Fase 2 — Mensalidades
 - Data de pagamento informada, forma de pagamento; situação (pago / pendente / atrasado) **calculada** pelo vencimento configurado

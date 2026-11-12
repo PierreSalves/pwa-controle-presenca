@@ -51,7 +51,8 @@ Variáveis e campos booleanos seguem a mesma ideia: `ativo`, `excluido`, `temPen
 ```
 app/            App Flutter Web (PWA)
 api/            Cloudflare Worker (TypeScript, Hono)
-db/migrations/  Migrações SQL numeradas, fonte única do esquema (D1 e drift)
+db/migrations/  Migrações SQL numeradas do servidor (D1); o drift usa um subconjunto sem colunas sensíveis
+db/testes/      Testes das migrações (node --test db/)
 docs/           Documentação e decisões
 ```
 

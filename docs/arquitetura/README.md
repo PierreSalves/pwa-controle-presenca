@@ -111,7 +111,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 
 ### Conflitos
 - Presença é quase só inserção; chave única `presencas (aula_id, aluno_id)`: dois aparelhos marcando o mesmo aluno resultam num registro só.
-- Aula: chave única `(turma_id, data_aula, tipo)` para aulas regulares, evitando duas aulas iguais criadas offline.
+- Aula regular: id determinístico (UUID v5 de `turma_id` + `data_aula`) e no máximo uma por turma e data, evitando duas aulas iguais criadas offline.
 - Mensalidade (online): chave única `(matricula_id, competencia)` validada pelo servidor.
 - No resto, a última edição vence (`updated_at`).
 
@@ -160,20 +160,32 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 - Demais parâmetros na tabela `regras` (JSON): `{ "periodos": [["01-01","06-30"],["07-01","12-31"]], "meses_graduacao": [6, 12], "conta_reposicao": <bool> }`.
 - Relatório: lista dos alunos da turma com a frequência atual do semestre, destacando quem está abaixo do mínimo, para o professor consultar antes da graduação.
 
-## Ajustes no modelo de dados (vs. levantamento inicial)
-- Todos os `id` viram UUID texto e ganham as colunas de sync acima.
-- Novo **`tenants`**: `id`, `nome`, `subdominio` (opcional), `cabecalho_impressao` (texto opcional, ex.: nome do professor/academia).
-- `users` → acrescentar `tenant_id` (nulo só para `superadmin`), `tipo` (`superadmin` | `professor` | `assistente`), `ativo`; tirar `remember_token` (era do Laravel).
-- Novo **`turma_usuarios`** (N:N): `turma_id`, `user_id`; chave única `(turma_id, user_id)`.
-- `turmas` → acrescentar **`frequencia_minima`** (%) para a graduação e `cabecalho_impressao` (texto opcional).
-- Não existe cadastro de professor separado: o professor não aparece nos relatórios por padrão.
-- `alunos` → acrescentar **`codigo`** (texto, ex.: `10A`), **único por tenant**; o sistema sugere o próximo livre e o usuário pode editar. `data_matricula` sai (a data fica em `matriculas`).
-- `alunoxturma` → renomear para **`matriculas`** e acrescentar `data_inicio`, `data_fim`, `situacao` (matriculado, remanejado, …).
-- `quadro_aulas_turma` → acrescentar `vigencia_inicio`, `vigencia_fim`.
-- `aulas` → acrescentar **`tipo`** (`regular` | `reposicao`).
-- `presencas` → só registra quem veio (o campo `presente` sai); chave única `(aula_id, aluno_id)`.
-- Novo **`regras`**: `tenant_id`, `escopo` (`tenant` | `professor` | `turma`), `escopo_id`, `tipo`, `parametros` (JSON), `vigencia_inicio`.
-- Novo **`mensalidades`** (Fase 2): `matricula_id`, `competencia` (mês/ano), `valor`, `data_pagamento` (data informada), `forma_pagamento`, `comprovante_key`. Situação (pago/pendente/atrasado) é calculada.
+## Modelo de dados
+
+O esquema do servidor (D1) está em [`db/migrations/0001_inicial.sql`](../../db/migrations/0001_inicial.sql), testado com `node --test db/`. O banco local do app (drift) usa um subconjunto dele, sem as colunas sensíveis.
+
+| Tabela | Sincronizada? | Observações |
+|---|---|---|
+| `tenants` | não | `nome`, `subdominio` (opcional), `cabecalho_impressao` |
+| `usuarios` | não | `tipo`: `superadmin` (sem tenant), `professor` e `assistente` (com tenant); e-mail único no sistema todo; senha em PBKDF2 |
+| `sessoes` | não | refresh tokens (guarda só o hash); revogar = preencher `revogado_em` |
+| `turmas` | sim | `frequencia_minima` (0–100), `cabecalho_impressao`; nome único por tenant |
+| `turma_usuarios` | sim | acesso N:N; único por `(turma_id, usuario_id)` |
+| `alunos` | sim, **só** `codigo`, `nome`, `ativo` | `codigo` único por tenant (sem diferenciar maiúsculas); CPF, RG, endereço, telefones e responsáveis ficam só no servidor |
+| `graduacoes` | não | faixa, grau, data |
+| `matriculas` | sim | `data_inicio`, `data_fim` (nulo = em aberto), `situacao` (matriculado, remanejado, encerrado) |
+| `quadros_aulas` | sim | dias da semana habilitados, com vigência |
+| `aulas` | sim | `tipo` regular ou reposicao; no máximo **uma regular por turma e data** |
+| `presencas` | sim | só quem veio; única por `(aula_id, aluno_id)`, mesmo excluída (desmarcar e remarcar alternam `excluido`) |
+| `regras` | não | escopo `tenant`, `turma` ou `usuario`; `parametros` em JSON validado |
+| `controle_versao` | — | contador global que gera o `server_version` |
+
+Decisões de modelagem:
+- **Id da aula regular é determinístico** (UUID v5 de `turma_id` + `data_aula`): dois aparelhos offline que abrem a mesma aula geram o mesmo id, sem conflito.
+- Unicidades de negócio valem só para registros não excluídos (índices parciais), exceto `presencas`, que reaproveita a mesma linha.
+- Não existe cadastro de professor separado: professor é um usuário e não aparece nos relatórios por padrão.
+- Coerência entre tenants (ex.: aluno e turma do mesmo tenant) é garantida pela API.
+- `mensalidades` entra numa migração da Fase 2: `matricula_id`, `competencia` (mês/ano), `valor` (centavos), `data_pagamento` (data informada), `forma_pagamento`, `comprovante_key`. Situação (pago/pendente/atrasado) é calculada.
 
 ## Importação das planilhas
 - As planilhas atuais são modelos impressos sem dados digitados; importar só a **lista de alunos** (código + nome) a partir das abas da presença semanal/anual.

@@ -7,6 +7,7 @@
 // (json_each), e todas as linhas aceitas num push recebem o mesmo server_version.
 import { Hono } from 'hono';
 import { autenticar, exigirPermissao } from '../middleware/autenticar';
+import { calcularRegrasDaTurma } from '../regras/configuracao-turma';
 import {
   calcularTipoDoDia,
   ehDataFutura,
@@ -43,6 +44,29 @@ async function obterTurmasPermitidas(db: D1Database, usuarioId: string, tenantId
 // ---------------------------------------------------------------------------------------------
 // PULL
 // ---------------------------------------------------------------------------------------------
+
+/** Parâmetros (JSON) da regra mais recente da turma em vigor hoje (?4). */
+function sqlRegraDaTurma(tipo: 'lista_lancamento' | 'alunos_sumidos'): string {
+  return `(SELECT r.parametros FROM regras r
+            WHERE r.tenant_id = turmas.tenant_id AND r.escopo = 'turma' AND r.escopo_id = turmas.id
+              AND r.tipo = '${tipo}' AND r.excluido = 0 AND r.vigencia_inicio <= ?4
+            ORDER BY r.vigencia_inicio DESC LIMIT 1)`;
+}
+
+interface LinhaTurmaPull {
+  lista_lancamento: string | null;
+  alunos_sumidos: string | null;
+  [coluna: string]: unknown;
+}
+
+/** Troca as colunas de regra pelo objeto `regras`, já com os valores padrão. */
+function montarTurmaComRegras({ lista_lancamento, alunos_sumidos, ...turma }: LinhaTurmaPull) {
+  const gravadas = [
+    { tipo: 'lista_lancamento', parametros: lista_lancamento },
+    { tipo: 'alunos_sumidos', parametros: alunos_sumidos },
+  ].filter((r): r is { tipo: string; parametros: string } => r.parametros !== null);
+  return { ...turma, regras: calcularRegrasDaTurma(gravadas) };
+}
 rotasSync.get('/pull', async (c) => {
   const { id: usuarioId, tenantId } = c.get('usuario');
   if (!tenantId) return responderErro(c, 403, 'sem_permissao');
@@ -58,10 +82,12 @@ rotasSync.get('/pull', async (c) => {
     db.prepare('SELECT ultima_versao FROM controle_versao WHERE id = 1'),
     db
       .prepare(
-        `SELECT id, nome, frequencia_minima, cabecalho_impressao, excluido, updated_at, server_version
+        `SELECT id, nome, frequencia_minima, cabecalho_impressao, excluido, updated_at, server_version,
+                ${sqlRegraDaTurma('lista_lancamento')} AS lista_lancamento,
+                ${sqlRegraDaTurma('alunos_sumidos')} AS alunos_sumidos
            FROM turmas WHERE tenant_id = ?1 AND id ${naLista} AND (?3 = 0 OR server_version > ?3)`,
       )
-      .bind(tenantId, lista, desde),
+      .bind(tenantId, lista, desde, obterHojeEmSaoPaulo()),
     db
       .prepare(
         `SELECT id, turma_id, usuario_id, excluido, updated_at, server_version
@@ -111,7 +137,7 @@ rotasSync.get('/pull', async (c) => {
     cursor: (cursor?.results[0] as { ultima_versao: number } | undefined)?.ultima_versao ?? 0,
     // desde=0 devolve tudo (primeira carga). Se a lista de turmas mudar, o app apaga o que não está aqui e refaz o pull desde 0.
     turmas_permitidas: turmas,
-    turmas: rTurmas?.results ?? [],
+    turmas: ((rTurmas?.results ?? []) as LinhaTurmaPull[]).map(montarTurmaComRegras),
     turma_usuarios: rAcessos?.results ?? [],
     quadros_aulas: rQuadros?.results ?? [],
     matriculas: rMatriculas?.results ?? [],

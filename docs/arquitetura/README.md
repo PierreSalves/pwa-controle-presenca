@@ -129,6 +129,7 @@ Exige login e a permissão `lancar_presenca` (professor e assistente).
 **`GET /api/sync/pull?desde=<cursor>`** → `{ cursor, turmas_permitidas, turmas, turma_usuarios, quadros_aulas, matriculas, alunos, aulas, presencas }`
 - `desde=0` devolve tudo (primeira carga); depois, só o que tem `server_version > desde`, inclusive excluídos.
 - `alunos` traz só `id`, `codigo`, `nome`, `ativo` e colunas de sync (sem dados sensíveis).
+- Cada turma traz `regras` (`lista_lancamento` e `alunos_sumidos`, já com os valores padrão), para o lançamento funcionar offline. Alterar uma regra atualiza o `server_version` da turma.
 - Se `turmas_permitidas` mudar em relação ao que o app tem, o app apaga os dados das turmas que saíram e refaz o pull com `desde=0`.
 
 **`POST /api/sync/push`** com `{ operacoes: [{ id, tabela, registro }] }` (até 500) → `{ aceitos: [id], rejeitados: [{ id, erro }] }`
@@ -140,6 +141,22 @@ Exige login e a permissão `lancar_presenca` (professor e assistente).
 - "Hoje" é calculado no fuso `America/Sao_Paulo`.
 
 **Regras compartilhadas:** os casos de teste de data futura, dia da semana, matrícula vigente, tipo do dia no quadro e id determinístico da aula ficam em [`docs/casos-regras/presenca.json`](../casos-regras/presenca.json) e rodam na API e no app.
+
+### API de cadastros (online)
+Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ erro: '<codigo>' }`. Toda gravação em tabela sincronizada incrementa o `server_version`, então o app recebe a mudança no pull seguinte.
+
+**Turmas** (`api/src/rotas/turmas.ts`, tela 10). Exige `gerenciar_turmas` (professor e assistente). O professor vê todas as turmas da academia; a assistente, só as liberadas para ela. Turma de outra academia ou sem acesso responde `404 turma_nao_encontrada`.
+
+| Rota | O que faz |
+|---|---|
+| `GET /api/turmas` | turmas visíveis, com `alunos_matriculados` (matrícula vigente hoje) |
+| `POST /api/turmas` | cria (`nome`, `descricao`, `frequencia_minima`, `cabecalho_impressao`); quem cria ganha acesso; nome repetido → `409 nome_ja_existe` |
+| `GET /api/turmas/:id` | `{ turma, quadros, regras, acessos }` para a tela de configuração |
+| `PUT /api/turmas/:id` | altera os dados da turma |
+| `DELETE /api/turmas/:id` | exclusão lógica; a turma some do aparelho no próximo pull |
+| `POST /api/turmas/:id/quadros` | novo quadro a partir de `vigencia_inicio` com `dias` (`0` sem aula, `1` regular, `2` reposição); o quadro anterior termina na véspera; mesma data de início corrige o último; início anterior ao último → `409 vigencia_anterior_ao_quadro_atual` |
+| `PUT /api/turmas/:id/regras` | `lista_lancamento` (`percentual_minimo` 0–100, `ultimas_aulas` 1–52) e/ou `alunos_sumidos` (`semanas` 1–52); vigência a partir de hoje |
+| `PUT /api/turmas/:id/acessos` | só professor (`gerenciar_acessos`): lista completa `usuario_ids`; usuário de outra academia ou superadmin → `400 usuario_invalido` |
 
 ### Conflitos
 - Presença é quase só inserção; chave única `presencas (aula_id, aluno_id)`: dois aparelhos marcando o mesmo aluno resultam num registro só.

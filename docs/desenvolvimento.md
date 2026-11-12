@@ -111,6 +111,7 @@ Correção de bug vem com um teste que falhava antes da correção.
 ## 7. Banco de dados
 
 - Toda mudança de esquema é uma **nova migração** em `db/migrations/` (`0001_inicial.sql`, `0002_…`). Migração já aplicada nunca é editada.
+- Toda migração atualiza, no mesmo PR, o **MER e o dicionário de dados** em [`docs/banco-de-dados.md`](banco-de-dados.md) e os testes em `db/testes/`.
 - Toda tabela sincronizada tem as colunas de sync (`id` UUID v7, `tenant_id`, `created_at`, `updated_at`, `excluido`, `server_version`, `created_by`, `updated_by`).
 - Nada é apagado de verdade: exclusão é `excluido = 1`.
 - Na API, **toda consulta filtra por `tenant_id` vindo do token** e, quando for o caso, pelas turmas a que o usuário tem acesso.
@@ -143,6 +144,6 @@ Correção de bug vem com um teste que falhava antes da correção.
 - [ ] Funciona no celular (testado em tela estreita)
 - [ ] Testes obrigatórios escritos e passando
 - [ ] Formatação e análise sem avisos
-- [ ] Migração nova, se mudou o banco
+- [ ] Migração nova, se mudou o banco, com MER e dicionário de dados atualizados
 - [ ] Documentação atualizada, se mudou alguma decisão ou regra
 - [ ] Sem segredos, dados reais ou logs de depuração

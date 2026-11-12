@@ -164,6 +164,8 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 
 O esquema do servidor (D1) está em [`db/migrations/0001_inicial.sql`](../../db/migrations/0001_inicial.sql), testado com `node --test db/`. O banco local do app (drift) usa um subconjunto dele, sem as colunas sensíveis.
 
+**MER e dicionário de dados completo: [`docs/banco-de-dados.md`](../banco-de-dados.md).** Resumo:
+
 | Tabela | Sincronizada? | Observações |
 |---|---|---|
 | `tenants` | não | `nome`, `subdominio` (opcional), `cabecalho_impressao` |

@@ -133,8 +133,8 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 As validações rodam **no app** (resposta imediata offline) e **de novo na API**, que tem a palavra final:
 - não lançar presença em dia futuro;
 - aluno só pode ser marcado dentro do período da matrícula;
-- aula **regular** só nos dias habilitados pelo quadro de aulas vigente;
-- aula de **reposição** pode ser em qualquer dia (aula extra, fora do quadro).
+- aula **regular** só nos dias marcados como *regular* no quadro de aulas vigente;
+- aula de **reposição fixa** aparece nos dias marcados como *reposição* no quadro; **reposição avulsa** pode ser em qualquer dia não futuro.
 
 Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê um aviso.
 
@@ -174,6 +174,24 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 - Demais parâmetros na tabela `regras` (JSON): `{ "periodos": [["01-01","06-30"],["07-01","12-31"]], "meses_graduacao": [6, 12], "conta_reposicao": <bool> }`.
 - Relatório: lista dos alunos da turma com a frequência atual do semestre, destacando quem está abaixo do mínimo, para o professor consultar antes da graduação.
 
+### Regra: lista do lançamento (alunos frequentes)
+- O lançamento mostra só os alunos **frequentes**: presentes em ao menos `percentual_minimo`% das últimas `ultimas_aulas` aulas regulares da turma (padrão 30% de 8), ordenados pela frequência.
+- Matrícula com menos de `ultimas_aulas` aulas lançadas é tratada como **nova** e sempre aparece.
+- Os demais ficam recolhidos e na busca; marcar um deles o traz de volta para os frequentes.
+- Calculada no aparelho com as presenças sincronizadas (funciona offline).
+- Tipo `lista_lancamento` na tabela `regras`, escopo turma: `{ "percentual_minimo": 30, "ultimas_aulas": 8 }`.
+
+### Regra: alunos sumidos
+- Aviso no início para alunos com matrícula aberta e sem presença há mais de `semanas` semanas (padrão 4), com atalho para encerrar a matrícula (data de fim sugerida = última presença).
+- Tipo `alunos_sumidos` na tabela `regras`, escopo turma: `{ "semanas": 4 }`.
+
+### Logotipo e ícone do app por academia
+- Endereço único para todos; a academia é conhecida **depois do login**.
+- O login mostra o logotipo da TghServices. Após o login, app e relatórios mostram o logotipo da academia.
+- O convite para instalar o PWA só aparece **após o login**. O manifesto (`/api/manifesto`, pedido com credenciais) é montado pelo Worker com o `nome_curto` e os ícones da academia do usuário; o `apple-touch-icon` é trocado pelo app após o login. Sem logotipo, usa o ícone da TghServices.
+- Limitação conhecida: instalar pelo menu do navegador antes do login fica com o ícone da TghServices.
+- No envio do logotipo, o app gera ícones 192 e 512 px (com margem de segurança para ícone redondo) e envia ao R2.
+
 ## Modelo de dados
 
 O esquema do servidor (D1) está em [`db/migrations/0001_inicial.sql`](../../db/migrations/0001_inicial.sql), testado com `node --test db/`. O banco local do app (drift) usa um subconjunto dele, sem as colunas sensíveis.
@@ -201,6 +219,10 @@ Decisões de modelagem:
 - Unicidades de negócio valem só para registros não excluídos (índices parciais), exceto `presencas`, que reaproveita a mesma linha.
 - Não existe cadastro de professor separado: professor é um usuário e não aparece nos relatórios por padrão.
 - Coerência entre tenants (ex.: aluno e turma do mesmo tenant) é garantida pela API.
+- **Próxima migração (`0002`), aprovada junto com os wireframes:**
+  - `quadros_aulas`: cada dia da semana passa de 0/1 para `0` sem aula, `1` regular, `2` reposição (dia fixo de reposição);
+  - aula de reposição fixa também ganha id determinístico (UUID v5 de `turma_id` + `data_aula` + `reposicao`);
+  - `tenants`: `logotipo_key`, `nome_curto` e as chaves dos ícones gerados (R2).
 - `mensalidades` entra numa migração da Fase 2: `matricula_id`, `competencia` (mês/ano), `valor` (centavos), `data_pagamento` (data informada), `forma_pagamento`, `comprovante_key`. Situação (pago/pendente/atrasado) é calculada.
 
 ## Importação das planilhas

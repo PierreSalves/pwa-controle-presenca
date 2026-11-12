@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes Fase 1</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{--t1:#1f1e1d;--t2:#5f5e5a;--t3:#888780;--b1:#d3d1c7;--b2:#b4b2a9;--b3:#5f5e5a;--s1:#f5f4ef;--s2:#ffffff;--okb:#eaf3de;--okt:#3b6d11;--wab:#faeeda;--wat:#854f0b;--dg:#a32d2d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--s1);font-family:system-ui,"Segoe UI",Roboto,sans-serif;color:var(--t1)}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;padding:24px}
+.lb{font-size:14px;color:var(--t2);margin:0 0 8px}
+.ph{background:var(--s2);border:1px solid var(--b2);border-radius:20px;padding:14px;min-height:560px;font-size:14px;display:flex;flex-direction:column;gap:9px}
+.bar{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);padding-bottom:8px;font-weight:600;font-size:15px}
+.bx{border:1px solid var(--b2);border-radius:8px;padding:8px 10px;color:var(--t2)}
+.bt{border:1px solid var(--b3);border-radius:8px;padding:9px;text-align:center;font-weight:600}
+.pr{background:var(--t1);color:#fff;border-radius:8px;padding:9px;text-align:center;font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);padding:7px 2px}
+.ok{background:var(--okb);color:var(--okt);border-radius:8px;padding:5px 10px;font-size:13px}
+.wa{background:var(--wab);color:var(--wat);border-radius:8px;padding:5px 10px;font-size:13px}
+.mu{color:var(--t3);font-size:13px}
+.ck{width:20px;height:20px;border:1px solid var(--b3);border-radius:5px;display:inline-flex;align-items:center;justify-content:center}
+.off{opacity:.45}
+.h{font-weight:600}
+.lg{border:1.5px dashed var(--b3);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t2)}
+.rp{background:#e6f1fb;color:#0c447c;border-radius:6px;padding:1px 6px;font-size:11px}
+.dd{border:1px solid var(--b2);border-radius:6px;padding:3px 7px;font-size:12px;color:var(--t2)}
+.dr{border-color:var(--b3);color:var(--t1);font-weight:600}
+.inf{background:#e6f1fb;color:#0c447c;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.ic{width:52px;height:52px;border-radius:14px;border:1px solid var(--b3);display:flex;align-items:center;justify-content:center;color:var(--t2)}
+.gd{display:flex;flex-direction:column;gap:24px;padding:0 24px 24px}
+.dk{background:var(--s2);border:1px solid var(--b2);border-radius:12px;font-size:14px;display:grid;grid-template-columns:180px 1fr;min-height:420px;width:1040px;max-width:100%}
+.sd{border-right:1px solid var(--b1);padding:14px;display:flex;flex-direction:column;gap:8px}
+.mn{padding:14px 18px;display:flex;flex-direction:column;gap:12px}
+.it{padding:7px 8px;border-radius:8px}
+.at{background:var(--s1);font-weight:600}
+.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb td,.tb th{border-bottom:1px solid var(--b1);padding:8px 6px;text-align:center;font-weight:400}
+.tb td:first-child,.tb th:first-child{text-align:left;width:38%}
+body.uma .g,body.uma .gd{display:block;padding:0}
+body.uma .tela{display:none;width:360px;padding:16px}
+body.uma .tela.dsk{width:1080px}
+body.uma .tela.ativa{display:block}
+</style>
+</head>
+<body>
+<div class="g">
+
+<div class="tela" id="t1"><p class="lb">1. Entrar</p><div class="ph" style="justify-content:center">
+<div class="lg" style="height:80px"><i class="ti ti-photo"></i> Logotipo TghServices</div>
+<div style="text-align:center;font-weight:600;font-size:18px">Controle de presença</div>
+<div class="bx">E-mail</div><div class="bx">Senha</div>
+<div class="pr">Entrar</div>
+<div class="mu" style="text-align:center">Esqueceu a senha? Fale com o professor</div>
+<div class="mu" style="text-align:center">Sem convite de instalação aqui: a academia só é conhecida após o login</div>
+</div></div>
+
+<div class="tela" id="t2"><p class="lb">2. Início</p><div class="ph">
+<div class="bar"><i class="ti ti-menu-2"></i><span class="lg" style="height:34px;padding:0 12px"><i class="ti ti-photo"></i> Logotipo da academia</span><i class="ti ti-user"></i></div>
+<div class="inf"><span class="h"><i class="ti ti-device-mobile"></i> Instale o app da Academia Teste</span><span style="font-size:12px">Abre direto, funciona sem internet e fica com o ícone da academia</span><div style="display:flex;gap:6px"><span class="bt" style="flex:1;background:var(--s2)">Instalar</span><span class="bt" style="flex:1;background:var(--s2)">Agora não</span></div></div>
+<div class="ok"><i class="ti ti-check"></i> Tudo enviado · 14:32</div>
+<div class="pr"><i class="ti ti-checkbox"></i> Lançar presença de hoje</div>
+<div class="h">Suas turmas</div>
+<div class="bx">Adulto · ter qua qui · 42 alunos</div>
+<div class="bx">Kids · seg qua · 18 alunos</div>
+<div class="h">Resumo de 2026</div>
+<div style="display:flex;gap:8px"><div class="bx" style="flex:1">Aulas<br><b>118</b></div><div class="bx" style="flex:1">Freq. média<br><b>71%</b></div></div>
+<div class="wa">5 alunos abaixo do mínimo para graduação</div>
+<div class="wa">6 alunos sem vir há mais de 4 semanas</div>
+<div class="row"><span>(03) Lucas S. · desde 02/09</span><span class="bt" style="padding:4px 8px">Encerrar</span></div>
+<div class="mu">Encerrar matrícula pede a data de fim (sugere a última presença). Sem logotipo cadastrado, mostra o nome da academia.</div>
+</div></div>
+
+<div class="tela" id="t2b"><p class="lb">2b. Instalar no iPhone</p><div class="ph" style="background:var(--s1)">
+<div class="bar"><span>Instalar no iPhone</span><i class="ti ti-x"></i></div>
+<div class="row"><span>1. Toque em <i class="ti ti-share"></i> Compartilhar</span></div>
+<div class="row"><span>2. Escolha "Adicionar à Tela de Início"</span></div>
+<div class="row"><span>3. Confirme o nome e toque em Adicionar</span></div>
+<div class="mu">O iPhone não tem botão de instalar automático; a tela explica o passo a passo</div>
+</div></div>
+
+<div class="tela" id="t3"><p class="lb">3. Escolher turma</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Lançar presença</span><span></span></div>
+<div class="mu">Se houver só uma turma, esta tela é pulada</div>
+<div class="row"><span>Adulto</span><i class="ti ti-chevron-right"></i></div>
+<div class="row"><span>Kids</span><i class="ti ti-chevron-right"></i></div>
+<div class="row"><span>Feminino</span><i class="ti ti-chevron-right"></i></div>
+</div></div>
+
+<div class="tela" id="t4"><p class="lb">4. Lançar presença</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Adulto</span><i class="ti ti-calendar"></i></div>
+<div style="display:flex;gap:4px;text-align:center">
+<div class="bx" style="flex:1;padding:5px 2px">ter<br>10/11</div>
+<div class="bx" style="flex:1;padding:5px 2px;border:2px solid var(--b3);color:var(--t1)">qua<br>11/11</div>
+<div class="bx off" style="flex:1;padding:5px 2px">qui<br>12/11</div>
+<div class="bx off" style="flex:1;padding:5px 2px">sáb<br>14/11<br><span class="rp">repos.</span></div>
+</div>
+<div class="mu">Semana atual · dia futuro bloqueado · sáb = reposição fixa</div>
+<div class="bx"><i class="ti ti-search"></i> Buscar outro aluno matriculado</div>
+<div class="mu">Frequentes (28) · ordem por frequência</div>
+<div class="row"><span>(01) Augusto T.</span><span class="ck"><i class="ti ti-check"></i></span></div>
+<div class="row"><span>(04) Carlos J.</span><span class="ck"><i class="ti ti-check"></i></span></div>
+<div class="row"><span>(108) Jayme V. <span class="rp">novo</span></span><span class="ck"></span></div>
+<div class="row"><span style="color:var(--t2)"><i class="ti ti-chevron-down"></i> Pouco frequentes (14)</span><span class="mu">recolhido</span></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><span>12 presentes</span><span class="wa">2 aguardando envio</span></div>
+<div class="bt">Marcar todos os frequentes</div>
+<div class="bt"><i class="ti ti-plus"></i> Reposição avulsa (outro dia)</div>
+</div></div>
+
+<div class="tela" id="t4b"><p class="lb">4b. Busca de aluno pouco frequente</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Adulto · qua 11/11</span><span></span></div>
+<div class="bx" style="color:var(--t1)"><i class="ti ti-search"></i> luc</div>
+<div class="row"><span>(03) Lucas S. <span class="mu">· 12% · última vez 02/09</span></span><span class="ck"></span></div>
+<div class="row"><span>(16) Lucas F. <span class="mu">· 0% · nunca veio</span></span><span class="ck"></span></div>
+<div class="mu">Ao marcar, o aluno volta para a lista de frequentes</div>
+</div></div>
+
+<div class="tela" id="t5"><p class="lb">5. Reposição avulsa</p><div class="ph" style="background:var(--s1)">
+<div class="bar"><span>Reposição avulsa</span><i class="ti ti-x"></i></div>
+<div class="mu">Aula extra fora do dia fixo de reposição. Conta na frequência.</div>
+<div class="bx">Turma: Adulto</div>
+<div class="bx">Data: 08/11/2026 (sábado)</div>
+<div class="pr">Criar e marcar presenças</div>
+</div></div>
+
+<div class="tela" id="t6"><p class="lb">6. Frequência do semestre</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Graduação · Adulto</span><i class="ti ti-printer"></i></div>
+<div class="bx">2º sem. 2026 · até 11/11 · mínimo 75%</div>
+<div class="row"><span>(01) Augusto T.</span><span>92%</span></div>
+<div class="row"><span>(04) Carlos J.</span><span>81%</span></div>
+<div class="row" style="color:var(--dg)"><span>(03) Lucas S.</span><span>58%</span></div>
+<div class="row" style="color:var(--dg)"><span>(09) Caroline G.</span><span>64%</span></div>
+<div class="mu">Presenças + reposições ÷ aulas lançadas na matrícula</div>
+</div></div>
+
+<div class="tela" id="t7"><p class="lb">7. Relatórios</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Relatórios</span><span></span></div>
+<div class="bx">Turma: Adulto</div>
+<div style="display:flex;gap:8px"><div class="bx" style="flex:1">De 01/11</div><div class="bx" style="flex:1">Até 30/11</div></div>
+<div class="row"><span>Presença semanal</span><i class="ti ti-chevron-right"></i></div>
+<div class="row"><span>Presença mensal</span><i class="ti ti-chevron-right"></i></div>
+<div class="row"><span>Presença anual</span><i class="ti ti-chevron-right"></i></div>
+<div class="row"><span>Por aluno</span><i class="ti ti-chevron-right"></i></div>
+<div class="row"><span>Frequência para graduação</span><i class="ti ti-chevron-right"></i></div>
+<div class="bt"><i class="ti ti-printer"></i> Imprimir / PDF</div>
+</div></div>
+
+<div class="tela" id="t8"><p class="lb">8. Alunos</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Alunos</span><i class="ti ti-plus"></i></div>
+<div class="bx"><i class="ti ti-search"></i> Nome ou código</div>
+<div class="mu">Ativos · 95</div>
+<div class="row"><span>(01) Augusto E. B. Torres</span><span class="mu">Adulto</span></div>
+<div class="row"><span>(03) Lucas V. S. da Mata</span><span class="mu">Adulto</span></div>
+<div class="row"><span>(10A) Lucas A. Costelinha</span><span class="mu">Kids</span></div>
+<div class="bt">Importar planilha</div>
+</div></div>
+
+<div class="tela" id="t9"><p class="lb">9. Aluno</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Aluno</span><span>Salvar</span></div>
+<div style="display:flex;gap:8px"><div class="bx" style="width:32%">Cód. 109</div><div class="bx" style="flex:1">Nome completo</div></div>
+<div class="mu">Código sugerido, pode editar</div>
+<div class="bx">Nascimento · telefone · CPF</div>
+<div class="bx">Responsáveis</div>
+<div class="h">Matrículas</div>
+<div class="row"><span>Adulto · 05/02/2026 →</span><span class="mu">matriculado</span></div>
+<div class="h">Graduações</div>
+<div class="row"><span>Azul · 2º grau</span><span class="mu">06/2026</span></div>
+</div></div>
+
+<div class="tela" id="t10"><p class="lb">10. Turma</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Turma</span><span>Salvar</span></div>
+<div class="bx">Nome: Adulto</div>
+<div class="bx">Frequência mínima: 75%</div>
+<div class="bx">Cabeçalho de impressão (opcional)</div>
+<div class="h">Quadro de aulas · desde 01/02/2026</div>
+<div class="mu">Toque no dia: sem aula, regular, reposição</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap"><span class="dd">dom</span><span class="dd">seg</span><span class="dd dr">ter</span><span class="dd dr">qua</span><span class="dd dr">qui</span><span class="dd">sex</span><span class="dd dr">sáb <span class="rp">repos.</span></span></div>
+<div class="h">Lista do lançamento</div>
+<div class="bx">Frequentes: ao menos <b>30%</b> das últimas <b>8</b> aulas</div>
+<div class="bx">Avisar sumidos após <b>4</b> semanas</div>
+<div class="h">Quem acessa</div>
+<div class="row"><span>Ana (assistente)</span><i class="ti ti-x"></i></div>
+<div class="row"><span>Prof. Junião</span><i class="ti ti-x"></i></div>
+<div class="mu">Só professor altera os acessos</div>
+</div></div>
+
+<div class="tela" id="t11"><p class="lb">11. Usuários (só professor)</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Usuários</span><i class="ti ti-plus"></i></div>
+<div class="row"><span>Prof. Junião</span><span class="mu">professor</span></div>
+<div class="row"><span>Ana</span><span class="mu">assistente</span></div>
+<div class="row"><span>Bia</span><span class="mu">assistente</span></div>
+<div class="bx">Novo: nome · e-mail · tipo · turmas</div>
+</div></div>
+
+<div class="tela" id="t12"><p class="lb">12. Menu e meus dados</p><div class="ph">
+<div class="bar"><span>Menu</span><i class="ti ti-x"></i></div>
+<div class="row"><span><i class="ti ti-home"></i> Início</span></div>
+<div class="row"><span><i class="ti ti-checkbox"></i> Lançar presença</span></div>
+<div class="row"><span><i class="ti ti-chart-bar"></i> Relatórios</span></div>
+<div class="row"><span><i class="ti ti-users"></i> Alunos</span></div>
+<div class="row"><span><i class="ti ti-school"></i> Turmas</span></div>
+<div class="row"><span><i class="ti ti-user-cog"></i> Usuários</span></div>
+<div class="row"><span><i class="ti ti-lock"></i> Meus dados e senha</span></div>
+<div class="row"><span><i class="ti ti-logout"></i> Sair</span></div>
+</div></div>
+
+<div class="tela" id="t13"><p class="lb">13. Administrador do sistema</p><div class="ph">
+<div class="bar"><span>Academias</span><i class="ti ti-plus"></i></div>
+<div class="row"><span>Academia Teste</span><span class="mu">ativa</span></div>
+<div class="row"><span>Outra Academia</span><span class="mu">ativa</span></div>
+<div class="bx">Nova: nome · primeiro professor</div>
+<div class="bt">Carga inicial (planilha de alunos)</div>
+<div class="mu">Só o superadmin vê esta área</div>
+</div></div>
+
+<div class="tela" id="t14"><p class="lb">14. Dados da academia (professor)</p><div class="ph">
+<div class="bar"><i class="ti ti-arrow-left"></i><span>Dados da academia</span><span>Salvar</span></div>
+<div class="bx">Nome: Academia Teste</div>
+<div class="bx">Nome curto no celular: Equipe Junião</div>
+<div class="lg" style="height:80px;flex-direction:column"><i class="ti ti-upload"></i><span>Enviar logotipo</span><span class="mu">PNG ou JPG · até 1 MB</span></div>
+<div class="h">Prévia do ícone do app</div>
+<div style="display:flex;gap:12px;align-items:center"><div class="ic"><i class="ti ti-photo"></i></div><div class="ic" style="border-radius:50%"><i class="ti ti-photo"></i></div><span class="mu">quadrado e redondo, com margem de segurança</span></div>
+<div class="bx">Cabeçalho de impressão (opcional)</div>
+<div class="mu">O logotipo também aparece nos relatórios impressos. Sem logotipo, o app usa o ícone da TghServices.</div>
+</div></div>
+
+</div>
+
+<div class="gd">
+
+<div class="tela dsk" id="d1"><p class="lb">D1. Início (desktop)</p><div class="dk"><div class="sd">
+<div class="lg" style="height:48px"><i class="ti ti-photo"></i> Logotipo</div>
+<div class="it at"><i class="ti ti-home"></i> Início</div>
+<div class="it"><i class="ti ti-checkbox"></i> Lançar presença</div>
+<div class="it"><i class="ti ti-chart-bar"></i> Relatórios</div>
+<div class="it"><i class="ti ti-users"></i> Alunos</div>
+<div class="it"><i class="ti ti-school"></i> Turmas</div>
+<div class="it"><i class="ti ti-user-cog"></i> Usuários</div>
+<div class="it" style="margin-top:auto"><i class="ti ti-logout"></i> Sair</div>
+</div><div class="mn">
+<div class="bar"><span>Início · Academia Teste</span><span class="ok"><i class="ti ti-check"></i> Tudo enviado</span></div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+<div class="bx">Aulas 2026<br><b>118</b></div><div class="bx">Freq. média<br><b>71%</b></div><div class="bx">Alunos ativos<br><b>95</b></div><div class="bx">Abaixo do mínimo<br><b>5</b></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div><div class="h">Suas turmas</div>
+<div class="row"><span>Adulto · ter qua qui</span><span class="bt">Lançar</span></div>
+<div class="row"><span>Kids · seg qua</span><span class="bt">Lançar</span></div></div>
+<div><div class="h">Abaixo do mínimo (graduação)</div>
+<div class="row"><span>(03) Lucas S.</span><span>58%</span></div>
+<div class="row"><span>(09) Caroline G.</span><span>64%</span></div></div>
+</div></div></div></div>
+
+<div class="tela dsk" id="d2"><p class="lb">D2. Lançar presença (desktop: grade da semana)</p><div class="dk"><div class="sd">
+<div class="lg" style="height:48px"><i class="ti ti-photo"></i> Logotipo</div>
+<div class="it">Início</div><div class="it at">Lançar presença</div><div class="it">Relatórios</div><div class="it">Alunos</div><div class="it">Turmas</div>
+</div><div class="mn">
+<div class="bar"><span>Adulto · semana de 09/11 a 15/11/2026</span><span style="display:flex;gap:8px"><span class="bt"><i class="ti ti-chevron-left"></i></span><span class="bt"><i class="ti ti-chevron-right"></i></span><span class="bt">+ Reposição avulsa</span></span></div>
+<div class="bx"><i class="ti ti-search"></i> Adicionar aluno pouco frequente à grade</div>
+<table class="tb"><tr><th>Aluno · freq. últimas 8 aulas</th><th>ter 10/11</th><th>qua 11/11</th><th class="off">qui 12/11</th><th class="off">sáb 14/11 <span class="rp">repos.</span></th></tr>
+<tr><td>(01) Augusto E. B. Torres · 100%</td><td><span class="ck"><i class="ti ti-check"></i></span></td><td><span class="ck"><i class="ti ti-check"></i></span></td><td><span class="ck off"></span></td><td><span class="ck off"></span></td></tr>
+<tr><td>(04) Carlos J. · 75%</td><td><span class="ck"></span></td><td><span class="ck"><i class="ti ti-check"></i></span></td><td><span class="ck off"></span></td><td><span class="ck off"></span></td></tr>
+<tr><td style="color:var(--t2)"><i class="ti ti-chevron-down"></i> Pouco frequentes (14)</td><td></td><td></td><td></td><td></td></tr>
+</table>
+<div style="display:flex;justify-content:space-between;align-items:center"><span class="mu">Dia futuro e fora da matrícula ficam bloqueados</span><span class="wa">2 aguardando envio</span></div>
+</div></div></div>
+
+<div class="tela dsk" id="d3"><p class="lb">D3. Alunos (desktop: lista e detalhe)</p><div class="dk"><div class="sd">
+<div class="lg" style="height:48px"><i class="ti ti-photo"></i> Logotipo</div>
+<div class="it">Início</div><div class="it">Lançar presença</div><div class="it">Relatórios</div><div class="it at">Alunos</div><div class="it">Turmas</div>
+</div><div class="mn" style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px">
+<div><div class="bx" style="margin-bottom:8px"><i class="ti ti-search"></i> Nome ou código</div>
+<div class="row" style="background:var(--s1)"><span>(01) Augusto T.</span><span class="mu">Adulto</span></div>
+<div class="row"><span>(03) Lucas S.</span><span class="mu">Adulto</span></div>
+<div class="row"><span>(10A) Lucas C.</span><span class="mu">Kids</span></div>
+<div style="display:flex;gap:8px;margin-top:10px"><span class="bt">+ Novo aluno</span><span class="bt">Importar planilha</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div class="bar"><span>(01) Augusto E. B. Torres</span><span class="bt">Salvar</span></div>
+<div class="bx">Nascimento · telefone · CPF · responsáveis</div>
+<div class="h">Matrículas</div><div class="row"><span>Adulto · 05/02/2026 →</span><span class="mu">matriculado</span></div>
+<div class="h">Graduações</div><div class="row"><span>Azul · 2º grau</span><span class="mu">06/2026</span></div></div>
+</div></div></div>
+
+<div class="tela dsk" id="d4"><p class="lb">D4. Frequência do semestre (desktop e impressão)</p><div class="dk"><div class="sd">
+<div class="lg" style="height:48px"><i class="ti ti-photo"></i> Logotipo</div>
+<div class="it">Início</div><div class="it">Lançar presença</div><div class="it at">Relatórios</div><div class="it">Alunos</div>
+</div><div class="mn">
+<div class="bar"><span>Frequência para graduação · Adulto · 2º sem. 2026</span><span class="bt"><i class="ti ti-printer"></i> Imprimir / PDF</span></div>
+<table class="tb"><tr><th>Aluno</th><th>Aulas</th><th>Presenças</th><th>Reposições</th><th>Freq.</th></tr>
+<tr><td>(01) Augusto T.</td><td>48</td><td>43</td><td>1</td><td>92%</td></tr>
+<tr style="color:var(--dg)"><td>(03) Lucas S.</td><td>48</td><td>26</td><td>2</td><td>58%</td></tr></table>
+<div class="mu">Cabeçalho impresso: logotipo + academia + turma + cabeçalhos configurados</div>
+</div></div></div>
+
+</div>
+<script>
+var n = new URLSearchParams(location.search).get('tela');
+if (n) { document.body.classList.add('uma'); var t = document.getElementById(/^d/.test(n) ? n : 't' + n); if (t) t.classList.add('ativa'); }
+</script>
+</body>
+</html>

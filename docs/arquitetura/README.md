@@ -143,6 +143,21 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 - Guardar o access token (curto) e um refresh token (longo, ex.: 30 dias).
 - Offline, o app continua lançando presença com a sessão salva. Se o token expirar, a sync pede novo login **sem perder a outbox**.
 
+### Autenticação (implementada em `api/src/rotas/autenticacao.ts`)
+| Rota | O que faz |
+|---|---|
+| `POST /api/autenticacao/entrar` | e-mail + senha → token de acesso (JWT HS256, 15 min) no corpo e token de renovação em cookie `cp_renovacao` (HttpOnly, Secure, SameSite=Strict, caminho `/api/autenticacao`, 30 dias) |
+| `POST /api/autenticacao/renovar` | troca o cookie por um novo token de acesso e **rotaciona** o token de renovação (o antigo deixa de valer) |
+| `POST /api/autenticacao/sair` | revoga a sessão e apaga o cookie |
+| `GET /api/eu` | usuário, academia e turmas liberadas |
+| `POST /api/eu/senha` | troca a própria senha e encerra as outras sessões |
+
+- Senhas: PBKDF2-SHA256 com 100.000 iterações (limite do runtime do Workers) e salt aleatório; comparação em tempo constante. E-mail inexistente também calcula um hash, para o tempo de resposta não revelar quais e-mails existem.
+- Toda rota autenticada confere no banco que a sessão não foi revogada e que usuário e academia seguem ativos: **desativar um usuário bloqueia o acesso na hora**.
+- Segredo do JWT: `JWT_SEGREDO` (local em `api/.dev.vars`, modelo em `.dev.vars.example`; produção via `wrangler secret put JWT_SEGREDO`).
+- Primeiro usuário: `npm run criar-superadmin -- --email ... [--remoto]` (em `api/`).
+- Pendente: limitar tentativas de login por IP/e-mail (proteção contra força bruta) antes de abrir para outras academias.
+
 ## Segurança
 
 | Risco | Mitigação |

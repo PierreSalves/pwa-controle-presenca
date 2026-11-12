@@ -1,0 +1,29 @@
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Claude Code (configurações locais)
+.claude/settings.local.json
+
+# Sistema operacional / editores
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Flutter / Dart
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Node / Cloudflare Workers
+node_modules/
+.wrangler/
+dist/
+
+# Planilhas reais não entram no repositório
+*.xlsx

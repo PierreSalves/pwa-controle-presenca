@@ -30,7 +30,20 @@ Diagramas: [1. Hospedagem](1-hospedagem-cloudflare.jpg) · [2. Segurança](2-seg
 | API | **Cloudflare Worker** em TypeScript (sugestão: Hono) | leve, mesmo provedor do banco |
 | Banco central | **D1** | |
 | Arquivos | **R2** | comprovantes de mensalidade |
-| Hospedagem do app | Cloudflare Pages (decisão original) ou Workers Static Assets (recomendação atual da Cloudflare para projetos novos) | decidir; a diferença é pequena |
+| Hospedagem do app | **Workers Static Assets** | recomendação da Cloudflare para projetos novos; app e API no mesmo Worker e no mesmo domínio (sem CORS, cookies e CSP mais simples) |
+| Endereço | **`controlepresenca.tghservices.com.br`** | custom domain do Worker, criado pelo Wrangler (não criar o registro DNS à mão); DNS de `tghservices.com.br` na Cloudflare |
+
+### Custos (plano gratuito, conferido em nov/2026)
+| Serviço | Limite gratuito |
+|---|---|
+| Static Assets | pedidos ilimitados; até 20.000 arquivos de até 25 MiB |
+| Workers (API) | 100.000 pedidos/dia (conta inteira); 10 ms de CPU por pedido |
+| D1 | 5 milhões de linhas lidas/dia, 100 mil gravadas/dia, 5 GB |
+| R2 | 10 GB, 1 milhão de operações classe A/mês, 10 milhões classe B/mês, saída grátis |
+
+- O uso previsto (alguns milhares de pedidos/dia) cabe no gratuito. O app pausa o pull quando a tela fica em segundo plano.
+- **Ponto de atenção:** hash de senha no login pode passar de 10 ms de CPU. Usar PBKDF2 nativo (Web Crypto) e medir; se não couber, o plano pago (US$ 5/mês) resolve.
+- Se a API estourar o limite diário, os arquivos do app continuam servidos e a presença cai no offline de reserva até a meia-noite UTC.
 
 Observações do drift no navegador: servir `sqlite3.wasm` com `Content-Type: application/wasm` e incluir `drift_worker.js` na pasta `web/`.
 
@@ -82,7 +95,8 @@ Sem conexão, as telas online mostram um aviso e ficam desabilitadas. Se no futu
 - Alunos pertencem ao tenant e podem estar em várias turmas, sem cadastro duplicado.
 - A API tira `tenant_id` e `tipo` do token, nunca do app.
 - O pull de cada usuário traz só as turmas a que ele tem acesso e os alunos matriculados nelas.
-- Subdomínio por tenant (`*.seudominio.com.br`, diagrama 1) é opcional; dá para começar sem.
+- **O tenant é identificado pelo login**: todos acessam `controlepresenca.tghservices.com.br`.
+- Subdomínio por tenant (ex.: `equipejuniao.tghservices.com.br`) fica para depois e é opcional. Precisa ser de **um nível** abaixo de `tghservices.com.br`, que é o que o certificado gratuito da Cloudflare cobre.
 
 ## Como a sincronização funciona (presença)
 
@@ -182,4 +196,3 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 ## Decisões pendentes
 1. Se tenant e turma tiverem `cabecalho_impressao`, aparecem os dois ou o da turma substitui o do tenant? (Sugestão: os dois, tenant em cima.)
 2. Valor da mensalidade fica na turma, na matrícula ou nos dois (turma como padrão, matrícula como exceção)?
-3. Cloudflare Pages ou Workers Static Assets para servir o app.

@@ -68,7 +68,8 @@ Detalhes em `docs/arquitetura/README.md`.
 - App: Flutter Web (PWA) + drift
 - API: Cloudflare Worker (TypeScript, Hono)
 - Banco: Cloudflare D1; arquivos: Cloudflare R2
-- Hospedagem do app: Cloudflare Pages ou Workers Static Assets (a decidir)
+- Hospedagem do app: **Workers Static Assets** (app e API no mesmo Worker, mesmo domínio)
+- Endereço: **`controlepresenca.tghservices.com.br`** (custom domain criado pelo Wrangler; não criar o registro DNS à mão). DNS do domínio na Cloudflare. O tenant é identificado pelo login, não pelo endereço.
 
 ## Convenções
 **Regras de desenvolvimento completas em `docs/desenvolvimento.md` — seguir sempre.** Resumo:

@@ -37,6 +37,18 @@ PWA para controlar a presença de alunos em aulas de esportes com professores pa
 - **Demais funções são online** (cadastros, mensalidades, relatórios, usuários), validadas pelo servidor.
 - **Multi-tenant:** cada academia/equipe é um tenant isolado. Usuários (`professor`, `assistente`) acessam só as turmas liberadas para eles; o administrador do sistema cadastra os tenants.
 
+## Ambiente de desenvolvimento (Windows)
+
+O script [`scripts/configurar-ambiente-windows.ps1`](scripts/configurar-ambiente-windows.ps1) instala Git, Node.js LTS, VS Code, Chrome, Flutter (stable) e Claude Code, e clona o projeto em `D:\workspace Claude\pwa-controle-presenca`. Abra o PowerShell (não precisa ser como administrador) e rode:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass -Force
+irm https://raw.githubusercontent.com/PierreSalves/pwa-controle-presenca/main/scripts/configurar-ambiente-windows.ps1 -OutFile $env:TEMP\configurar.ps1
+& $env:TEMP\configurar.ps1
+```
+
+O SDK do Flutter e o cache do pub ficam em `D:\ferramentas`, porque o Flutter não aceita caminhos com espaço. O script pode ser rodado de novo sem problema. O que protege o código é o GitHub: faça commit e push sempre.
+
 ## Documentação
 
 - [Arquitetura](docs/arquitetura/README.md): stack, sincronização, tenants e permissões, segurança, modelo de dados e decisões pendentes

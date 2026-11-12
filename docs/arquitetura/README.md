@@ -123,6 +123,12 @@ Local, além disso: tabela **`outbox`** (`id`, `tabela`, `registro_id`, `operaca
 
 Por que `server_version` e não a hora do celular para o pull: relógio de celular pode estar errado. O cursor do servidor nunca perde alterações.
 
+### No app (`app/lib/dados/`)
+- `banco_local.dart`: esquema drift (subconjunto do D1, sem dados sensíveis) + `outbox` + `estado_sync` (cursor e turmas permitidas). O código gerado (`banco_local.g.dart`) fica no repositório; depois de mudar o esquema, rodar `dart run build_runner build` em `app/`.
+- `repositorio_presenca.dart`: a tela de lançamento só fala com ele. Valida as mesmas regras da API (dia futuro, quadro, matrícula), grava a aula do quadro com o id determinístico e a presença, e põe na outbox na mesma transação. A outbox tem **uma linha por registro**: marcar e desmarcar antes do envio só atualiza a linha.
+- `servico_sincronizacao.dart`: push da outbox (apaga os aceitos, marca os recusados com o erro e não os reenvia; uma nova alteração do registro limpa o erro) e pull pelo cursor. Registro com alteração pendente não é sobrescrito pelo pull. Turma retirada é apagada do aparelho (com a outbox dela) e o pull recomeça do zero.
+- `abrir_banco.dart`: abre o banco no navegador (precisa de `web/sqlite3.wasm` e `web/drift_worker.js`, ainda não incluídos).
+
 ### Contrato da API de sync (implementado em `api/src/rotas/sync.ts`)
 Exige login e a permissão `lancar_presenca` (professor e assistente).
 

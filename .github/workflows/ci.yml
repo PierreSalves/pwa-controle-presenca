@@ -37,6 +37,7 @@ jobs:
           cache: npm
           cache-dependency-path: api/package-lock.json
       - run: npm ci
+      - run: cp .dev.vars.example .dev.vars
       - run: npm run formatar:verificar
       - run: npm run lint
       - run: npm run cf-typegen -- --check || (echo "Rode 'npm run cf-typegen' e faça commit de worker-configuration.d.ts" && exit 1)

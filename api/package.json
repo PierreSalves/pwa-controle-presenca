@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --port 8811",
     "deploy": "wrangler deploy",
     "cf-typegen": "wrangler types",
     "db:migrar:local": "wrangler d1 migrations apply DB --local",
@@ -11,7 +11,8 @@
     "formatar": "prettier --write .",
     "formatar:verificar": "prettier --check .",
     "tipos": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "criar-superadmin": "node scripts/criar-superadmin.ts"
   },
   "dependencies": {
     "hono": "^4.13.18"

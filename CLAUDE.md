@@ -97,10 +97,12 @@ Rodar a partir da raiz do repositório (Git Bash ou PowerShell). Pré-requisitos
 | API: instalar | `cd api && npm ci` |
 | API: testes / lint / tipos / formato | `npm test` · `npm run lint` · `npm run tipos` · `npm run formatar` |
 | API: regenerar tipos após mudar `wrangler.jsonc` | `npm run cf-typegen` |
+| API: segredo local (uma vez) | copiar `api/.dev.vars.example` para `api/.dev.vars` e trocar o valor |
 | Banco local: aplicar migrações | `cd api && npm run db:migrar:local` |
+| Criar o superadmin | `cd api && npm run criar-superadmin -- --email voce@exemplo.com` (`--remoto` para o banco da Cloudflare) |
 | App: testes / análise / formato | `cd app && flutter test` · `flutter analyze` · `dart format lib test` |
 | App: rodar em desenvolvimento | `cd app && flutter run -d edge` |
-| Tudo junto (app + API no Worker local) | `cd app && flutter build web` e depois `cd api && npm run dev` → http://localhost:8787 |
+| Tudo junto (app + API no Worker local) | `cd app && flutter build web` e depois `cd api && npm run dev` → http://localhost:8811 (a 8799 é usada por outro projeto) |
 | Imagens dos wireframes | `bash docs/telas/gerar-imagens.sh` |
 
 O CI (`.github/workflows/ci.yml`) roda tudo isso em cada PR.

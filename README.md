@@ -39,7 +39,7 @@ PWA para controlar a presença de alunos em aulas de esportes com professores pa
 
 ## Ambiente de desenvolvimento (Windows)
 
-O script [`scripts/configurar-ambiente-windows.ps1`](scripts/configurar-ambiente-windows.ps1) instala Git, Node.js LTS, VS Code, Chrome, Flutter (stable) e Claude Code, e clona o projeto em `D:\workspace Claude\pwa-controle-presenca`. Abra o PowerShell (não precisa ser como administrador) e rode:
+O script [`scripts/configurar-ambiente-windows.ps1`](scripts/configurar-ambiente-windows.ps1) instala Git, Node.js LTS, VS Code, Chrome, Flutter (stable) e Claude Code, e clona o projeto em `D:\workspace\Claude\projetos\controle-presenca`. Abra o PowerShell (não precisa ser como administrador) e rode:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass -Force
@@ -47,7 +47,7 @@ irm https://raw.githubusercontent.com/PierreSalves/pwa-controle-presenca/main/sc
 & $env:TEMP\configurar.ps1
 ```
 
-O SDK do Flutter e o cache do pub ficam em `D:\ferramentas`, porque o Flutter não aceita caminhos com espaço. O script pode ser rodado de novo sem problema. O que protege o código é o GitHub: faça commit e push sempre.
+O SDK do Flutter e o cache do pub ficam em `D:\workspace\Claude\ferramentas` (o Flutter não aceita caminho com espaço). O script pode ser rodado de novo sem problema. O que protege o código é o GitHub: faça commit e push sempre.
 
 ## Documentação
 

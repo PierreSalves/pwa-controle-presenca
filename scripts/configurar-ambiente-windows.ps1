@@ -8,16 +8,16 @@
   Pode ser executado de novo quantas vezes quiser: o que já está instalado é pulado.
 
   Onde fica cada coisa:
-    D:\workspace Claude\pwa-controle-presenca   código (clone do GitHub)
-    D:\workspace Claude\programas\...            Git, Node.js e VS Code
-    D:\workspace Claude\npm-global, npm-cache    pacotes globais e cache do npm
-    D:\ferramentas\flutter, D:\ferramentas\pub-cache
-      O SDK do Flutter e o cache do pub NÃO podem ficar num caminho com espaço
-      ("workspace Claude" tem espaço), por isso ficam em D:\ferramentas.
+    D:\workspace\Claude\projetos\controle-presenca   código (clone do GitHub)
+    D:\workspace\Claude\programas\...                 Git, Node.js e VS Code
+    D:\workspace\Claude\ferramentas\flutter, pub-cache  SDK e cache do Flutter
+    D:\workspace\Claude\npm-global, npm-cache          pacotes globais e cache do npm
+  Atenção: o Flutter não aceita caminho com espaço; não use espaço em -Raiz.
 #>
 param(
-    [string]$Raiz = 'D:\workspace Claude',
-    [string]$Ferramentas = 'D:\ferramentas',
+    [string]$Raiz = 'D:\workspace\Claude',
+    [string]$Ferramentas = 'D:\workspace\Claude\ferramentas',
+    [string]$Projeto = 'D:\workspace\Claude\projetos\controle-presenca',
     [string]$Repositorio = 'https://github.com/PierreSalves/pwa-controle-presenca.git',
     [switch]$SemClaudeCode
 )
@@ -55,6 +55,7 @@ function Instalar-Winget([string]$id, [string]$comando, [string]$pasta) {
 # --- Pré-requisitos -----------------------------------------------------------
 Escrever-Etapa 'Conferindo pré-requisitos'
 if (-not (Test-Path 'D:\')) { throw 'A unidade D: não existe.' }
+if ($Ferramentas -match ' ') { throw 'O caminho das ferramentas não pode ter espaço (exigência do Flutter).' }
 if (-not (Tem-Comando 'winget')) {
     throw 'winget não encontrado. Instale o "Instalador de Aplicativo" pela Microsoft Store e rode de novo.'
 }
@@ -110,7 +111,8 @@ if (-not $SemClaudeCode) {
 
 # --- Código do projeto --------------------------------------------------------
 Escrever-Etapa 'Clonando o projeto'
-$projeto = Join-Path $Raiz 'pwa-controle-presenca'
+$projeto = $Projeto
+New-Item -ItemType Directory -Force -Path (Split-Path $projeto) | Out-Null
 if (Test-Path "$projeto\.git") {
     Write-Host '  Projeto já clonado; buscando atualizações.'
     git -C $projeto fetch --all --prune

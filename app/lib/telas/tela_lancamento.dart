@@ -11,21 +11,13 @@ import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
-import 'menu_app.dart';
 import 'tela_busca_aluno.dart';
 import 'tela_reposicao_avulsa.dart';
 
 class TelaLancamento extends StatefulWidget {
-  const TelaLancamento({
-    super.key,
-    required this.turmaId,
-    this.ehTelaInicial = false,
-  });
+  const TelaLancamento({super.key, required this.turmaId});
 
   final String turmaId;
-
-  /// Usuário com uma turma só: a tela abre direto, com o menu no lugar do voltar.
-  final bool ehTelaInicial;
 
   @override
   State<TelaLancamento> createState() => _TelaLancamentoState();
@@ -169,7 +161,6 @@ class _TelaLancamentoState extends State<TelaLancamento> {
               ),
             ],
           ),
-          drawer: widget.ehTelaInicial ? const MenuApp() : null,
           body: dados == null || _quadros == null
               ? const Center(child: CircularProgressIndicator())
               : LarguraCelular(child: _montarConteudo(context, dados)),

@@ -190,6 +190,25 @@ class ClienteApi implements ClienteSync {
     return jsonDecode(resposta.body) as Map<String, dynamic>;
   }
 
+  /// Encerra a matrícula na data informada (online; o pull seguinte traz a alteração).
+  Future<void> encerrarMatricula({
+    required String matriculaId,
+    required String dataInicio,
+    required String dataFim,
+  }) async {
+    await _enviarAutenticado(
+      (cabecalhos) => _http.put(
+        _montarUrl('matriculas/$matriculaId'),
+        headers: cabecalhos,
+        body: jsonEncode({
+          'data_inicio': dataInicio,
+          'data_fim': dataFim,
+          'situacao': 'encerrado',
+        }),
+      ),
+    );
+  }
+
   /// Dados do usuário logado e da academia (`GET /api/eu`).
   Future<Map<String, dynamic>> buscarEu() => _buscarJson('eu');
 

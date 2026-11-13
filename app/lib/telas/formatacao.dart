@@ -23,6 +23,13 @@ String formatarDataBr(String data) =>
 String obterDiaAbreviado(String data) =>
     _diasAbreviados[obterDiaDaSemana(data)]!;
 
+/// Hora em São Paulo (UTC−3, sem horário de verão desde 2019): '14:32'.
+String formatarHora(DateTime instante) {
+  final local = instante.toUtc().subtract(const Duration(hours: 3));
+  return '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
+}
+
 /// '(10A) Ana Souza'.
 String formatarAluno(String codigo, String nome) => '($codigo) $nome';
 

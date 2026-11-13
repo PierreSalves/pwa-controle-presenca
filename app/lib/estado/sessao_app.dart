@@ -17,12 +17,40 @@ class SessaoApp extends ChangeNotifier {
   final ClienteApi _cliente;
 
   static const _chaveUsuario = 'usuario';
+  static const _chaveAcademia = 'academia';
 
   SituacaoSessao _situacao = SituacaoSessao.carregando;
   SituacaoSessao get situacao => _situacao;
 
   UsuarioLogado? _usuario;
   UsuarioLogado? get usuario => _usuario;
+
+  /// Nome da academia (cabeçalho do Início enquanto não houver logotipo).
+  String? _nomeAcademia;
+  String? get nomeAcademia => _nomeAcademia;
+
+  Future<void> _gravarEstado(String chave, String valor) => _banco
+      .into(_banco.estadoSync)
+      .insertOnConflictUpdate(
+        EstadoSyncCompanion.insert(chave: chave, valor: valor),
+      );
+
+  /// Busca o nome da academia na API e guarda no aparelho; sem internet, mantém o guardado.
+  Future<void> _atualizarAcademia() async {
+    try {
+      final eu = await _cliente.buscarEu();
+      final nome = (eu['tenant'] as Map?)?['nome'];
+      if (nome is String && nome != _nomeAcademia) {
+        _nomeAcademia = nome;
+        await _gravarEstado(_chaveAcademia, nome);
+        notifyListeners();
+      }
+    } on SemConexao {
+      // segue com o nome guardado
+    } on ErroApi {
+      // segue com o nome guardado
+    }
+  }
 
   void _definir(SituacaoSessao situacao, UsuarioLogado? usuario) {
     _situacao = situacao;
@@ -47,12 +75,16 @@ class SessaoApp extends ChangeNotifier {
       _definir(SituacaoSessao.deslogado, null);
       return;
     }
+    _nomeAcademia = (await (_banco.select(
+      _banco.estadoSync,
+    )..where((e) => e.chave.equals(_chaveAcademia))).getSingleOrNull())?.valor;
     _definir(
       SituacaoSessao.logado,
       UsuarioLogado.lerJson(jsonDecode(gravado.valor) as Map<String, dynamic>),
     );
     try {
       await _cliente.renovarSessao();
+      await _atualizarAcademia();
     } on SessaoEncerrada {
       await encerrarLocalmente();
     } on SemConexao {
@@ -66,17 +98,12 @@ class SessaoApp extends ChangeNotifier {
   Future<void> entrar(String email, String senha) async {
     final usuario = await _cliente.entrar(email.trim(), senha);
     await _banco.apagarTudo();
-    await _banco
-        .into(_banco.estadoSync)
-        .insertOnConflictUpdate(
-          EstadoSyncCompanion.insert(
-            chave: _chaveUsuario,
-            valor: jsonEncode(usuario.converterEmJson()),
-          ),
-        );
+    _nomeAcademia = null;
+    await _gravarEstado(_chaveUsuario, jsonEncode(usuario.converterEmJson()));
     if (usuario.tenantId != null) {
       try {
         await ServicoSincronizacao(_banco, _cliente).buscarAlteracoes();
+        await _atualizarAcademia();
       } catch (_) {
         // Sem a primeira carga o app não tem o que mostrar offline: volta ao login.
         await _banco.apagarTudo();
@@ -95,6 +122,7 @@ class SessaoApp extends ChangeNotifier {
   /// Apaga os dados locais e volta ao login (sessão encerrada ou revogada no servidor).
   Future<void> encerrarLocalmente() async {
     await _banco.apagarTudo();
+    _nomeAcademia = null;
     _definir(SituacaoSessao.deslogado, null);
   }
 }

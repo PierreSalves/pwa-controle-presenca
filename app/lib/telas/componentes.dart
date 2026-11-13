@@ -66,9 +66,12 @@ class StatusEnvio extends StatelessWidget {
           final pendentes = snapshot.data ?? 0;
           final offline =
               dependencias.coordenador.conexao == ConexaoSync.offline;
-          final texto = pendentes == 0
+          final ultima = dependencias.coordenador.ultimaSincronizacao;
+          final texto = pendentes > 0
+              ? '$pendentes aguardando envio'
+              : ultima == null
               ? 'Tudo enviado ✓'
-              : '$pendentes aguardando envio';
+              : 'Tudo enviado ✓ · ${formatarHora(ultima)}';
           final complemento = offline ? ' · sem internet' : '';
           return Semantics(
             liveRegion: true,

@@ -1,0 +1,139 @@
+{
+  "descricao": "Casos da frequência (graduação e resumo) e dos alunos sumidos. Os mesmos casos rodam na API (TypeScript) e no app (Dart). Frequência no período [inicio, fim]: aulas = aulas regulares lançadas no período dentro da matrícula; presenças = presenças nessas aulas + presenças em reposições no período dentro da matrícula; percentual = presenças ÷ aulas, arredondado para baixo e limitado a 100 (null sem aulas). Lista os alunos matriculados no dia `fim`. Sumidos: matrícula aberta no dia `hoje` e sem presença (nem início da matrícula) nos últimos `semanas` × 7 dias.",
+  "inicio_do_semestre": [
+    { "data": "2026-01-01", "esperado": "2026-01-01" },
+    { "data": "2026-06-30", "esperado": "2026-01-01" },
+    { "data": "2026-07-01", "esperado": "2026-07-01" },
+    { "data": "2026-11-12", "esperado": "2026-07-01" },
+    { "data": "2026-12-31", "esperado": "2026-07-01" }
+  ],
+  "frequencia": [
+    {
+      "nome": "presenças e reposições sobre aulas regulares, abaixo do mínimo",
+      "inicio": "2026-07-01",
+      "fim": "2026-11-12",
+      "minimo": 75,
+      "aulas": [
+        { "id": "a1", "data": "2026-11-03", "tipo": "regular" },
+        { "id": "a2", "data": "2026-11-05", "tipo": "regular" },
+        { "id": "a3", "data": "2026-11-10", "tipo": "regular" },
+        { "id": "a4", "data": "2026-11-12", "tipo": "regular" },
+        { "id": "r1", "data": "2026-11-07", "tipo": "reposicao" }
+      ],
+      "presencas": [
+        { "aula_id": "a1", "aluno_id": "ana" },
+        { "aula_id": "a2", "aluno_id": "ana" },
+        { "aula_id": "r1", "aluno_id": "ana" },
+        { "aula_id": "a1", "aluno_id": "bia" }
+      ],
+      "alunos": [
+        { "id": "ana", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] },
+        { "id": "bia", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "ana", "aulas": 4, "presencas": 2, "reposicoes": 1, "percentual": 75, "abaixo_do_minimo": false },
+        { "aluno_id": "bia", "aulas": 4, "presencas": 1, "reposicoes": 0, "percentual": 25, "abaixo_do_minimo": true }
+      ]
+    },
+    {
+      "nome": "reposições não passam de 100%",
+      "inicio": "2026-07-01",
+      "fim": "2026-11-12",
+      "minimo": 75,
+      "aulas": [
+        { "id": "a1", "data": "2026-11-03", "tipo": "regular" },
+        { "id": "r1", "data": "2026-11-07", "tipo": "reposicao" },
+        { "id": "r2", "data": "2026-11-08", "tipo": "reposicao" }
+      ],
+      "presencas": [
+        { "aula_id": "a1", "aluno_id": "ana" },
+        { "aula_id": "r1", "aluno_id": "ana" },
+        { "aula_id": "r2", "aluno_id": "ana" }
+      ],
+      "alunos": [{ "id": "ana", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] }],
+      "esperado": [
+        { "aluno_id": "ana", "aulas": 1, "presencas": 1, "reposicoes": 2, "percentual": 100, "abaixo_do_minimo": false }
+      ]
+    },
+    {
+      "nome": "só aulas do período e dentro da matrícula contam; sem aulas o percentual é nulo",
+      "inicio": "2026-07-01",
+      "fim": "2026-11-12",
+      "minimo": 50,
+      "aulas": [
+        { "id": "a0", "data": "2026-06-30", "tipo": "regular" },
+        { "id": "a1", "data": "2026-11-03", "tipo": "regular" },
+        { "id": "a2", "data": "2026-11-10", "tipo": "regular" },
+        { "id": "a3", "data": "2026-11-13", "tipo": "regular" }
+      ],
+      "presencas": [
+        { "aula_id": "a0", "aluno_id": "ana" },
+        { "aula_id": "a2", "aluno_id": "ana" },
+        { "aula_id": "a3", "aluno_id": "ana" }
+      ],
+      "alunos": [
+        { "id": "ana", "matriculas": [{ "data_inicio": "2026-11-05", "data_fim": null }] },
+        { "id": "novo", "matriculas": [{ "data_inicio": "2026-11-12", "data_fim": null }] },
+        { "id": "saiu", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": "2026-11-11" }] }
+      ],
+      "esperado": [
+        { "aluno_id": "ana", "aulas": 1, "presencas": 1, "reposicoes": 0, "percentual": 100, "abaixo_do_minimo": false },
+        { "aluno_id": "novo", "aulas": 0, "presencas": 0, "reposicoes": 0, "percentual": null, "abaixo_do_minimo": false }
+      ]
+    },
+    {
+      "nome": "turma sem frequência mínima nunca marca abaixo do mínimo",
+      "inicio": "2026-07-01",
+      "fim": "2026-11-12",
+      "minimo": null,
+      "aulas": [{ "id": "a1", "data": "2026-11-03", "tipo": "regular" }],
+      "presencas": [],
+      "alunos": [{ "id": "ana", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] }],
+      "esperado": [
+        { "aluno_id": "ana", "aulas": 1, "presencas": 0, "reposicoes": 0, "percentual": 0, "abaixo_do_minimo": false }
+      ]
+    }
+  ],
+  "alunos_sumidos": [
+    {
+      "nome": "sem presença há mais de 4 semanas é sumido; presença recente não",
+      "hoje": "2026-11-12",
+      "semanas": 4,
+      "aulas": [
+        { "id": "a1", "data": "2026-09-02", "tipo": "regular" },
+        { "id": "a2", "data": "2026-10-15", "tipo": "regular" },
+        { "id": "a3", "data": "2026-10-14", "tipo": "regular" }
+      ],
+      "presencas": [
+        { "aula_id": "a1", "aluno_id": "lucas" },
+        { "aula_id": "a2", "aluno_id": "ana" },
+        { "aula_id": "a3", "aluno_id": "bia" }
+      ],
+      "alunos": [
+        { "id": "lucas", "matriculas": [{ "id": "m1", "data_inicio": "2026-01-01", "data_fim": null }] },
+        { "id": "ana", "matriculas": [{ "id": "m2", "data_inicio": "2026-01-01", "data_fim": null }] },
+        { "id": "bia", "matriculas": [{ "id": "m3", "data_inicio": "2026-01-01", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "lucas", "matricula_id": "m1", "ultima_presenca": "2026-09-02" },
+        { "aluno_id": "bia", "matricula_id": "m3", "ultima_presenca": "2026-10-14" }
+      ]
+    },
+    {
+      "nome": "nunca veio: conta desde o início da matrícula; matrícula encerrada ou futura fica fora",
+      "hoje": "2026-11-12",
+      "semanas": 4,
+      "aulas": [],
+      "presencas": [],
+      "alunos": [
+        { "id": "antigo", "matriculas": [{ "id": "m1", "data_inicio": "2026-10-01", "data_fim": null }] },
+        { "id": "recente", "matriculas": [{ "id": "m2", "data_inicio": "2026-10-20", "data_fim": null }] },
+        { "id": "encerrado", "matriculas": [{ "id": "m3", "data_inicio": "2026-01-01", "data_fim": "2026-12-31" }] },
+        { "id": "futuro", "matriculas": [{ "id": "m4", "data_inicio": "2026-12-01", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "antigo", "matricula_id": "m1", "ultima_presenca": null }
+      ]
+    }
+  ]
+}

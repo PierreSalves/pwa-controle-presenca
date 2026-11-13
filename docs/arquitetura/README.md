@@ -129,6 +129,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - `servico_sincronizacao.dart`: push da outbox (apaga os aceitos, marca os recusados com o erro e não os reenvia; uma nova alteração do registro limpa o erro) e pull pelo cursor. Registro com alteração pendente não é sobrescrito pelo pull. Turma retirada é apagada do aparelho (com a outbox dela) e o pull recomeça do zero.
 - `abrir_banco.dart`: abre o banco no navegador com `web/sqlite3.wasm` e `web/drift_worker.js`, copiados das releases oficiais do drift (mesma versão do `pubspec.lock`; ao atualizar o drift, baixar os dois de novo da release `drift-<versão>` e conferir o SHA-256). Nos navegadores Chromium o drift usa um SharedWorker com IndexedDB. A pré-visualização do Claude Desktop não deixa SharedWorker fazer `fetch`; para testar o app ali, usar o Edge ou o Chrome.
 - `cliente_api.dart`: HTTP para `/api/...` no mesmo domínio. O token de acesso fica só na memória e é renovado pelo cookie (30 s antes de expirar ou depois de um 401), **uma renovação por vez**, porque o servidor gira o cookie a cada renovação e duas simultâneas encerrariam a sessão. Falha de rede → `SemConexao`; renovação recusada → `SessaoEncerrada`.
+- `consulta_inicio.dart`: leitura para o Início (turmas com dias do quadro vigente e matriculados hoje, resumo do ano, abaixo do mínimo e sumidos) e para a frequência do semestre. Recalcula quando o banco muda.
 - `consulta_lancamento.dart`: leitura para a tela de lançamento (dias de aula da semana pelo quadro, matriculados na data com a frequência da lista do lançamento e quem já foi marcado). Observa o banco e recalcula a cada marcação ou pull.
 
 ### Sessão e sincronização no app (`app/lib/estado/`)
@@ -280,6 +281,8 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 - **Percentual mínimo: campo `turmas.frequencia_minima`**, configurado em cada turma.
 - Demais parâmetros na tabela `regras` (JSON): `{ "periodos": [["01-01","06-30"],["07-01","12-31"]], "meses_graduacao": [6, 12], "conta_reposicao": <bool> }`.
 - Relatório: lista dos alunos da turma com a frequência atual do semestre, destacando quem está abaixo do mínimo, para o professor consultar antes da graduação.
+- Implementação (`api/src/regras/frequencia.ts` e `app/lib/regras/frequencia.dart`, casos em `docs/casos-regras/frequencia.json`): `calcularFrequenciaNoPeriodo(inicio, fim)` lista os alunos matriculados no dia `fim`; percentual arredondado para baixo e limitado a 100, e nulo quando não há aula regular no período. Os períodos ainda são fixos (jan–jun e jul–dez; `calcularInicioDoSemestre`) e a reposição sempre conta. Os parâmetros da tabela `regras` entram quando a tela de regras existir.
+- No app: tela 6 (frequência do semestre, até hoje) e aviso no Início com o número de alunos abaixo do mínimo; a "Freq. média" do resumo do ano é a média das frequências do ano dos alunos matriculados hoje.
 
 ### Regra: lista do lançamento (alunos frequentes)
 - O lançamento mostra só os alunos **frequentes**: presentes em ao menos `percentual_minimo`% das últimas `ultimas_aulas` aulas regulares da turma (padrão 30% de 8), ordenados pela frequência.
@@ -295,6 +298,8 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 ### Regra: alunos sumidos
 - Aviso no início para alunos com matrícula aberta e sem presença há mais de `semanas` semanas (padrão 4), com atalho para encerrar a matrícula (data de fim sugerida = última presença).
 - Tipo `alunos_sumidos` na tabela `regras`, escopo turma: `{ "semanas": 4 }`.
+- Implementação (`calcularAlunosSumidos`, mesmos arquivos da frequência): matrícula **aberta** (sem data de fim) no dia de hoje cuja última presença é anterior a `semanas` × 7 dias. Quem nunca veio conta a partir do início da matrícula.
+- Encerrar é online (`PUT /api/matriculas/:id` com `situacao = encerrado`); a data sugerida é a última presença ou, se o aluno nunca veio, o início da matrícula. O pull seguinte traz a matrícula encerrada para o aparelho.
 
 ### Logotipo e ícone do app por academia
 - Endereço único para todos; a academia é conhecida **depois do login**.

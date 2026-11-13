@@ -173,6 +173,31 @@ void main() {
     expect(renovacoes, 1);
   });
 
+  test('encerrar matrícula envia o período com a situação encerrado', () async {
+    late http.Request recebida;
+    final cliente = ClienteApi(
+      base: _base,
+      relogio: () => _agora,
+      cliente: MockClient((req) async {
+        if (req.url.path.endsWith('/renovar')) return _json(_token('E'));
+        recebida = req;
+        return _json({'matricula': {}});
+      }),
+    );
+    await cliente.encerrarMatricula(
+      matriculaId: 'm1',
+      dataInicio: '2026-03-01',
+      dataFim: '2026-09-02',
+    );
+    expect(recebida.method, 'PUT');
+    expect(recebida.url.path, '/api/matriculas/m1');
+    expect(jsonDecode(recebida.body), {
+      'data_inicio': '2026-03-01',
+      'data_fim': '2026-09-02',
+      'situacao': 'encerrado',
+    });
+  });
+
   test('falha de rede vira SemConexao', () async {
     final cliente = ClienteApi(
       base: _base,

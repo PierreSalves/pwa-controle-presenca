@@ -193,4 +193,55 @@ void main() {
       'data_graduacao': '2026-11-12',
     });
   });
+
+  test('importação: confere sem gravar e importa com confirmar', () async {
+    final repositorio = criar();
+    final relatorio = {
+      'incompletas': [3],
+      'codigos_repetidos': [
+        {
+          'codigo': '10A',
+          'linhas': [1, 2],
+        },
+      ],
+      'codigos_existentes': [
+        {'codigo': '03', 'linha': 4, 'nome_cadastrado': 'Lucas'},
+      ],
+      'nomes_repetidos': [
+        {
+          'nome': 'Ana',
+          'linhas': [1, 5],
+        },
+      ],
+      'pode_importar': false,
+    };
+    responder = (_) => _json({'relatorio': relatorio, 'importados': 0});
+    final conferido = await repositorio.importarAlunos([
+      (codigo: '10A', nome: 'Ana'),
+    ]);
+    expect(conferido.importados, 0);
+    expect(conferido.relatorio.podeImportar, isFalse);
+    expect(conferido.relatorio.incompletas, [3]);
+    expect(conferido.relatorio.codigosRepetidos.single.linhas, [1, 2]);
+    expect(
+      conferido.relatorio.codigosExistentes.single.nomeCadastrado,
+      'Lucas',
+    );
+    expect(conferido.relatorio.nomesRepetidos.single.nome, 'Ana');
+    expect(jsonDecode(recebidas.last.body), {
+      'alunos': [
+        {'codigo': '10A', 'nome': 'Ana'},
+      ],
+    });
+
+    responder = (_) => _json({
+      'relatorio': {...relatorio, 'pode_importar': true},
+      'importados': 1,
+    }, 201);
+    final importado = await repositorio.importarAlunos([
+      (codigo: '10A', nome: 'Ana'),
+    ], confirmar: true);
+    expect(importado.importados, 1);
+    expect((jsonDecode(recebidas.last.body) as Map)['confirmar'], isTrue);
+  });
 }

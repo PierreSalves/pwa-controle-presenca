@@ -25,6 +25,7 @@ class _ApiFalsa {
   final List<Map<String, dynamic>> matriculasEncerradas = [];
   final List<Map<String, dynamic>> alunosCriados = [];
   final List<Map<String, dynamic>> quadrosCriados = [];
+  int alunosImportados = 0;
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -62,6 +63,34 @@ class _ApiFalsa {
     if (caminho.contains('/matriculas/') && req.method == 'PUT') {
       matriculasEncerradas.add(jsonDecode(req.body) as Map<String, dynamic>);
       return _json({'matricula': {}});
+    }
+    if (caminho.endsWith('/alunos/importacao')) {
+      // Relatório simplificado: só códigos repetidos na lista.
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      final alunos = (corpo['alunos'] as List).cast<Map<String, dynamic>>();
+      final porCodigo = <String, List<int>>{};
+      for (var i = 0; i < alunos.length; i++) {
+        porCodigo
+            .putIfAbsent(alunos[i]['codigo'] as String, () => [])
+            .add(i + 1);
+      }
+      final repetidos = [
+        for (final e in porCodigo.entries)
+          if (e.value.length > 1) {'codigo': e.key, 'linhas': e.value},
+      ];
+      final relatorio = {
+        'incompletas': [],
+        'codigos_repetidos': repetidos,
+        'codigos_existentes': [],
+        'nomes_repetidos': [],
+        'pode_importar': repetidos.isEmpty,
+      };
+      final grava = corpo['confirmar'] == true && repetidos.isEmpty;
+      if (grava) alunosImportados += alunos.length;
+      return _json({
+        'relatorio': relatorio,
+        'importados': grava ? alunos.length : 0,
+      }, grava ? 201 : 200);
     }
     if (caminho.endsWith('/alunos/proximo-codigo')) {
       return _json({'codigo': '12'});
@@ -388,6 +417,51 @@ void main() {
     expect((api.quadrosCriados.single['dias'] as Map)['segunda'], 1);
     expect((api.quadrosCriados.single['dias'] as Map)['sabado'], 2);
     expect(find.text('Alterações salvas.'), findsOneWidget);
+    await fecharApp(tester);
+  });
+
+  testWidgets('importa alunos colados: acusa repetido e importa corrigido', (
+    tester,
+  ) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alunos'));
+    await esperar(tester);
+    await tester.tap(find.text('Importar planilha'));
+    await tester.pumpAndSettle();
+
+    // Linha 2 em branco: o relatório aponta as linhas do texto colado (1 e 3).
+    await tester.enterText(
+      find.byType(TextField),
+      '20\tAna\n\n20\tBia\n21\tCaio',
+    );
+    await tester.tap(find.text('Conferir lista'));
+    await esperar(tester);
+    expect(find.text('3 linhas lidas'), findsOneWidget);
+    expect(find.text('Código 20 repetido nas linhas 1 e 3'), findsOneWidget);
+    final botao = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Importar 3 alunos'),
+    );
+    expect(botao.onPressed, isNull);
+
+    await tester.tap(find.text('Voltar e corrigir'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField),
+      '20\tAna\n22\tBia\n21\tCaio',
+    );
+    await tester.tap(find.text('Conferir lista'));
+    await esperar(tester);
+    expect(find.text('Tudo certo para importar.'), findsOneWidget);
+    await tester.tap(find.text('Importar 3 alunos'));
+    await esperar(tester);
+    expect(api.alunosImportados, 3);
+    expect(find.text('3 alunos importados.'), findsOneWidget);
+    expect(
+      find.text('Importar planilha'),
+      findsOneWidget,
+    ); // voltou para a lista
     await fecharApp(tester);
   });
 }

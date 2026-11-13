@@ -9,7 +9,7 @@ NAVEGADOR="${CHROME_EXECUTABLE:-/c/Program Files (x86)/Microsoft/Edge/Applicatio
 URL="file:///${PASTA//\\//}/wireframes-fase1.html"
 PERFIS="$(mktemp -d)"
 
-CELULAR=(1 2 2b 3 4 4b 5 6 7 8 9 10 11 12 13 14)
+CELULAR=(1 2 2b 3 4 4b 5 6 7 8 8b 8c 9 10 11 12 13 14)
 DESKTOP=(d1 d2 d3 d4)
 TELAS=("$@")
 [ ${#TELAS[@]} -eq 0 ] && TELAS=("${CELULAR[@]}" "${DESKTOP[@]}")
@@ -17,8 +17,10 @@ TELAS=("$@")
 for tela in "${TELAS[@]}"; do
   if [[ "$tela" == d* ]]; then tamanho="1112,520"; arquivo="desktop-0${tela#d}.png"
   else tamanho="392,900"; arquivo="celular-${tela}.png"; fi
-  # um perfil novo por captura: reaproveitar o perfil faz o navegador sair sem gerar a imagem
-  timeout 60 "$NAVEGADOR" --headless=new --disable-gpu --hide-scrollbars --no-first-run \
+  # um perfil novo por captura: reaproveitar o perfil faz o navegador sair sem gerar a imagem.
+  # --inprivate e --disable-sync: o Edge não entra sozinho na conta Microsoft do Windows no perfil novo.
+  timeout 60 "$NAVEGADOR" --headless=new --inprivate --disable-sync --disable-gpu --hide-scrollbars --no-first-run \
+    --disable-features=msImplicitSignin \
     --user-data-dir="$PERFIS/$tela" --virtual-time-budget=5000 --window-size="$tamanho" \
     --screenshot="$PASTA/img/$arquivo" "$URL?tela=$tela" >/dev/null 2>&1 || true
   [ -s "$PASTA/img/$arquivo" ] && echo "ok  $arquivo" || echo "ERRO $arquivo"

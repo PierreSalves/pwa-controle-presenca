@@ -158,6 +158,27 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `PUT /api/turmas/:id/regras` | `lista_lancamento` (`percentual_minimo` 0–100, `ultimas_aulas` 1–52) e/ou `alunos_sumidos` (`semanas` 1–52); vigência a partir de hoje |
 | `PUT /api/turmas/:id/acessos` | só professor (`gerenciar_acessos`): lista completa `usuario_ids`; usuário de outra academia ou superadmin → `400 usuario_invalido` |
 
+**Alunos** (`api/src/rotas/alunos.ts`, telas 8 e 9). Exige `gerenciar_alunos`. Alunos são da academia: todos os professores e assistentes veem o cadastro. Os dados sensíveis só saem por estas rotas, nunca pelo sync.
+
+| Rota | O que faz |
+|---|---|
+| `GET /api/alunos?busca=&inativos=1` | lista (busca por nome ou código), com as turmas das matrículas em aberto |
+| `GET /api/alunos/proximo-codigo` | próximo código numérico livre (mantém os zeros à esquerda: `09` → `10`) |
+| `POST /api/alunos` | cria; código único na academia sem diferenciar maiúsculas → `409 codigo_ja_existe` |
+| `GET /api/alunos/:id` | `{ aluno, matriculas, graduacoes }`, com os dados sensíveis |
+| `PUT /api/alunos/:id` | altera |
+| `DELETE /api/alunos/:id` | exclusão lógica do aluno e das matrículas dele; o código fica livre |
+| `POST /api/alunos/:id/graduacoes` · `DELETE /api/alunos/:id/graduacoes/:gid` | faixa, grau e data |
+| `POST /api/alunos/importacao` | `{ alunos: [{ codigo, nome }], confirmar }` (até 2.000 linhas; `(10A)` vira `10A`). Sem `confirmar`, só o relatório: linhas incompletas, códigos repetidos na planilha, códigos já cadastrados e nomes repetidos (este só avisa). Com `confirmar: true`, grava tudo se não houver bloqueio |
+
+**Matrículas** (`api/src/rotas/matriculas.ts`). Exige `gerenciar_matriculas` e acesso à turma.
+
+| Rota | O que faz |
+|---|---|
+| `POST /api/matriculas` | `aluno_id`, `turma_id`, `data_inicio`, `data_fim` e `situacao` opcionais (sem situação: com fim é `encerrado`, sem fim é `matriculado`); dias em comum com outra matrícula do aluno na mesma turma → `409 matricula_sobreposta` |
+| `PUT /api/matriculas/:id` | altera período e situação; usado também para encerrar (alunos sumidos) |
+| `DELETE /api/matriculas/:id` | exclusão lógica (lançada por engano) |
+
 ### Conflitos
 - Presença é quase só inserção; chave única `presencas (aula_id, aluno_id)`: dois aparelhos marcando o mesmo aluno resultam num registro só.
 - Aula regular: id determinístico (UUID v5 de `turma_id` + `data_aula`) e no máximo uma por turma e data, evitando duas aulas iguais criadas offline.

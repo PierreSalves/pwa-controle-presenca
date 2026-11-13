@@ -159,3 +159,61 @@ class LinhaAluno extends StatelessWidget {
     );
   }
 }
+
+/// Indicador de carregamento com rótulo para o leitor de tela.
+class Carregando extends StatelessWidget {
+  const Carregando({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: CircularProgressIndicator(semanticsLabel: 'Carregando…'),
+  );
+}
+
+/// Ao voltar com alterações não salvas, pergunta antes de descartar (formulários online).
+class ProtecaoAlteracoes extends StatelessWidget {
+  const ProtecaoAlteracoes({
+    super.key,
+    required this.temAlteracoes,
+    required this.child,
+  });
+
+  /// Consultada na hora de voltar (os campos mudam sem redesenhar a tela).
+  final bool Function() temAlteracoes;
+  final Widget child;
+
+  Future<void> _confirmarSaida(BuildContext context) async {
+    final navegador = Navigator.of(context);
+    if (!temAlteracoes()) {
+      navegador.pop();
+      return;
+    }
+    final descartar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Descartar alterações?'),
+        content: const Text('O que você mudou nesta tela ainda não foi salvo.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Continuar editando'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Descartar'),
+          ),
+        ],
+      ),
+    );
+    if (descartar == true) navegador.pop();
+  }
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+    canPop: false,
+    onPopInvokedWithResult: (saiu, _) {
+      if (!saiu) _confirmarSaida(context);
+    },
+    child: child,
+  );
+}

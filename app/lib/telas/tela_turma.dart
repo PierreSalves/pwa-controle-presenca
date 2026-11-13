@@ -138,6 +138,20 @@ class _TelaTurmaState extends State<TelaTurma> {
     return antes.length != agora.length || !antes.containsAll(agora);
   }
 
+  /// Há algo mudado e não salvo (consultado ao voltar).
+  bool _temAlteracoes() {
+    if (_carregando || _erro != null) return false;
+    final t = _turma;
+    final dadosMudaram = t == null
+        ? _nome.text.trim().isNotEmpty ||
+              _frequencia.text.isNotEmpty ||
+              _cabecalho.text.trim().isNotEmpty
+        : _nome.text.trim() != t.nome ||
+              int.tryParse(_frequencia.text) != t.frequenciaMinima ||
+              _cabecalho.text.trim() != (t.cabecalhoImpressao ?? '');
+    return dadosMudaram || _quadroMudou || _regrasMudaram || _acessosMudaram;
+  }
+
   Future<void> _salvar() async {
     if (_salvando || !_formulario.currentState!.validate()) return;
     setState(() => _salvando = true);
@@ -245,35 +259,38 @@ class _TelaTurmaState extends State<TelaTurma> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Turma'),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: _carregando || _erro != null || _salvando
-                ? null
-                : _salvar,
-            child: const Text('Salvar'),
-          ),
-        ],
+    return ProtecaoAlteracoes(
+      temAlteracoes: _temAlteracoes,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Turma'),
+          centerTitle: true,
+          actions: [
+            TextButton(
+              onPressed: _carregando || _erro != null || _salvando
+                  ? null
+                  : _salvar,
+              child: const Text('Salvar'),
+            ),
+          ],
+        ),
+        body: _carregando
+            ? const Carregando()
+            : _erro != null
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_erro!),
+                    TextButton(
+                      onPressed: _carregar,
+                      child: const Text('Tentar de novo'),
+                    ),
+                  ],
+                ),
+              )
+            : LarguraCelular(child: _montarFormulario(context)),
       ),
-      body: _carregando
-          ? const Center(child: CircularProgressIndicator())
-          : _erro != null
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_erro!),
-                  TextButton(
-                    onPressed: _carregar,
-                    child: const Text('Tentar de novo'),
-                  ),
-                ],
-              ),
-            )
-          : LarguraCelular(child: _montarFormulario(context)),
     );
   }
 

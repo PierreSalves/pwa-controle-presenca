@@ -4,6 +4,7 @@ import 'package:controle_presenca/dados/banco_local.dart';
 import 'package:controle_presenca/dados/cliente_api.dart';
 import 'package:controle_presenca/estado/dependencias.dart';
 import 'package:controle_presenca/main.dart';
+import 'package:controle_presenca/telas/componentes.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -536,5 +537,53 @@ void main() {
       findsOneWidget,
     );
     await fecharApp(tester);
+  });
+
+  testWidgets('voltar com alterações não salvas pergunta antes de descartar', (
+    tester,
+  ) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alunos'));
+    await esperar(tester);
+    await tester.tap(find.byTooltip('Novo aluno'));
+    await esperar(tester);
+
+    // Sem nada digitado, volta direto.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Ativos · 1'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Novo aluno'));
+    await esperar(tester);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nome completo'),
+      'Bruno Lima',
+    );
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Descartar alterações?'), findsOneWidget);
+    await tester.tap(find.text('Continuar editando'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bruno Lima'), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Descartar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ativos · 1'), findsOneWidget);
+    expect(api.alunosCriados, isEmpty);
+    await fecharApp(tester);
+  });
+
+  testWidgets('carregando tem rótulo para o leitor de tela', (tester) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Carregando(),
+      ),
+    );
+    expect(find.bySemanticsLabel('Carregando…'), findsOneWidget);
   });
 }

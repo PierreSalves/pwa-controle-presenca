@@ -88,6 +88,8 @@ class _TelaEntrarState extends State<TelaEntrar> {
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.emailAddress,
+                        autocorrect: false,
+                        enableSuggestions: false,
                         autofillHints: const [AutofillHints.email],
                         textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || !v.contains('@'))
@@ -126,6 +128,7 @@ class _TelaEntrarState extends State<TelaEntrar> {
                             ? const SizedBox.square(
                                 dimension: 20,
                                 child: CircularProgressIndicator(
+                                  semanticsLabel: 'Entrando…',
                                   strokeWidth: 2,
                                 ),
                               )

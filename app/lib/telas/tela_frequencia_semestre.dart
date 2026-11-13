@@ -44,7 +44,7 @@ class _TelaFrequenciaSemestreState extends State<TelaFrequenciaSemestre> {
             centerTitle: true,
           ),
           body: dados == null
-              ? const Center(child: CircularProgressIndicator())
+              ? const Carregando()
               : LarguraCelular(
                   child: ListView(
                     padding: const EdgeInsets.all(16),

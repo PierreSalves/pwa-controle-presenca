@@ -154,6 +154,8 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
           minLines: 8,
           maxLines: 16,
           keyboardType: TextInputType.multiline,
+          autocorrect: false,
+          enableSuggestions: false,
           style: const TextStyle(fontSize: 13),
           decoration: const InputDecoration(
             border: OutlineInputBorder(),

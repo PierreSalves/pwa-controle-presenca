@@ -55,7 +55,7 @@ class _TelaInicioState extends State<TelaInicio> {
         builder: (context, snapshot) {
           final dados = snapshot.data;
           if (dados == null) {
-            return const Center(child: CircularProgressIndicator());
+            return const Carregando();
           }
           return LarguraCelular(child: _montarConteudo(context, dados));
         },

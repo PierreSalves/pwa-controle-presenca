@@ -78,10 +78,7 @@ class _TelaTurmasState extends State<TelaTurmas> {
                 child: const Text('Tentar de novo'),
               ),
             ] else if (turmas == null)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
+              const Padding(padding: EdgeInsets.all(24), child: Carregando())
             else ...[
               for (final turma in turmas) ...[
                 ListTile(

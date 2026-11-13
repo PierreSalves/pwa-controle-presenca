@@ -22,6 +22,9 @@ class DiaDeAula {
 
   /// Preenchido na reposição avulsa (aula criada fora do quadro).
   final String? aulaIdAvulsa;
+
+  /// Identifica a aula na semana: o id da avulsa ou a data (só há uma aula do quadro por dia).
+  String get chave => aulaIdAvulsa ?? data;
 }
 
 class AlunoNoLancamento {
@@ -76,6 +79,61 @@ class DadosLancamento {
       lista.where((a) => a.presente).length +
       poucoFrequentes.where((a) => a.presente).length;
 }
+
+/// Aluno na grade da semana (desktop): presenças e dias bloqueados, pela chave do dia.
+class AlunoNaGrade {
+  const AlunoNaGrade({
+    required this.id,
+    required this.codigo,
+    required this.nome,
+    required this.frequencia,
+    required this.presencas,
+    required this.bloqueados,
+  });
+
+  final String id;
+  final String codigo;
+  final String nome;
+  final FrequenciaNaLista frequencia;
+  final Set<String> presencas;
+
+  /// Dias futuros e dias fora do período da matrícula.
+  final Set<String> bloqueados;
+
+  /// Aparece na grade: é frequente ou já tem presença na semana.
+  bool get estaNaLista => frequencia.frequente || presencas.isNotEmpty;
+}
+
+class DadosGrade {
+  const DadosGrade({
+    required this.turmaNome,
+    required this.domingo,
+    required this.dias,
+    required this.lista,
+    required this.poucoFrequentes,
+  });
+
+  final String turmaNome;
+
+  /// Primeiro dia da semana mostrada (AAAA-MM-DD).
+  final String domingo;
+  final List<DiaDeAula> dias;
+
+  /// Frequentes e quem veio na semana, por frequência (maior primeiro) e nome.
+  final List<AlunoNaGrade> lista;
+
+  /// Matriculados fora da grade, por nome.
+  final List<AlunoNaGrade> poucoFrequentes;
+
+  int calcularPresentes(DiaDeAula dia) => [
+    ...lista,
+    ...poucoFrequentes,
+  ].where((a) => a.presencas.contains(dia.chave)).length;
+}
+
+/// Domingo da semana da data.
+String obterDomingoDaSemana(String data) =>
+    somarDiasNaData(data, -diasDaSemana.indexOf(obterDiaDaSemana(data)));
 
 /// Dias da semana (domingo a sábado) da data com aula regular ou reposição no quadro.
 List<DiaDeAula> calcularDiasDeAulaDaSemana(
@@ -175,10 +233,7 @@ class ConsultaLancamento {
     String hoje,
   ) async {
     final doQuadro = calcularDiasDeAulaDaSemana(data, quadros, hoje);
-    final domingo = somarDiasNaData(
-      data,
-      -diasDaSemana.indexOf(obterDiaDaSemana(data)),
-    );
+    final domingo = obterDomingoDaSemana(data);
     final avulsas = await _obterReposicoesAvulsas(
       turmaId,
       domingo,
@@ -293,6 +348,103 @@ class ConsultaLancamento {
       tipo: tipo,
       aulaIdAvulsa: aulaIdAvulsa,
       diasDaSemana: await _obterDiasDaSemana(turmaId, data, quadros, hoje),
+      lista: todos.where((a) => a.estaNaLista).toList()
+        ..sort((a, b) {
+          final porFrequencia = b.frequencia.percentual.compareTo(
+            a.frequencia.percentual,
+          );
+          return porFrequencia != 0 ? porFrequencia : compararNome(a, b);
+        }),
+      poucoFrequentes: todos.where((a) => !a.estaNaLista).toList()
+        ..sort(compararNome),
+    );
+  }
+
+  /// Recalcula a grade sempre que o banco local muda.
+  Stream<DadosGrade> observarGrade(
+    String turmaId,
+    String data, {
+    required String hoje,
+  }) async* {
+    yield await obterGrade(turmaId, data, hoje: hoje);
+    await for (final _ in _banco.tableUpdates(
+      TableUpdateQuery.onAllTables([
+        _banco.turmas,
+        _banco.quadrosAulas,
+        _banco.alunos,
+        _banco.matriculas,
+        _banco.aulas,
+        _banco.presencas,
+      ]),
+    )) {
+      yield await obterGrade(turmaId, data, hoje: hoje);
+    }
+  }
+
+  /// Grade da semana da data: a frequência é a do último dia da semana até hoje.
+  Future<DadosGrade> obterGrade(
+    String turmaId,
+    String data, {
+    required String hoje,
+  }) async {
+    final domingo = obterDomingoDaSemana(data);
+    final sabado = somarDiasNaData(domingo, 6);
+    final referencia = ehDataFutura(sabado, hoje) ? hoje : sabado;
+    final base = await obterLancamento(
+      turmaId,
+      ehDataFutura(domingo, referencia) ? domingo : referencia,
+      hoje: hoje,
+    );
+    final dias = base.diasDaSemana;
+    final aulaPorChave = {
+      for (final d in dias)
+        d.chave: d.aulaIdAvulsa ?? gerarIdAulaDoQuadro(turmaId, d.data, d.tipo),
+    };
+    final presencas =
+        await (_banco.select(_banco.presencas)..where(
+              (p) => p.aulaId.isIn(aulaPorChave.values) & p.excluido.equals(0),
+            ))
+            .get();
+    final matriculas = await (_banco.select(
+      _banco.matriculas,
+    )..where((m) => m.turmaId.equals(turmaId) & m.excluido.equals(0))).get();
+
+    AlunoNaGrade converter(AlunoNoLancamento a) {
+      bool estaMatriculado(String dia) => matriculas.any(
+        (m) =>
+            m.alunoId == a.id &&
+            estaMatriculadoNaData(
+              dia,
+              dataInicio: m.dataInicio,
+              dataFim: m.dataFim,
+            ),
+      );
+      return AlunoNaGrade(
+        id: a.id,
+        codigo: a.codigo,
+        nome: a.nome,
+        frequencia: a.frequencia,
+        presencas: {
+          for (final d in dias)
+            if (presencas.any(
+              (p) => p.alunoId == a.id && p.aulaId == aulaPorChave[d.chave],
+            ))
+              d.chave,
+        },
+        bloqueados: {
+          for (final d in dias)
+            if (d.futuro || !estaMatriculado(d.data)) d.chave,
+        },
+      );
+    }
+
+    final todos = [...base.lista, ...base.poucoFrequentes].map(converter);
+    int compararNome(AlunoNaGrade a, AlunoNaGrade b) =>
+        a.nome.toLowerCase().compareTo(b.nome.toLowerCase());
+    return DadosGrade(
+      turmaNome: base.turmaNome,
+      domingo: domingo,
+      dias: dias,
       lista: todos.where((a) => a.estaNaLista).toList()
         ..sort((a, b) {
           final porFrequencia = b.frequencia.percentual.compareTo(

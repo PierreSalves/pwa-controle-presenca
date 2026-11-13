@@ -185,4 +185,54 @@ void main() {
       expect(dados.tipo, TipoAula.regular);
     },
   );
+
+  group('grade da semana (desktop)', () {
+    test('mostra as presenças da semana e bloqueia o futuro', () async {
+      await carregar(montarPull());
+      await repositorio.definirPresenca(
+        turmaId: turmaId,
+        data: '2026-11-11',
+        alunoId: alunoId,
+        presente: true,
+      );
+      final grade = await consulta.obterGrade(turmaId, hoje, hoje: hoje);
+      expect(grade.domingo, '2026-11-08');
+      expect(
+        [for (final d in grade.dias) d.chave],
+        ['2026-11-11', '2026-11-12', '2026-11-14'],
+      );
+      final ana = grade.lista.single;
+      expect(ana.presencas, {'2026-11-11'});
+      expect(ana.bloqueados, {'2026-11-14'});
+      expect(grade.calcularPresentes(grade.dias.first), 1);
+      expect(grade.calcularPresentes(grade.dias[1]), 0);
+    });
+
+    test('dia antes da matrícula fica bloqueado', () async {
+      await carregar(montarPull());
+      // Matrícula desde 01/10: na semana de 27/09, a quarta 30/09 fica de fora.
+      final grade = await consulta.obterGrade(
+        turmaId,
+        '2026-09-30',
+        hoje: hoje,
+      );
+      final ana = [...grade.lista, ...grade.poucoFrequentes].single;
+      expect(ana.bloqueados, {'2026-09-30'});
+    });
+
+    test('reposição avulsa tem coluna própria', () async {
+      await carregar(montarPull());
+      final aulaId = await repositorio.criarReposicaoAvulsa(turmaId, hoje);
+      await repositorio.definirPresenca(
+        turmaId: turmaId,
+        data: hoje,
+        alunoId: alunoId,
+        presente: true,
+        aulaIdAvulsa: aulaId,
+      );
+      final grade = await consulta.obterGrade(turmaId, hoje, hoje: hoje);
+      expect([for (final d in grade.dias) d.chave], contains(aulaId));
+      expect(grade.lista.single.presencas, {aulaId});
+    });
+  });
 }

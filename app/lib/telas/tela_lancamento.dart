@@ -1,4 +1,4 @@
-// Tela 4 — Lançar presença (docs/telas/README.md). Tela principal: marca quem veio, rápido,
+// Tela 4 — Lançar presença no celular (docs/telas/README.md; no desktop, grade_semana.dart). Tela principal: marca quem veio, rápido,
 // durante a aula. Grava no aparelho (funciona offline) e envia em seguida; com a tela aberta,
 // busca as marcações dos outros aparelhos a cada poucos segundos.
 import 'dart:async';
@@ -12,6 +12,7 @@ import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
+import 'grade_semana.dart';
 import 'tema.dart';
 import 'tela_busca_aluno.dart';
 import 'tela_reposicao_avulsa.dart';
@@ -106,14 +107,6 @@ class _TelaLancamentoState extends State<TelaLancamento> {
     if (escolhida != null) _definirData(formatarData(escolhida));
   }
 
-  String _descreverRecusa(RecusaMarcacao motivo) => switch (motivo) {
-    RecusaMarcacao.dataFutura => 'Não dá para lançar presença em dia futuro.',
-    RecusaMarcacao.diaSemAulaRegular || RecusaMarcacao.diaSemReposicaoFixa =>
-      'O quadro de aulas não tem aula neste dia.',
-    RecusaMarcacao.foraDaMatricula =>
-      'O aluno não estava matriculado nesta data.',
-  };
-
   Future<void> _definirPresenca(
     DadosLancamento dados,
     String alunoId,
@@ -135,7 +128,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(_descreverRecusa(recusa.motivo))));
+      ).showSnackBar(SnackBar(content: Text(descreverRecusa(recusa.motivo))));
     }
   }
 
@@ -147,6 +140,8 @@ class _TelaLancamentoState extends State<TelaLancamento> {
 
   @override
   Widget build(BuildContext context) {
+    // Desktop: grade da semana (D2); celular: um dia por vez (tela 4).
+    if (ehDesktop(context)) return GradeSemana(turmaId: widget.turmaId);
     return StreamBuilder<DadosLancamento>(
       stream: _dados,
       builder: (context, snapshot) {

@@ -10,6 +10,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'dados/apoio.dart';
@@ -614,6 +615,54 @@ void main() {
     expect(find.text('Código sugerido, pode editar'), findsOneWidget);
     expect(find.text('Turmas'), findsOneWidget);
     expect(find.text('Salvar'), findsOneWidget);
+    await fecharApp(tester);
+    semantica.dispose();
+  });
+
+  testWidgets('no desktop o lançamento mostra a grade da semana', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final semantica = tester.ensureSemantics();
+    await entrar(tester);
+    await tester.tap(find.text('Lançar presença de hoje'));
+    await esperar(tester);
+
+    // D2: a semana inteira, uma coluna por dia de aula (qua, qui e a reposição de sábado).
+    expect(find.text('Turma $turmaId · 08/11 a 14/11/2026'), findsOneWidget);
+    expect(find.text('qua 11/11'), findsOneWidget);
+    expect(find.text('qui 12/11'), findsOneWidget);
+    expect(find.text('sáb 14/11'), findsOneWidget);
+    expect(find.byType(Checkbox), findsNWidgets(3));
+    // Sábado ainda não chegou: bloqueado.
+    expect(
+      tester.widgetList<Checkbox>(find.byType(Checkbox)).last.onChanged,
+      isNull,
+    );
+    expect(find.bySemanticsLabel(RegExp('Ana, qui 12/11')), findsOneWidget);
+
+    // Marca a quinta: grava, envia e conta no rodapé.
+    await tester.tap(find.byType(Checkbox).at(1));
+    await esperar(tester);
+    final marcadas = tester
+        .widgetList<Checkbox>(find.byType(Checkbox))
+        .map((c) => c.value);
+    expect(marcadas, [false, true, false]);
+    expect(api.envios.expand((e) => e).length, 2); // aula + presença
+    expect(find.textContaining('Tudo enviado'), findsOneWidget);
+
+    // Semana que vem ainda não chegou; a anterior abre normalmente.
+    final proxima = tester.widget<IconButton>(
+      find.widgetWithIcon(IconButton, Symbols.chevron_right),
+    );
+    expect(proxima.onPressed, isNull);
+    await tester.tap(find.byTooltip('Semana anterior'));
+    await esperar(tester);
+    expect(find.text('Turma $turmaId · 01/11 a 07/11/2026'), findsOneWidget);
+    expect(find.text('qua 04/11'), findsOneWidget);
     await fecharApp(tester);
     semantica.dispose();
   });

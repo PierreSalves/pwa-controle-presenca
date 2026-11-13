@@ -17,11 +17,17 @@ class TelaBuscaAluno extends StatefulWidget {
     required this.turmaId,
     required this.data,
     required this.tipo,
+    required this.hoje,
+    this.aulaIdAvulsa,
   });
 
   final String turmaId;
   final String data;
   final TipoAula tipo;
+  final String hoje;
+
+  /// Reposição avulsa (null para a aula do quadro).
+  final String? aulaIdAvulsa;
 
   @override
   State<TelaBuscaAluno> createState() => _TelaBuscaAlunoState();
@@ -34,8 +40,12 @@ class _TelaBuscaAlunoState extends State<TelaBuscaAluno> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _dados ??= EscopoDependencias.obter(context).consulta
-        .observarLancamento(widget.turmaId, widget.data);
+    _dados ??= EscopoDependencias.obter(context).consulta.observarLancamento(
+      widget.turmaId,
+      widget.data,
+      hoje: widget.hoje,
+      aulaIdAvulsa: widget.aulaIdAvulsa,
+    );
   }
 
   List<AlunoNoLancamento> _filtrar(DadosLancamento dados) {
@@ -57,6 +67,7 @@ class _TelaBuscaAlunoState extends State<TelaBuscaAluno> {
         alunoId: alunoId,
         presente: presente,
         tipo: widget.tipo,
+        aulaIdAvulsa: widget.aulaIdAvulsa,
       );
       unawaited(dependencias.coordenador.sincronizar());
     } on MarcacaoRecusada {

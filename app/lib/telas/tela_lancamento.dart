@@ -13,6 +13,7 @@ import 'componentes.dart';
 import 'formatacao.dart';
 import 'menu_app.dart';
 import 'tela_busca_aluno.dart';
+import 'tela_reposicao_avulsa.dart';
 
 class TelaLancamento extends StatefulWidget {
   const TelaLancamento({
@@ -35,6 +36,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
   List<QuadroAulas>? _quadros;
   late String _hoje;
   late String _data;
+  String? _aulaIdAvulsa;
   Stream<DadosLancamento>? _dados;
   bool _iniciado = false;
 
@@ -64,22 +66,38 @@ class _TelaLancamentoState extends State<TelaLancamento> {
   }
 
   /// Escolhe o dia: se não houver aula nele, o último dia de aula já passado da mesma semana.
-  void _definirData(String data) {
+  /// Com [aulaIdAvulsa], abre a reposição avulsa daquele dia.
+  void _definirData(String data, {String? aulaIdAvulsa}) {
     final dias = calcularDiasDeAulaDaSemana(data, _quadros ?? const [], _hoje);
     final ehDiaDeAula = dias.any((d) => d.data == data);
     final anteriores = dias.where(
       (d) => !d.futuro && d.data.compareTo(data) <= 0,
     );
-    final escolhida = ehDiaDeAula || anteriores.isEmpty
+    final escolhida = aulaIdAvulsa != null || ehDiaDeAula || anteriores.isEmpty
         ? data
         : anteriores.last.data;
     setState(() {
       _data = escolhida;
+      _aulaIdAvulsa = aulaIdAvulsa;
       _dados = _dependencias.consulta.observarLancamento(
         widget.turmaId,
         escolhida,
+        hoje: _hoje,
+        aulaIdAvulsa: aulaIdAvulsa,
       );
     });
+  }
+
+  Future<void> _abrirReposicaoAvulsa(String turmaNome) async {
+    final criada = await Navigator.of(context).push<DiaDeAula>(
+      MaterialPageRoute(
+        builder: (_) =>
+            TelaReposicaoAvulsa(turmaId: widget.turmaId, turmaNome: turmaNome),
+      ),
+    );
+    if (criada != null && mounted) {
+      _definirData(criada.data, aulaIdAvulsa: criada.aulaIdAvulsa);
+    }
   }
 
   Future<void> _escolherOutraData() async {
@@ -115,6 +133,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
         alunoId: alunoId,
         presente: presente,
         tipo: tipo,
+        aulaIdAvulsa: dados.aulaIdAvulsa,
       );
       unawaited(_dependencias.coordenador.sincronizar());
     } on MarcacaoRecusada catch (recusa) {
@@ -161,19 +180,29 @@ class _TelaLancamentoState extends State<TelaLancamento> {
   Widget _montarConteudo(BuildContext context, DadosLancamento dados) {
     final cores = Theme.of(context).colorScheme;
     final textoApoio = TextStyle(color: cores.onSurfaceVariant, fontSize: 13);
-    final dias = calcularDiasDeAulaDaSemana(_data, _quadros!, _hoje);
-    final reposicoes = dias.where((d) => d.tipo == TipoAula.reposicao);
+    final dias = dados.diasDaSemana;
+    final reposicoesFixas = dias.where(
+      (d) => d.tipo == TipoAula.reposicao && d.aulaIdAvulsa == null,
+    );
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _SeletorDias(dias: dias, selecionada: _data, aoEscolher: _definirData),
+        _SeletorDias(
+          dias: dias,
+          data: _data,
+          aulaIdAvulsa: _aulaIdAvulsa,
+          aoEscolher: (dia) =>
+              _definirData(dia.data, aulaIdAvulsa: dia.aulaIdAvulsa),
+        ),
         const SizedBox(height: 8),
         Text(
           [
             if (dias.any((d) => d.data == _hoje)) 'Semana atual',
             'dia futuro bloqueado',
-            for (final r in reposicoes)
+            for (final r in reposicoesFixas)
               '${obterDiaAbreviado(r.data)} = reposição fixa',
+            if (dados.aulaIdAvulsa != null)
+              'reposição avulsa de ${formatarDiaMes(dados.data)}',
           ].join(' · '),
           style: textoApoio,
         ),
@@ -201,6 +230,8 @@ class _TelaLancamentoState extends State<TelaLancamento> {
                   turmaId: widget.turmaId,
                   data: dados.data,
                   tipo: dados.tipo!,
+                  hoje: _hoje,
+                  aulaIdAvulsa: dados.aulaIdAvulsa,
                 ),
               ),
             ),
@@ -249,6 +280,15 @@ class _TelaLancamentoState extends State<TelaLancamento> {
             child: const Text('Marcar todos os frequentes'),
           ),
         ],
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: () => _abrirReposicaoAvulsa(dados.turmaNome),
+          icon: const Icon(Icons.add),
+          label: const Text('Reposição avulsa (outro dia)'),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+          ),
+        ),
       ],
     );
   }
@@ -257,13 +297,18 @@ class _TelaLancamentoState extends State<TelaLancamento> {
 class _SeletorDias extends StatelessWidget {
   const _SeletorDias({
     required this.dias,
-    required this.selecionada,
+    required this.data,
+    required this.aulaIdAvulsa,
     required this.aoEscolher,
   });
 
   final List<DiaDeAula> dias;
-  final String selecionada;
-  final ValueChanged<String> aoEscolher;
+  final String data;
+  final String? aulaIdAvulsa;
+  final ValueChanged<DiaDeAula> aoEscolher;
+
+  bool _estaSelecionado(DiaDeAula dia) =>
+      dia.data == data && dia.aulaIdAvulsa == aulaIdAvulsa;
 
   @override
   Widget build(BuildContext context) {
@@ -278,21 +323,21 @@ class _SeletorDias extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Semantics(
-                selected: dia.data == selecionada,
+                selected: _estaSelecionado(dia),
                 button: true,
                 enabled: !dia.futuro,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(10),
-                  onTap: dia.futuro ? null : () => aoEscolher(dia.data),
+                  onTap: dia.futuro ? null : () => aoEscolher(dia),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: dia.data == selecionada
+                        color: _estaSelecionado(dia)
                             ? cores.onSurface
                             : cores.outlineVariant,
-                        width: dia.data == selecionada ? 2 : 1,
+                        width: _estaSelecionado(dia) ? 2 : 1,
                       ),
                     ),
                     child: Column(
@@ -311,7 +356,7 @@ class _SeletorDias extends StatelessWidget {
                         ),
                         if (dia.tipo == TipoAula.reposicao)
                           Text(
-                            'repos.',
+                            dia.aulaIdAvulsa == null ? 'repos.' : 'avulsa',
                             style: TextStyle(
                               fontSize: 11,
                               color: cores.onSurfaceVariant,

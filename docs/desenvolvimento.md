@@ -140,10 +140,36 @@ Correção de bug vem com um teste que falhava antes da correção.
 - Áreas de toque de no mínimo 48 px; textos simples, sem jargão técnico.
 - Toda ação que depende de internet avisa claramente quando não há conexão.
 - A tela de lançamento sempre mostra o status de envio.
+- **Wireframes em HTML:** todo wireframe ou proposta de tela é um arquivo HTML em `docs/telas/`; as imagens de `docs/telas/img/` são geradas dele (`bash docs/telas/gerar-imagens.sh`).
+
+### 10.1 Revisão de interface (web-design-guidelines)
+
+Toda tela nova ou mudança visual passa pela skill `web-design-guidelines` (Web Interface Guidelines da Vercel) **duas vezes**:
+
+1. **No wireframe**, antes da aprovação: o wireframe é HTML, então as regras se aplicam direto. O que a revisão pedir vira requisito da tela (ex.: a seção "Requisitos de implementação" da proposta v2).
+2. **No código**, antes do PR: revisar os arquivos da tela e corrigir. O PR lista o que foi corrigido, o que já estava certo e o que não se aplica.
+
+As diretrizes são baixadas na hora (a skill busca a versão atual). Como foram escritas para HTML e React, no Flutter Web valem os equivalentes:
+
+| Regra | No Flutter |
+|---|---|
+| Rótulo em botão só com ícone | `tooltip` no `IconButton` |
+| Leitor de tela | árvore de acessibilidade ligada ao iniciar (`ensureSemantics` em `main.dart`); `semanticsLabel` em indicadores |
+| Foco visível e teclado | cores de foco do tema; testar com Tab no desktop |
+| Área de toque | mínimo 48 px |
+| Contraste | texto 4,5:1; contorno de campo, caixa e ícone 3:1 (WCAG 1.4.11); cores como tokens do tema |
+| Movimento reduzido | `MediaQuery.disableAnimationsOf(context)` |
+| Campos | `keyboardType`, `autofillHints` no login, `autocorrect: false` em e-mail, código e documentos |
+| Alterações não salvas | `ProtecaoAlteracoes` (pergunta antes de descartar) |
+| Textos longos | `maxLines` e `overflow: ellipsis` |
+| Números em coluna | `FontFeature.tabularFigures()` |
+
+Não se aplicam ao projeto: Title Case (a interface é pt-BR, com só a primeira letra maiúscula) e formatos de data do navegador (o projeto fixa dd/mm/aaaa e o fuso de São Paulo).
 
 ## 11. Pronto para o PR (checklist)
 
 - [ ] Tela segue o wireframe aprovado em `docs/telas/`
+- [ ] Revisão com a `web-design-guidelines` feita e registrada no PR (seção 10.1)
 - [ ] Funciona no celular (testado em tela estreita)
 - [ ] Testes obrigatórios escritos e passando
 - [ ] Formatação e análise sem avisos

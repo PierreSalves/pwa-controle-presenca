@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes v2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Wireframes v2</h1>
+  <p>Revisão dos wireframes v1 com as skills <b>frontend-design</b> e <b>high-end-visual-design</b>, pedida e <b>aprovada em 13/11/2026</b>: menu lateral fixo no desktop e cor de destaque em todo botão de ação. O conteúdo e as regras de cada tela continuam os da v1; muda a linguagem visual.</p>
+  <p>Ideia central: o app é de uma academia de jiu-jítsu. O <b>azul do tatame</b> marca tudo que é ação, e o único elemento chamativo é a <b>faixa do aluno</b>, com a cor real e os graus na ponta preta. O resto fica sóbrio, para lançar presença rápido no celular durante a aula.</p>
+</div>
+
+<div class="tokens">
+  <div class="tk"><h2>Cores</h2>
+    <div class="cor"><i style="background:#13557A"></i>Azul tatame #13557A: botões de ação, item ativo do menu, caixa marcada</div>
+    <div class="cor"><i style="background:#E3EEF4"></i>Tatame claro #E3EEF4: botões secundários e voltar</div>
+    <div class="cor"><i style="background:#F5F6F4"></i>Papel #F5F6F4: fundo (cinza frio, sem creme)</div>
+    <div class="cor"><i style="background:#23262B"></i>Grafite #23262B: texto</div>
+    <div class="cor"><i style="background:#B3261E"></i>Ponta vermelha #B3261E: erro e ação que apaga ou encerra</div>
+    <div class="cor"><i style="background:#2E6B45"></i>Verde #2E6B45 e âmbar #8A5A00: enviado e aguardando envio</div>
+  </div>
+  <div class="tk"><h2>Tipografia</h2>
+    <p style="margin:0 0 8px">Lexend, uma família só (regular e seminegrito). Foi criada para facilitar a leitura, com letras abertas e espaçamento generoso, o que ajuda a ler nomes e códigos de relance no celular durante a aula. Substitui a Roboto, vetada pela high-end-visual-design. (A Atkinson Hyperlegible foi descartada: o zero cortado deixava as datas como "Ø6/2Ø26".)</p>
+    <p class="mu" style="margin:0">Escala: 13 · 15 (texto) · 17 (título de tela no celular) · 22 (título no desktop) · 28</p>
+  </div>
+  <div class="tk"><h2>Botões</h2>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+      <span class="bp">Salvar<span class="ic"><i class="ti ti-check"></i></span></span>
+      <span class="bs"><i class="ti ti-plus"></i>Reposição avulsa</span>
+      <span style="display:flex;gap:10px;align-items:center"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="mu">Voltar: círculo azul-claro</span></span>
+      <span class="bs bd">Encerrar matrícula</span>
+    </div>
+    <p class="mu" style="margin:10px 0 0">Principal: pílula azul com o ícone num círculo; ao apertar, encolhe de leve (efeito mola). Secundário: azul-claro. Destrutivo: vermelho-claro.</p>
+  </div>
+  <div class="tk"><h2>Faixa do aluno (o destaque)</h2>
+    <p style="margin:0 0 8px"><span class="faixa"><span class="cor f-azul"></span><span class="pt"><i></i><i></i></span></span> Azul · 2 graus</p>
+    <p style="margin:0 0 8px"><span class="faixa"><span class="cor f-roxa"></span><span class="pt"><i></i></span></span> Roxa · 1 grau</p>
+    <p class="mu" style="margin:0">Aparece no cadastro do aluno e na lista de alunos. Usa as cores reais das faixas, nunca como enfeite.</p>
+  </div>
+</div>
+
+<div class="sec"><h2>Celular</h2><p>Topo com voltar em círculo azul-claro e, quando houver, o botão principal da tela em pílula azul. Mesmas telas e regras da v1.</p></div>
+<div class="g">
+
+  <div><p class="rot">1. Entrar</p><div class="cel">
+    <div class="corpo" style="justify-content:center;gap:14px;padding:24px 20px">
+      <div class="logo"><i class="ti ti-photo"></i>Logotipo TghServices</div>
+      <div style="font-size:22px;font-weight:600;text-align:center">Controle de presença</div>
+      <div class="campo"><b>E-mail</b><span>ana@academia.com.br</span></div>
+      <div class="campo"><b>Senha</b><span>••••••••</span></div>
+      <span class="bp lg">Entrar<span class="ic"><i class="ti ti-arrow-right"></i></span></span>
+      <div class="mu" style="text-align:center">Esqueceu a senha? Fale com o professor</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">2. Início</p><div class="cel">
+    <div class="topo"><span class="voltar" style="background:transparent;color:var(--grafite)"><i class="ti ti-menu-2"></i></span><span class="tit">Academia Teste</span><span style="width:40px"></span></div>
+    <div class="corpo">
+      <span class="ok" style="align-self:flex-start"><i class="ti ti-check"></i>Tudo enviado · 14:32</span>
+      <span class="bp lg">Lançar presença de hoje<span class="ic"><i class="ti ti-checkbox"></i></span></span>
+      <div class="h">Suas turmas</div>
+      <div class="cartao lin" style="border:0">Adulto · ter qua qui<span class="mu">42 alunos</span></div>
+      <div class="cartao lin" style="border:0">Kids · seg qua<span class="mu">18 alunos</span></div>
+      <div class="h">Resumo de 2026</div>
+      <div style="display:flex;gap:10px"><div class="cartao" style="flex:1"><div class="mu">Aulas</div><div class="h" style="font-size:20px">118</div></div><div class="cartao" style="flex:1"><div class="mu">Freq. média</div><div class="h" style="font-size:20px">71%</div></div></div>
+      <div class="av">5 alunos abaixo do mínimo para graduação</div>
+      <div class="lin">(03) Lucas S. · desde 02/09<span class="bs bd" style="min-height:36px;padding:6px 14px">Encerrar</span></div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">4. Lançar presença</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Adulto</span><span class="voltar"><i class="ti ti-calendar"></i></span></div>
+    <div class="corpo">
+      <div class="dias"><div class="dia">ter<br>10/11</div><div class="dia sel">qua<br>11/11</div><div class="dia off">qui<br>12/11</div><div class="dia off">sáb<br>14/11</div></div>
+      <div class="campo"><i class="ti ti-search"></i> Buscar outro aluno matriculado…</div>
+      <div class="mu">Frequentes (28), por frequência</div>
+      <div class="lin">(01) Augusto T.<span class="ck on"><i class="ti ti-check"></i></span></div>
+      <div class="lin">(04) Carlos J.<span class="ck on"><i class="ti ti-check"></i></span></div>
+      <div class="lin"><span>(108) Jayme V.<span class="tag">novo</span></span><span class="ck"></span></div>
+      <div class="lin mu"><span><i class="ti ti-chevron-down"></i> Pouco frequentes (14)</span>recolhido</div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="h">12 presentes</span><span class="av">2 aguardando envio</span></div>
+      <span class="bs lg">Marcar todos os frequentes</span>
+      <span class="bs lg"><i class="ti ti-plus"></i>Reposição avulsa (outro dia)</span>
+    </div>
+  </div></div>
+
+  <div><p class="rot">9. Aluno</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Aluno</span><span class="bp sm">Salvar<span class="ic"><i class="ti ti-check"></i></span></span></div>
+    <div class="corpo">
+      <div style="display:flex;gap:8px"><div class="campo" style="width:90px"><b>Cód.</b><span>109</span></div><div class="campo" style="flex:1"><b>Nome completo</b><span>Augusto E. B. Torres</span></div></div>
+      <div class="cartao" style="display:flex;align-items:center;justify-content:space-between"><span><span class="faixa"><span class="cor f-azul"></span><span class="pt"><i></i><i></i></span></span> &nbsp;Azul · 2 graus</span><span class="mu">06/2026</span></div>
+      <div class="campo">Nascimento · telefone · CPF <i class="ti ti-chevron-down" style="float:right"></i></div>
+      <div class="campo">Responsáveis <i class="ti ti-chevron-down" style="float:right"></i></div>
+      <div class="h">Matrículas</div>
+      <div class="lin">Adulto · desde 05/02/2026<span class="mu">matriculado</span></div>
+      <span class="bs" style="align-self:flex-start"><i class="ti ti-plus"></i>Matricular</span>
+      <div class="h">Graduações</div>
+      <div class="lin">Azul · 2º grau<span class="mu">06/2026</span></div>
+      <span class="bs" style="align-self:flex-start"><i class="ti ti-plus"></i>Graduação</span>
+    </div>
+  </div></div>
+
+</div>
+
+<div class="sec"><h2>Desktop (a partir de ~1000 px)</h2><p>Menu lateral fixo, sempre visível, com o item da tela atual em azul. Título da tela à esquerda e o botão principal à direita. O conteúdo ocupa a largura, sem a coluna estreita do celular.</p></div>
+<div class="g">
+
+  <div><p class="rot">D1. Início</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav at"><i class="ti ti-home"></i>Início</div>
+      <div class="nav"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div class="nav"><i class="ti ti-user-cog"></i>Usuários</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="tit">Início · Academia Teste</span><span class="ok"><i class="ti ti-check"></i>Tudo enviado · 14:32</span><span class="bp">Lançar presença de hoje<span class="ic"><i class="ti ti-checkbox"></i></span></span></div>
+      <div class="kpis">
+        <div class="cartao kpi"><div class="mu">Aulas 2026</div><div class="v">118</div></div>
+        <div class="cartao kpi"><div class="mu">Freq. média</div><div class="v">71%</div></div>
+        <div class="cartao kpi"><div class="mu">Alunos ativos</div><div class="v">95</div></div>
+        <div class="cartao kpi"><div class="mu">Abaixo do mínimo</div><div class="v">5</div></div>
+      </div>
+      <div class="dois">
+        <div class="cartao"><div class="h" style="margin-bottom:4px">Suas turmas</div>
+          <div class="lin">Adulto · ter qua qui<span class="bs" style="min-height:36px;padding:6px 16px">Lançar</span></div>
+          <div class="lin" style="border:0">Kids · seg qua<span class="bs" style="min-height:36px;padding:6px 16px">Lançar</span></div></div>
+        <div class="cartao"><div class="h" style="margin-bottom:4px">Abaixo do mínimo (graduação)</div>
+          <div class="lin">(03) Lucas S.<span style="color:var(--ponta)">58%</span></div>
+          <div class="lin" style="border:0">(09) Caroline G.<span style="color:var(--ponta)">64%</span></div></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">D2. Lançar presença (grade da semana)</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav"><i class="ti ti-home"></i>Início</div>
+      <div class="nav at"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="voltar"><i class="ti ti-chevron-left"></i></span><span class="tit" style="flex:none;font-size:19px">Adulto · 09/11 a 15/11/2026</span><span class="voltar"><i class="ti ti-chevron-right"></i></span><span style="flex:1"></span><span class="av">2 aguardando envio</span><span class="bs"><i class="ti ti-plus"></i>Reposição avulsa</span></div>
+      <div class="campo"><i class="ti ti-search"></i> Adicionar aluno pouco frequente à grade…</div>
+      <div class="cartao" style="padding:4px 14px"><table>
+        <tr><th>Aluno · freq. últimas 8 aulas</th><th>ter 10/11</th><th>qua 11/11</th><th style="color:var(--desativado)">qui 12/11</th><th style="color:var(--desativado)">sáb 14/11 <span class="tag">repos.</span></th></tr>
+        <tr><td>(01) Augusto E. B. Torres · 100%</td><td><span class="ck on" style="margin:auto"><i class="ti ti-check"></i></span></td><td><span class="ck on" style="margin:auto"><i class="ti ti-check"></i></span></td><td><span class="ck" style="margin:auto;opacity:.4"></span></td><td><span class="ck" style="margin:auto;opacity:.4"></span></td></tr>
+        <tr><td>(04) Carlos J. · 75%</td><td><span class="ck" style="margin:auto"></span></td><td><span class="ck on" style="margin:auto"><i class="ti ti-check"></i></span></td><td><span class="ck" style="margin:auto;opacity:.4"></span></td><td><span class="ck" style="margin:auto;opacity:.4"></span></td></tr>
+        <tr><td colspan="5" class="mu"><i class="ti ti-chevron-down"></i> Pouco frequentes (14)</td></tr>
+      </table></div>
+      <div class="mu">Dia futuro e fora da matrícula ficam bloqueados</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">D3. Alunos (lista e cadastro lado a lado)</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav"><i class="ti ti-home"></i>Início</div>
+      <div class="nav"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav at"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="tit">Alunos</span><span class="bs">Importar planilha</span><span class="bp">Novo aluno<span class="ic"><i class="ti ti-plus"></i></span></span></div>
+      <div class="dois">
+        <div class="cartao">
+          <div class="campo" style="margin-bottom:6px"><i class="ti ti-search"></i> Nome ou código…</div>
+          <div class="lin" style="background:var(--tatame-claro);border-radius:10px;padding:10px 8px;border:0"><span>(01) Augusto T.</span><span class="faixa" style="width:70px"><span class="cor f-azul"></span><span class="pt" style="width:26px"><i></i><i></i></span></span></div>
+          <div class="lin"><span>(03) Lucas S.</span><span class="faixa" style="width:70px"><span class="cor f-branca"></span><span class="pt" style="width:26px"></span></span></div>
+          <div class="lin"><span>(10A) Lucas C.</span><span class="faixa" style="width:70px"><span class="cor f-roxa"></span><span class="pt" style="width:26px"><i></i></span></span></div>
+        </div>
+        <div class="cartao">
+          <div class="cab"><span class="tit" style="font-size:17px">(01) Augusto E. B. Torres</span><span class="bp sm foco">Salvar<span class="ic"><i class="ti ti-check"></i></span></span></div>
+          <div class="mu" style="margin-top:6px">Salvar com foco do teclado (Tab): anel azul em volta.</div>
+          <div class="campo" style="margin:10px 0">Nascimento · telefone · CPF · responsáveis <i class="ti ti-chevron-down" style="float:right"></i></div>
+          <div class="h">Matrículas</div>
+          <div class="lin">Adulto · desde 05/02/2026<span class="mu">matriculado</span></div>
+          <div class="h" style="margin-top:8px">Graduações</div>
+          <div class="lin" style="border:0"><span><span class="faixa"><span class="cor f-azul"></span><span class="pt"><i></i><i></i></span></span> &nbsp;Azul · 2º grau</span><span class="mu">06/2026</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+</div>
+
+<div class="sec"><h2>O que entrou e o que ficou de fora das skills</h2></div>
+<div class="diff"><table>
+  <tr><th>Skill</th><th>Adotado</th><th>Recusado, e por quê</th></tr>
+  <tr><td><b>frontend-design</b></td><td>Identidade a partir do jiu-jítsu (azul do tatame, cores reais das faixas); um único elemento de destaque (a faixa); fundo cinza frio em vez do creme; tipografia escolhida para a tarefa; textos curtos e verbos diretos.</td><td>Nada recusado.</td></tr>
+  <tr><td><b>high-end-visual-design</b></td><td>Botão principal em pílula com o ícone num círculo; sombra suave no lugar da borda cinza de 1 px; efeito de pressionar com curva de mola; troca da Roboto; ícones de traço fino.</td><td><b>Espaço vazio enorme</b> e <b>grade assimétrica</b>: o lançamento precisa de muitos alunos por tela. <b>Animação ao rolar</b>: atrasa a marcação e pesa no celular. <b>Vidro com desfoque e fundo escuro</b>: pior leitura no ginásio e mais pesado. <b>Menu flutuante</b>: você pediu o menu lateral.</td></tr>
+  <tr><td><b>Pedido de 13/11</b></td><td>Menu lateral fixo no desktop; cor de destaque em todo botão de ação (principal azul, secundário azul-claro, voltar em círculo azul-claro, destrutivo vermelho-claro).</td><td>—</td></tr>
+</table>
+<p class="mu" style="margin-top:12px">Para implementar: a fonte Lexend (licença livre OFL) precisa ser baixada do repositório do Google Fonts e embutida no app, como foi feito com a Roboto. Os ícones de traço fino usariam o pacote de ícones Material Symbols com espessura leve (dependência nova). As duas coisas pedem aprovação antes de entrar no app.</p>
+</div>
+
+<div class="sec"><h2>Requisitos de implementação (revisão com a web-design-guidelines)</h2><p>As diretrizes da Vercel aplicadas a esta v2 e traduzidas para o Flutter Web. Valem para todas as telas da v2.</p></div>
+<div class="diff"><table>
+  <tr><th>Regra</th><th>Na v2</th><th>No Flutter</th></tr>
+  <tr><td>Área de toque</td><td>Mínimo 48 px em botões, dias, voltar, itens do menu e caixas de marcar (a caixa desenhada tem 26 px, mas a área de toque tem 48)</td><td><code>minimumSize</code> 48 nos botões; <code>materialTapTargetSize: padded</code></td></tr>
+  <tr><td>Contraste</td><td>Textos de 5,2:1 a 14:1; contornos de campos e caixas em #868D94 (3,1:1 ou mais); dia futuro em #80878E</td><td>Cores como tokens do tema, não espalhadas pelas telas</td></tr>
+  <tr><td>Foco visível</td><td>Anel azul de 3 px em volta do item focado pelo teclado (exemplo no Salvar do D3)</td><td><code>focusColor</code> e borda de foco no tema; navegação por Tab no desktop</td></tr>
+  <tr><td>Botão só com ícone</td><td>Voltar, calendário, semana anterior e próxima</td><td><code>tooltip</code> em todo <code>IconButton</code> (já é assim)</td></tr>
+  <tr><td>Hover e pressionar</td><td>Principal, secundário e itens do menu escurecem no hover; os botões encolhem 2% ao apertar</td><td>Estados do tema; curva de mola só no apertar</td></tr>
+  <tr><td>Movimento reduzido</td><td>Sem animação quando o aparelho pede menos movimento</td><td><code>MediaQuery.disableAnimationsOf(context)</code></td></tr>
+  <tr><td>Números</td><td>Algarismos de largura fixa em indicadores, percentuais, códigos e na grade</td><td><code>FontFeature.tabularFigures()</code></td></tr>
+  <tr><td>Textos de exemplo</td><td>Terminam com "…" (ex.: "Nome ou código…")</td><td><code>hintText</code></td></tr>
+  <tr><td>Nomes longos</td><td>Cortados com reticências na grade e nas listas, nunca empurrando colunas</td><td><code>maxLines: 1</code> e <code>overflow: ellipsis</code></td></tr>
+  <tr><td>Salvar durante o envio</td><td>O botão continua habilitado até a gravação começar e mostra que está salvando</td><td>Indicador dentro do botão com rótulo "Salvando…"</td></tr>
+  <tr><td>Menu lateral com endereço</td><td>Cada item do menu é uma página com endereço próprio (ex.: <code>/alunos</code>): recarregar mantém a tela, e voltar e Ctrl+clique funcionam no navegador</td><td>Rotas com caminho no endereço (sem <code>#</code>)</td></tr>
+  <tr><td>Confirmação</td><td>Encerrar matrícula e sair continuam pedindo confirmação</td><td>Já implementado</td></tr>
+</table>
+<p class="mu" style="margin-top:12px">Não se aplicam: Title Case (a interface é pt-BR, com só a primeira letra maiúscula); formatos de data do navegador (o projeto fixa dd/mm/aaaa e o fuso de São Paulo); modo escuro (fora do escopo).</p>
+</div>
+
+</body>
+</html>

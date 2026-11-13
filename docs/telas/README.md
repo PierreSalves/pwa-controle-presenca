@@ -4,6 +4,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 
 - Fonte editável: [`wireframes-fase1.html`](wireframes-fase1.html) (abra no navegador; `?tela=4` mostra uma tela só): conteúdo e regras de cada tela (v1 e v1.1).
 - **Linguagem visual: [`wireframes-v2.html`](wireframes-v2.html)** (v2): cores, tipografia, botões, menu lateral no desktop e requisitos de implementação. Imagem: [`img/v2.png`](img/v2.png).
+- **Relatórios: [`wireframes-relatorios.html`](wireframes-relatorios.html)** (v3): resultado de cada relatório da tela 7 (7a–7d), desktop (D5, D6) e a página impressa (P1). Imagem: [`img/relatorios.png`](img/relatorios.png).
 - **Aparência e componentes implementados: [`componentes.md`](componentes.md)**: cores, fonte, ícones, formas, layout e as características de cada componente visual do app.
 - Imagens: [`img/`](img/), geradas com `bash docs/telas/gerar-imagens.sh` (Git Bash; usa o Edge ou o navegador em `CHROME_EXECUTABLE`).
 - Mensalidades (Fase 2) terão wireframes próprios quando a fase começar.
@@ -14,6 +15,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 |---|---|---|---|
 | 1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 1 a 14 (celular), 2b e 4b, e D1 a D4 (desktop). Inclui logotipo e ícone da academia, reposição fixa no quadro e lista do lançamento por frequência |
 | 1.1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 8b e 8c: importar alunos colando a lista copiada da planilha (sem escolher arquivo), com relatório de códigos repetidos ou já cadastrados antes de gravar |
+| 3 | 13/11/2026 | **Aprovado** pelo responsável do projeto | Relatórios ([`wireframes-relatorios.html`](wireframes-relatorios.html)): tela 7 detalhada com atalhos de período, resultados semanal, mensal, anual e por aluno no celular (7a–7d) e no desktop (D5, D6), e a página impressa (P1) pelo navegador. Calculados no aparelho a partir das presenças |
 | 2 | 13/11/2026 | **Aprovado** pelo responsável do projeto | Nova linguagem visual para todas as telas (revisão com as skills frontend-design e high-end-visual-design, e conferida com a web-design-guidelines): menu lateral fixo no desktop (D1 a D3), cor de destaque em todo botão de ação (principal azul, secundário azul-claro, voltar em círculo, destrutivo vermelho-claro), fonte Lexend e a faixa do aluno como único destaque. Conteúdo e regras das telas seguem a v1 |
 
 ## Decisões de interface aprovadas
@@ -90,6 +92,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 
 - **Objetivo:** escolher relatório e período: semanal, mensal, anual, por aluno, frequência para graduação.
 - **Regras:** todos calculados a partir das presenças (nenhum total gravado); impressão/PDF com cabeçalho do tenant e da turma.
+- **Resultados e impressão (v3):** [`wireframes-relatorios.html`](wireframes-relatorios.html). Falta = aula lançada sem presença, dentro da matrícula; frequência pela regra da graduação. No celular cada relatório abre numa tela própria; no desktop aparece abaixo dos filtros. Imprimir / PDF abre a página numa aba nova.
 
 ### 8. Alunos
 ![Alunos](img/celular-8.png)

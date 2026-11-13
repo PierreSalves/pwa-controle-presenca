@@ -53,7 +53,8 @@ Observações do drift no navegador: servir `sqlite3.wasm` com `Content-Type: ap
 |---|---|---|
 | Lançar presença (marcada **ao vivo** na aula) | **online primeiro, offline de reserva** | a internet da academia não é garantida; sem reserva, o app trava na chamada e todos voltam ao papel |
 | Consultar turmas e alunos necessários para lançar | **offline (leitura)** | a tela de lançamento precisa abrir sem sinal |
-| Mensalidades, cadastros (alunos, turmas, quadro, matrículas), regras, relatórios, usuários, acessos, tenants | **online** | ninguém lança pagamento no tatame; o servidor valida na hora (ex.: código de aluno único) e o aparelho guarda menos dados |
+| Relatórios de presença (tela 7) | **offline (leitura)** | calculados no aparelho a partir das aulas e presenças já sincronizadas; nada novo vai para o aparelho |
+| Mensalidades, cadastros (alunos, turmas, quadro, matrículas), regras, usuários, acessos, tenants | **online** | ninguém lança pagamento no tatame; o servidor valida na hora (ex.: código de aluno único) e o aparelho guarda menos dados |
 
 ### Online primeiro, offline de reserva
 - **Com internet:** cada marcação é gravada no SQLite local e **enviada na hora** (push imediato). Na prática se comporta como um sistema online.
@@ -139,7 +140,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 
 ### Interface e navegação no app (v2)
 - Aparência e componentes: [`docs/telas/componentes.md`](../telas/componentes.md) (tokens em `app/lib/telas/tema.dart`, componentes em `componentes.dart`).
-- Rotas com endereço (`/`, `/lancar`, `/alunos`, `/turmas`, `/usuarios`) em `app/lib/telas/navegacao.dart`, com `usePathUrlStrategy` (sem `#`). Cada rota passa pelo `PortaoSessao` (sem login, mostra a tela de entrar); rota sem permissão cai no Início. O Worker (`not_found_handling: single-page-application`) e o service worker devolvem o `index.html` para qualquer endereço.
+- Rotas com endereço (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`) em `app/lib/telas/navegacao.dart`, com `usePathUrlStrategy` (sem `#`). Cada rota passa pelo `PortaoSessao` (sem login, mostra a tela de entrar); rota sem permissão cai no Início. O Worker (`not_found_handling: single-page-application`) e o service worker devolvem o `index.html` para qualquer endereço.
 - No desktop (≥ 1000 px) o menu lateral fica em volta do navegador interno (`MaterialApp.builder`), por isso continua visível ao abrir um aluno ou uma turma. O navegador é um contêiner próprio de acessibilidade: a barreira de cada rota bloqueia, no mesmo contêiner, o que é desenhado antes dela.
 - Ao sair ou ter a sessão encerrada, a pilha volta para `/`.
 
@@ -296,7 +297,9 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 ## Relatórios e regras configuráveis
 
 - **Nenhum total é gravado.** Semanal, mensal, anual, por aluno e inadimplência são calculados a partir de `aulas` + `presencas` (+ `mensalidades`).
-- Falta = aula prevista (regular, dentro da matrícula) sem presença.
+- Falta = aula lançada (dentro da matrícula) sem presença do aluno; frequência = presenças + reposições ÷ aulas regulares lançadas (limite de 100%), a mesma regra da graduação.
+- **Onde:** os relatórios de presença são calculados no app (`app/lib/regras/relatorios.dart`, montados em `app/lib/telas/relatorios/`) a partir do banco local, então funcionam offline. A mesma tabela montada vai para a tela e para a página impressa.
+- **Impressão / PDF:** o app gera um HTML simples, sem script, e o abre numa aba nova a partir de um blob do próprio app (mesma origem, compatível com a CSP); a aba chama a impressão do navegador, onde dá para salvar em PDF. Semanal e anual em A4 paisagem; os demais em retrato.
 - **Cabeçalho dos relatórios/impressão:** dados do tenant e da turma. Se preenchido, o campo `cabecalho_impressao` do tenant e o da turma também aparecem (ex.: para incluir o nome do professor).
 - **Regras** ficam numa tabela `regras` com tipos pré-definidos e parâmetros (JSON), não fórmulas livres:
   - escopo: padrão do tenant, sobrescrito por professor ou turma;

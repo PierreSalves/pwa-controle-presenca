@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframes dos relatórios</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+</head>
+<body>
+<style>
+/* Acréscimos dos relatórios (o resto vem da v2) */
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:48px;padding:8px 14px;border-radius:999px;background:var(--cartao);box-shadow:inset 0 0 0 1.5px var(--linha);font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.chip.at{background:var(--tatame);color:#fff;box-shadow:none}
+.op{display:flex;align-items:center;gap:12px;min-height:56px}
+.op .ic2{width:40px;height:40px;border-radius:12px;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.op .tx{flex:1}.op .tx b{display:block;font-weight:600}.op .tx span{font-size:13px;color:var(--nevoa)}
+.mini td,.mini th{padding:7px 4px;font-size:13px}
+.v{color:var(--tatame);font-weight:600}
+.x{color:var(--nevoa)}
+.baixo{color:var(--ponta);font-weight:600}
+.semana{font-weight:600;font-size:13px;color:var(--nevoa);margin:10px 0 2px}
+.folha{width:794px;max-width:100%;background:#fff;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);padding:40px 44px;font-size:13px;color:#111}
+.folha h3{font-size:17px;margin:0}
+.folha table{font-size:12px}
+.folha th,.folha td{border:1px solid #c9ccc8;padding:5px 6px}
+.folha .cabp{display:flex;gap:16px;align-items:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:14px}
+.folha .logo{width:120px;height:56px}
+.nota{max-width:1180px;margin:0 auto;padding:0 24px 12px}
+.nota ul{margin:6px 0 0;padding-left:20px;color:var(--nevoa)}
+</style>
+
+<div class="intro">
+  <h1>Relatórios · proposta</h1>
+  <p>Detalha a <b>tela 7</b> aprovada na v1 (escolher turma, período e relatório) e desenha o resultado de cada relatório, que ainda não tinha wireframe. Visual da v2. O relatório <b>Frequência para graduação</b> continua sendo a tela 6 / D4 já aprovada.</p>
+  <p>Todos são <b>calculados na hora a partir das presenças</b> (nenhum total gravado), no próprio aparelho, então abrem também sem internet. <b>Falta</b> = aula lançada sem presença do aluno, dentro da matrícula. <b>Frequência</b> = presenças + reposições ÷ aulas regulares lançadas (limite de 100%), a mesma regra da graduação.</p>
+</div>
+
+<div class="nota"><div class="cartao">
+  <div class="h">O que cada relatório mostra</div>
+  <ul>
+    <li><b>Presença semanal:</b> igual à planilha do mês: aluno × dias de aula de cada semana, com <i class="ti ti-check" aria-label="veio"></i> em quem veio e o total da semana.</li>
+    <li><b>Presença mensal:</b> aluno × meses do período: presenças no mês, e no fim aulas, presenças, reposições e frequência do período.</li>
+    <li><b>Presença anual:</b> igual à planilha anual: aluno × JAN…DEZ com as presenças de cada mês (o ano é o da data "Até").</li>
+    <li><b>Por aluno:</b> escolhe o aluno; lista cada aula do período (data, tipo, veio ou faltou) com os totais.</li>
+    <li><b>Acessibilidade (web-design-guidelines):</b> chips e linhas com 48 px de toque; ✓ é ícone com rótulo "veio" para o leitor de tela; falta em cinza com contraste de 4,5:1; números de largura fixa nas tabelas; tabela larga rola para o lado com a coluna do aluno fixa.</li>
+    <li><b>Imprimir / PDF:</b> abre a página pronta para imprimir no navegador, onde dá para escolher "Salvar como PDF". Sem dependência nova.</li>
+  </ul>
+</div></div>
+
+<div class="sec"><h2>Celular</h2><p>Escolhe tudo numa tela e abre o relatório numa tela própria, com o botão Imprimir / PDF no topo.</p></div>
+<div class="g">
+
+  <div><p class="rot">7. Relatórios (escolha)</p><div class="cel">
+    <div class="topo"><span class="voltar" style="background:transparent;color:var(--grafite)"><i class="ti ti-menu-2"></i></span><span class="tit">Relatórios</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div class="campo"><b>Turma</b><span>Adulto</span> <i class="ti ti-chevron-down" style="float:right"></i></div>
+      <div style="display:flex;gap:8px"><div class="campo" style="flex:1"><b>De</b><span>01/11/2026</span></div><div class="campo" style="flex:1"><b>Até</b><span>30/11/2026</span></div></div>
+      <div class="seg"><span class="chip">Esta semana</span><span class="chip at">Este mês</span><span class="chip">Semestre</span><span class="chip">Ano</span></div>
+      <div class="cartao" style="padding:4px 14px">
+        <div class="op lin"><span class="ic2"><i class="ti ti-calendar-week"></i></span><span class="tx"><b>Presença semanal</b><span>Como a planilha do mês</span></span><i class="ti ti-chevron-right"></i></div>
+        <div class="op lin"><span class="ic2"><i class="ti ti-calendar-month"></i></span><span class="tx"><b>Presença mensal</b><span>Presenças por mês e frequência</span></span><i class="ti ti-chevron-right"></i></div>
+        <div class="op lin"><span class="ic2"><i class="ti ti-calendar"></i></span><span class="tx"><b>Presença anual</b><span>JAN a DEZ, como a planilha anual</span></span><i class="ti ti-chevron-right"></i></div>
+        <div class="op lin"><span class="ic2"><i class="ti ti-user"></i></span><span class="tx"><b>Por aluno</b><span>Cada aula do período</span></span><i class="ti ti-chevron-right"></i></div>
+        <div class="op lin" style="border:0"><span class="ic2"><i class="ti ti-award"></i></span><span class="tx"><b>Frequência para graduação</b><span>Semestre, mínimo da turma</span></span><i class="ti ti-chevron-right"></i></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">7a. Presença semanal</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Semanal · Adulto</span><span class="voltar"><i class="ti ti-printer"></i></span></div>
+    <div class="corpo">
+      <div class="mu">01/11 a 30/11/2026 · 5 semanas</div>
+      <div class="cartao" style="padding:6px 12px">
+        <div class="semana">2ª semana · 08/11 a 14/11</div>
+        <table class="mini"><tr><th>Aluno</th><th>ter</th><th>qua</th><th>qui</th><th>sáb<br><span class="tag" style="margin:0">repos.</span></th><th>Total</th></tr>
+          <tr><td>(01) Augusto T.</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td>3</td></tr>
+          <tr><td>(02) Beatriz N.</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td class="x">·</td><td>2</td></tr>
+          <tr><td>(03) Lucas S.</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td class="x">·</td><td class="x">·</td><td>1</td></tr>
+          <tr><td>Presentes</td><td>5</td><td>4</td><td>5</td><td>–</td><td></td></tr></table>
+      </div>
+      <div style="display:flex;justify-content:space-between"><span class="bs"><i class="ti ti-chevron-left"></i>1ª semana</span><span class="bs">3ª semana<i class="ti ti-chevron-right"></i></span></div>
+      <div class="mu"><i class="ti ti-check" aria-label="veio"></i> veio · <span class="x">·</span> faltou · em branco: fora da matrícula</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">7b. Presença mensal</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Mensal · Adulto</span><span class="voltar"><i class="ti ti-printer"></i></span></div>
+    <div class="corpo">
+      <div class="mu">01/08 a 30/11/2026 · mínimo 75%</div>
+      <div class="cartao" style="padding:6px 12px">
+        <table class="mini"><tr><th>Aluno</th><th>ago</th><th>set</th><th>out</th><th>nov</th><th>Freq.</th></tr>
+          <tr><td>(01) Augusto T.</td><td>12</td><td>13</td><td>14</td><td>6</td><td>100%</td></tr>
+          <tr><td>(02) Beatriz N.</td><td>11</td><td>12</td><td>12</td><td>5</td><td>90%</td></tr>
+          <tr><td>(03) Lucas S.</td><td>7</td><td>6</td><td>8</td><td>3</td><td class="baixo">53%</td></tr>
+          <tr><td>Aulas</td><td>12</td><td>13</td><td>14</td><td>6</td><td></td></tr></table>
+      </div>
+      <div class="mu">Toque no aluno para ver aulas, presenças e reposições do período.</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">7c. Presença anual</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Anual · Adulto</span><span class="voltar"><i class="ti ti-printer"></i></span></div>
+    <div class="corpo">
+      <div class="mu">2026 · role para o lado para ver todos os meses</div>
+      <div class="cartao" style="padding:6px 12px;overflow:hidden">
+        <table class="mini"><tr><th>Aluno</th><th>jan</th><th>fev</th><th>mar</th><th>…</th><th>dez</th><th>Total</th></tr>
+          <tr><td>(01) Augusto T.</td><td>10</td><td>11</td><td>13</td><td>…</td><td>–</td><td>118</td></tr>
+          <tr><td>(02) Beatriz N.</td><td>9</td><td>12</td><td>11</td><td>…</td><td>–</td><td>104</td></tr>
+          <tr><td>(03) Lucas S.</td><td>6</td><td>5</td><td>7</td><td>…</td><td>–</td><td>61</td></tr>
+          <tr><td>Aulas</td><td>12</td><td>12</td><td>13</td><td>…</td><td>–</td><td>131</td></tr></table>
+      </div>
+      <div class="mu">Mês futuro com "–"; a coluna do aluno fica fixa ao rolar.</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">7d. Por aluno</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Por aluno</span><span class="voltar"><i class="ti ti-printer"></i></span></div>
+    <div class="corpo">
+      <div class="campo"><b>Aluno</b><span>(03) Lucas Siqueira</span> <i class="ti ti-search" style="float:right"></i></div>
+      <div style="display:flex;gap:10px">
+        <div class="cartao" style="flex:1"><div class="mu">Aulas</div><div class="h" style="font-size:20px">14</div></div>
+        <div class="cartao" style="flex:1"><div class="mu">Veio</div><div class="h" style="font-size:20px">8</div><div class="mu">1 reposição</div></div>
+        <div class="cartao" style="flex:1"><div class="mu">Freq.</div><div class="h baixo" style="font-size:20px">57%</div></div>
+      </div>
+      <div class="cartao" style="padding:4px 14px">
+        <div class="lin">ter 10/11/2026<span class="v">veio</span></div>
+        <div class="lin">qua 11/11/2026<span class="x">faltou</span></div>
+        <div class="lin">sáb 07/11/2026 <span class="tag">repos.</span><span class="v">veio</span></div>
+        <div class="lin" style="border:0">qui 05/11/2026<span class="x">faltou</span></div>
+      </div>
+    </div>
+  </div></div>
+
+</div>
+
+<div class="sec"><h2>Desktop</h2><p>Escolha no topo e o relatório logo abaixo, na mesma tela; o botão principal é Imprimir / PDF.</p></div>
+<div class="g">
+
+  <div><p class="rot">D5. Relatórios · presença semanal</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav"><i class="ti ti-home"></i>Início</div>
+      <div class="nav"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav at"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="tit">Relatórios</span><span class="bp">Imprimir / PDF<span class="ic"><i class="ti ti-printer"></i></span></span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="campo" style="width:200px"><b>Turma</b><span>Adulto</span></div>
+        <div class="campo" style="width:150px"><b>De</b><span>01/11/2026</span></div>
+        <div class="campo" style="width:150px"><b>Até</b><span>30/11/2026</span></div>
+        <div class="seg"><span class="chip">Esta semana</span><span class="chip at">Este mês</span><span class="chip">Semestre</span><span class="chip">Ano</span></div>
+      </div>
+      <div class="seg"><span class="chip at"><i class="ti ti-calendar-week"></i>Semanal</span><span class="chip"><i class="ti ti-calendar-month"></i>Mensal</span><span class="chip"><i class="ti ti-calendar"></i>Anual</span><span class="chip"><i class="ti ti-user"></i>Por aluno</span><span class="chip"><i class="ti ti-award"></i>Graduação</span></div>
+      <div class="cartao" style="padding:6px 14px">
+        <table><tr><th rowspan="2">Aluno</th><th colspan="4">1ª sem. · 01 a 07/11</th><th colspan="4">2ª sem. · 08 a 14/11</th><th rowspan="2">Total</th></tr>
+          <tr><th>ter</th><th>qua</th><th>qui</th><th>sáb</th><th>ter</th><th>qua</th><th>qui</th><th>sáb</th></tr>
+          <tr><td>(01) Augusto E. B. Torres</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td>6</td></tr>
+          <tr><td>(02) Beatriz Nogueira</td><td class="x">·</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td class="x">·</td><td>4</td></tr>
+          <tr><td>(08) Gabriel Antunes</td><td></td><td></td><td></td><td></td><td></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="v"><i class="ti ti-check" aria-label="veio"></i></td><td class="x">·</td><td>2</td></tr>
+          <tr><td>Presentes</td><td>4</td><td>5</td><td>3</td><td>0</td><td>5</td><td>4</td><td>5</td><td>–</td><td></td></tr></table>
+      </div>
+      <div class="mu">Semanas do período lado a lado (rolagem horizontal se não couber); <i class="ti ti-check" aria-label="veio"></i> veio · <span class="x">·</span> faltou · em branco fora da matrícula.</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">D6. Relatórios · presença anual</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav"><i class="ti ti-home"></i>Início</div>
+      <div class="nav"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav at"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="tit">Relatórios</span><span class="bp">Imprimir / PDF<span class="ic"><i class="ti ti-printer"></i></span></span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="campo" style="width:200px"><b>Turma</b><span>Adulto</span></div>
+        <div class="campo" style="width:150px"><b>De</b><span>01/01/2026</span></div>
+        <div class="campo" style="width:150px"><b>Até</b><span>31/12/2026</span></div>
+        <div class="seg"><span class="chip">Esta semana</span><span class="chip">Este mês</span><span class="chip">Semestre</span><span class="chip at">Ano</span></div>
+      </div>
+      <div class="seg"><span class="chip"><i class="ti ti-calendar-week"></i>Semanal</span><span class="chip"><i class="ti ti-calendar-month"></i>Mensal</span><span class="chip at"><i class="ti ti-calendar"></i>Anual</span><span class="chip"><i class="ti ti-user"></i>Por aluno</span><span class="chip"><i class="ti ti-award"></i>Graduação</span></div>
+      <div class="cartao" style="padding:6px 14px">
+        <table><tr><th>Aluno</th><th>JAN</th><th>FEV</th><th>MAR</th><th>ABR</th><th>MAI</th><th>JUN</th><th>JUL</th><th>AGO</th><th>SET</th><th>OUT</th><th>NOV</th><th>DEZ</th><th>Total</th></tr>
+          <tr><td>(01) Augusto E. B. Torres</td><td>10</td><td>11</td><td>13</td><td>12</td><td>12</td><td>11</td><td>9</td><td>12</td><td>13</td><td>14</td><td>6</td><td>–</td><td>123</td></tr>
+          <tr><td>(02) Beatriz Nogueira</td><td>9</td><td>12</td><td>11</td><td>10</td><td>11</td><td>9</td><td>8</td><td>11</td><td>12</td><td>12</td><td>5</td><td>–</td><td>110</td></tr>
+          <tr><td>(03) Lucas Siqueira</td><td>6</td><td>5</td><td>7</td><td>6</td><td>5</td><td>6</td><td>4</td><td>7</td><td>6</td><td>8</td><td>3</td><td>–</td><td>63</td></tr>
+          <tr><td>Aulas</td><td>12</td><td>12</td><td>13</td><td>13</td><td>13</td><td>12</td><td>10</td><td>12</td><td>13</td><td>14</td><td>6</td><td>–</td><td>130</td></tr></table>
+      </div>
+    </div>
+  </div></div>
+
+</div>
+
+<div class="sec"><h2>Impressão / PDF</h2><p>Página A4 aberta numa aba nova, só com o relatório; o navegador imprime ou salva em PDF. Paisagem para a semanal e a anual, retrato para as demais.</p></div>
+<div class="g">
+  <div><p class="rot">P1. Página impressa (presença mensal)</p><div class="folha">
+    <div class="cabp"><div class="logo"><i class="ti ti-photo"></i>Logotipo</div>
+      <div style="flex:1"><h3>Academia Teste</h3><div>Prof. Fulano · cabeçalho de impressão da academia</div><div><b>Turma Adulto</b> · cabeçalho de impressão da turma</div></div>
+      <div style="text-align:right"><b>Presença mensal</b><br>01/08 a 30/11/2026<br>Mínimo 75%</div></div>
+    <table><tr><th style="text-align:left">Aluno</th><th>ago</th><th>set</th><th>out</th><th>nov</th><th>Aulas</th><th>Presenças</th><th>Repos.</th><th>Freq.</th></tr>
+      <tr><td style="text-align:left">(01) Augusto Eduardo Barbosa Torres</td><td>12</td><td>13</td><td>14</td><td>6</td><td>45</td><td>45</td><td>0</td><td>100%</td></tr>
+      <tr><td style="text-align:left">(02) Beatriz Nogueira</td><td>11</td><td>12</td><td>12</td><td>5</td><td>45</td><td>40</td><td>1</td><td>91%</td></tr>
+      <tr><td style="text-align:left">(03) Lucas Siqueira</td><td>7</td><td>6</td><td>8</td><td>3</td><td>45</td><td>24</td><td>0</td><td><b>53%</b></td></tr></table>
+    <p style="margin:14px 0 0;color:#555">Frequência = presenças + reposições ÷ aulas regulares lançadas dentro da matrícula (limite de 100%). Gerado em 13/11/2026 às 10:15 por Ana (assistente).</p>
+  </div></div>
+</div>
+
+</body>
+</html>

@@ -59,7 +59,7 @@ List<FrequenciaNoPeriodo> calcularFrequenciaNoPeriodo({
   return [
     for (final aluno in alunos)
       if (aluno.estaMatriculado(fim))
-        _calcularFrequenciaDoAluno(
+        calcularFrequenciaDoAluno(
           aluno,
           doPeriodo,
           presencasDoAluno[aluno.id] ?? const {},
@@ -68,7 +68,8 @@ List<FrequenciaNoPeriodo> calcularFrequenciaNoPeriodo({
   ];
 }
 
-FrequenciaNoPeriodo _calcularFrequenciaDoAluno(
+/// Frequência de um aluno nas aulas do período ([doPeriodo]), contando só as da matrícula.
+FrequenciaNoPeriodo calcularFrequenciaDoAluno(
   AlunoDaLista aluno,
   List<AulaDaLista> doPeriodo,
   Set<String> presentes,

@@ -86,7 +86,7 @@ class _InstalacaoNoNavegador implements ServicoInstalacao {
         ?.setAttribute(
           'href',
           icone == null
-              ? 'icons/Icon-192.png'
+              ? 'icons/Icon-maskable-192.png'
               : 'data:image/png;base64,${base64Encode(icone)}',
         );
     // Endereço novo faz o navegador pedir o manifesto de novo (agora com o cookie da academia).

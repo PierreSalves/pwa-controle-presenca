@@ -391,6 +391,29 @@ class LinhaAluno extends StatelessWidget {
 }
 
 /// Indicador de carregamento com rótulo para o leitor de tela.
+/// Copyright discreto da TghServices no fim da tela de entrar, do menu e do Início: a marca do
+/// sistema fica em segundo plano; quem aparece é a academia.
+class RodapeCopyright extends StatelessWidget {
+  const RodapeCopyright({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ano = EscopoDependencias.obter(context).relogio().year;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        '© $ano TghServices',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: CoresV2.nevoa,
+          fontSize: 12,
+          fontFeatures: numerosFixos,
+        ),
+      ),
+    );
+  }
+}
+
 class Carregando extends StatelessWidget {
   const Carregando({super.key});
 

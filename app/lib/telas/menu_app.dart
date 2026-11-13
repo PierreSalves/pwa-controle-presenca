@@ -61,6 +61,8 @@ class MenuApp extends StatelessWidget {
               texto: 'Sair',
               aoTocar: () => confirmarSaida(context),
             ),
+            const SizedBox(height: 8),
+            const RodapeCopyright(),
           ],
         ),
       ),

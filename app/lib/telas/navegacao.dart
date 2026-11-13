@@ -283,6 +283,7 @@ class _MenuLateral extends StatelessWidget {
                       if (contexto != null) confirmarSaida(contexto);
                     },
                   ),
+                  const RodapeCopyright(),
                 ],
               ),
             ),

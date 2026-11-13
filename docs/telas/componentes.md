@@ -156,6 +156,10 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Aparência:** gaveta com cabeçalho "Menu" e fechar (círculo), itens com ícone e divisória, "Sair" logo depois dos itens.
 - **Só no celular** (`obterMenuDoCelular` devolve null no desktop).
 
+### 2.16b Copyright discreto (`RodapeCopyright`)
+- **Aparência:** "© <ano> TghServices" centralizado, 12 px, em `nevoa`, com números fixos e 12 px de respiro em cima e embaixo. O ano vem do relógio do app.
+- **Uso:** só no fim da tela de entrar (presa embaixo), do menu lateral (embaixo de Sair), do menu do celular e do Início do celular. A marca do sistema nunca aparece em destaque: quem aparece é a academia.
+
 ### 2.17 Carregando (`Carregando`)
 - **Aparência:** indicador circular `tatame` centralizado.
 - **Acessibilidade:** rótulo "Carregando…".

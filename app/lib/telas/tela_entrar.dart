@@ -1,5 +1,6 @@
 // Tela 1 — Entrar (docs/telas/README.md). Login por e-mail e senha; o primeiro acesso exige internet.
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../estado/dependencias.dart';
@@ -119,20 +120,13 @@ class _TelaEntrarState extends State<TelaEntrar> {
                         ),
                       ],
                       const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: _entrando ? null : _entrar,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(48),
-                        ),
-                        child: _entrando
-                            ? const SizedBox.square(
-                                dimension: 20,
-                                child: CircularProgressIndicator(
-                                  semanticsLabel: 'Entrando…',
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Entrar'),
+                      BotaoPrincipal(
+                        rotulo: 'Entrar',
+                        icone: Symbols.arrow_forward,
+                        largo: true,
+                        carregando: _entrando,
+                        rotuloCarregando: 'Entrando…',
+                        aoTocar: _entrar,
                       ),
                       const SizedBox(height: 12),
                       Text(

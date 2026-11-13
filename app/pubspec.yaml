@@ -12,7 +12,11 @@ dependencies:
   drift_flutter: ^0.3.1
   flutter:
     sdk: flutter
+  # Endereços sem # (usePathUrlStrategy): /alunos, /turmas... Pacote do próprio SDK.
+  flutter_web_plugins:
+    sdk: flutter
   http: ^1.6.0
+  material_symbols_icons: ^4.2960.0
   material_ui: ^1.1.0
   uuid: ^4.6.0
 
@@ -25,13 +29,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # Roboto embutida (cópia do SDK do Flutter, Apache 2.0, ver fonts/LICENSE-Roboto.txt): sem ela
-  # o Flutter web baixa a fonte de fonts.gstatic.com, o que quebra o offline e a CSP.
+  # Lexend embutida (googlefonts/lexend, SIL OFL 1.1, ver fonts/LICENSE-Lexend.txt): fonte da v2
+  # (docs/telas/wireframes-v2.html). Embutida para não depender do Google: offline e CSP.
   fonts:
-    - family: Roboto
+    - family: Lexend
       fonts:
-        - asset: fonts/Roboto-Regular.ttf
-        - asset: fonts/Roboto-Medium.ttf
-          weight: 500
-        - asset: fonts/Roboto-Bold.ttf
-          weight: 700
+        - asset: fonts/Lexend-Regular.ttf
+        - asset: fonts/Lexend-SemiBold.ttf
+          weight: 600

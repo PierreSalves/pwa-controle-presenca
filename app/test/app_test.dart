@@ -586,4 +586,35 @@ void main() {
     );
     expect(find.bySemanticsLabel('Carregando…'), findsOneWidget);
   });
+
+  testWidgets('no desktop o menu lateral fica fixo e acompanha as telas', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final semantica = tester.ensureSemantics();
+    await entrar(tester);
+    // D1: título na página, indicadores e menu lateral no lugar do ☰.
+    expect(find.text('Início · Academia Teste'), findsOneWidget);
+    expect(find.text('Alunos ativos'), findsOneWidget);
+    expect(find.byTooltip('Abrir menu de navegação'), findsNothing);
+    expect(find.text('Turmas'), findsOneWidget);
+    // O menu lateral também existe para o leitor de tela.
+    expect(find.bySemanticsLabel('Turmas'), findsOneWidget);
+
+    await tester.tap(find.text('Alunos'));
+    await esperar(tester);
+    expect(find.text('Ativos · 1'), findsOneWidget);
+
+    // Abrir um cadastro mantém o menu lateral visível.
+    await tester.tap(find.byTooltip('Novo aluno'));
+    await esperar(tester);
+    expect(find.text('Código sugerido, pode editar'), findsOneWidget);
+    expect(find.text('Turmas'), findsOneWidget);
+    expect(find.text('Salvar'), findsOneWidget);
+    await fecharApp(tester);
+    semantica.dispose();
+  });
 }

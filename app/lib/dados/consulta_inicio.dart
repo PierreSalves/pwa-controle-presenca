@@ -66,6 +66,7 @@ class DadosInicio {
     required this.ano,
     required this.turmas,
     required this.aulasNoAno,
+    required this.alunosAtivos,
     required this.frequenciaMediaNoAno,
     required this.abaixoDoMinimo,
     required this.sumidos,
@@ -77,6 +78,9 @@ class DadosInicio {
 
   /// Aulas regulares lançadas no ano até hoje, somando as turmas.
   final int aulasNoAno;
+
+  /// Alunos distintos matriculados hoje em alguma das turmas (indicador do desktop, D1).
+  final int alunosAtivos;
 
   /// Média das frequências do ano dos alunos matriculados hoje; null sem aulas.
   final int? frequenciaMediaNoAno;
@@ -257,6 +261,7 @@ class ConsultaInicio {
     final sumidos = <AlunoSumidoNoInicio>[];
     final percentuaisAno = <int>[];
     var aulasNoAno = 0;
+    final alunosAtivos = <String>{};
     var semanasSumido = 0;
 
     for (final turma in await _obterTurmas()) {
@@ -287,6 +292,7 @@ class ConsultaInicio {
           .where((a) => a.tipo == 'regular' && a.data.compareTo(inicioAno) >= 0)
           .length;
       percentuaisAno.addAll(doAno.map((f) => f.percentual).whereType<int>());
+      alunosAtivos.addAll(doAno.map((f) => f.alunoId));
 
       final doSemestre = calcularFrequenciaNoPeriodo(
         inicio: inicioSemestre,
@@ -359,6 +365,7 @@ class ConsultaInicio {
       ano: int.parse(hoje.substring(0, 4)),
       turmas: turmas,
       aulasNoAno: aulasNoAno,
+      alunosAtivos: alunosAtivos.length,
       frequenciaMediaNoAno: percentuaisAno.isEmpty
           ? null
           : (percentuaisAno.reduce((a, b) => a + b) / percentuaisAno.length)

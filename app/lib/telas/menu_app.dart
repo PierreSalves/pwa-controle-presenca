@@ -1,23 +1,23 @@
-// Tela 12 — Menu: itens conforme a permissão, na ordem do wireframe. Nesta etapa existem Início,
-// Lançar presença, Alunos, Turmas, Usuários (só professor) e Sair; os demais entram com as telas correspondentes.
+// Tela 12 — Menu do celular (no desktop, o menu lateral fixo de navegacao.dart faz este papel).
+// Itens conforme a permissão, na ordem do wireframe; cada item abre a rota com endereço.
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../estado/dependencias.dart';
-import 'tela_alunos.dart';
-import 'tela_escolher_turma.dart';
-import 'tela_turmas.dart';
-import 'tela_usuarios.dart';
+import 'componentes.dart';
+import 'navegacao.dart';
+import 'tema.dart';
+
+/// O menu escondido (☰) só existe no celular; no desktop o menu lateral fica sempre visível.
+Widget? obterMenuDoCelular(BuildContext context) =>
+    ehDesktop(context) ? null : const MenuApp();
 
 class MenuApp extends StatelessWidget {
   const MenuApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // O administrador do sistema não lança presença.
-    final usuario = EscopoDependencias.obter(context).sessao.usuario;
-    final temAcademia = usuario?.tenantId != null;
-    // Usuários: só o professor (tela 11).
-    final ehProfessor = usuario?.tipo == 'professor';
+    final itens = obterItensMenu(EscopoDependencias.obter(context).sessao);
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -34,63 +34,30 @@ class MenuApp extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'Fechar',
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Symbols.close),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
             ),
             const Divider(height: 1),
-            if (temAcademia) ...[
+            for (final item in itens)
               _ItemMenu(
-                icone: Icons.home_outlined,
-                texto: 'Início',
-                aoTocar: () =>
-                    Navigator.of(context).popUntil((rota) => rota.isFirst),
-              ),
-              _ItemMenu(
-                icone: Icons.check_box_outlined,
-                texto: 'Lançar presença',
+                icone: item.icone,
+                texto: item.texto,
                 aoTocar: () {
-                  Navigator.of(context).pop();
-                  abrirLancamento(context);
-                },
-              ),
-              _ItemMenu(
-                icone: Icons.people_outline,
-                texto: 'Alunos',
-                aoTocar: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const TelaAlunos()),
-                  );
-                },
-              ),
-              _ItemMenu(
-                icone: Icons.school_outlined,
-                texto: 'Turmas',
-                aoTocar: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (_) => const TelaTurmas()),
-                  );
-                },
-              ),
-              if (ehProfessor)
-                _ItemMenu(
-                  icone: Icons.manage_accounts_outlined,
-                  texto: 'Usuários',
-                  aoTocar: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const TelaUsuarios(),
-                      ),
+                  final navegador = Navigator.of(context)..pop();
+                  if (item.rota == Rotas.inicio) {
+                    navegador.pushNamedAndRemoveUntil(
+                      Rotas.inicio,
+                      (_) => false,
                     );
-                  },
-                ),
-            ],
+                  } else {
+                    navegador.pushNamed(item.rota);
+                  }
+                },
+              ),
             _ItemMenu(
-              icone: Icons.logout,
+              icone: Symbols.logout,
               texto: 'Sair',
               aoTocar: () => confirmarSaida(context),
             ),
@@ -150,6 +117,7 @@ Future<void> confirmarSaida(BuildContext context) async {
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
+          style: pendentes == 0 ? null : estiloConfirmarDestrutivo,
           child: Text(pendentes == 0 ? 'Sair' : 'Sair mesmo assim'),
         ),
       ],

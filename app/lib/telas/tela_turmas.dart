@@ -3,11 +3,13 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_turmas.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'tema.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 import 'tela_turma.dart';
 
@@ -57,12 +59,14 @@ class _TelaTurmasState extends State<TelaTurmas> {
     final turmas = _turmas;
     return Scaffold(
       appBar: AppBar(
+        // No desktop o menu lateral faz o papel do voltar nas telas principais.
+        automaticallyImplyLeading: !ehDesktop(context),
         title: const Text('Turmas'),
         centerTitle: true,
         actions: [
           IconButton(
             tooltip: 'Nova turma',
-            icon: const Icon(Icons.add),
+            icon: const Icon(Symbols.add),
             onPressed: () => _abrir(),
           ),
         ],
@@ -73,7 +77,7 @@ class _TelaTurmasState extends State<TelaTurmas> {
           children: [
             if (_erro != null) ...[
               Text(_erro!, style: TextStyle(color: cores.error)),
-              TextButton(
+              OutlinedButton(
                 onPressed: _carregar,
                 child: const Text('Tentar de novo'),
               ),
@@ -88,7 +92,7 @@ class _TelaTurmasState extends State<TelaTurmas> {
                     '${turma.alunosMatriculados} '
                     '${turma.alunosMatriculados == 1 ? 'aluno' : 'alunos'}',
                   ),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: const Icon(Symbols.chevron_right),
                   onTap: () => _abrir(id: turma.id),
                 ),
                 const Divider(height: 1),

@@ -1,21 +1,23 @@
 import 'dart:async';
 
 import 'package:flutter/semantics.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'dados/abrir_banco.dart';
 import 'dados/cliente_api.dart';
 import 'estado/dependencias.dart';
 import 'estado/sessao_app.dart';
-import 'telas/componentes.dart';
-import 'telas/tela_entrar.dart';
-import 'telas/tela_inicial.dart';
+import 'telas/navegacao.dart';
+import 'telas/tema.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // No navegador o Flutter só monta a árvore de acessibilidade quando o leitor de tela acha o
   // botão escondido "Enable accessibility". Ligada desde o início, o app já abre acessível.
   SemanticsBinding.instance.ensureSemantics();
+  // Endereços sem #: /alunos, /turmas... (o Worker e o service worker devolvem o index.html).
+  usePathUrlStrategy();
   final dependencias = Dependencias(
     banco: abrirBancoLocal(),
     cliente: ClienteApi(),
@@ -24,63 +26,64 @@ void main() {
   unawaited(dependencias.sessao.iniciar());
 }
 
-const _cantos8 = RoundedRectangleBorder(
-  borderRadius: BorderRadius.all(Radius.circular(8)),
-);
-
-/// Raiz do app. As telas da Fase 1 seguem os wireframes aprovados em docs/telas/.
-class ControlePresencaApp extends StatelessWidget {
+/// Raiz do app. As telas seguem os wireframes aprovados em docs/telas/ (visual da v2).
+class ControlePresencaApp extends StatefulWidget {
   const ControlePresencaApp({super.key, required this.dependencias});
 
   final Dependencias dependencias;
 
   @override
+  State<ControlePresencaApp> createState() => _ControlePresencaAppState();
+}
+
+class _ControlePresencaAppState extends State<ControlePresencaApp> {
+  final _navegador = GlobalKey<NavigatorState>();
+  final _observador = ObservadorRotas();
+  late SituacaoSessao _situacao = widget.dependencias.sessao.situacao;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.dependencias.sessao.addListener(_aoMudarSessao);
+  }
+
+  @override
+  void dispose() {
+    widget.dependencias.sessao.removeListener(_aoMudarSessao);
+    super.dispose();
+  }
+
+  /// Ao sair (ou ter a sessão encerrada), volta para o início com a pilha limpa.
+  void _aoMudarSessao() {
+    final nova = widget.dependencias.sessao.situacao;
+    if (_situacao == SituacaoSessao.logado &&
+        nova == SituacaoSessao.deslogado) {
+      _navegador.currentState?.pushNamedAndRemoveUntil(
+        Rotas.inicio,
+        (_) => false,
+      );
+    }
+    _situacao = nova;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return EscopoDependencias(
-      dependencias: dependencias,
+      dependencias: widget.dependencias,
       child: MaterialApp(
         title: 'Controle de presença',
         debugShowCheckedModeBanner: false,
         locale: const Locale('pt', 'BR'),
         supportedLocales: const [Locale('pt', 'BR')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        // Preto e branco, como os wireframes aprovados.
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF1F1E1D),
-            dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
-          ),
-          useMaterial3: true,
-          // Botões com cantos de 8 px (wireframes), não em pílula.
-          filledButtonTheme: FilledButtonThemeData(
-            style: FilledButton.styleFrom(shape: _cantos8),
-          ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(shape: _cantos8),
-          ),
-        ),
-        home: ListenableBuilder(
-          listenable: dependencias.sessao,
-          builder: (context, _) => switch (dependencias.sessao.situacao) {
-            SituacaoSessao.carregando => const Scaffold(body: Carregando()),
-            SituacaoSessao.deslogado => const TelaEntrar(),
-            SituacaoSessao.falhaNoBanco => const Scaffold(
-              body: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text(
-                    'Este navegador não permitiu guardar os dados no aparelho. '
-                    'Saia da janela anônima ou use outro navegador.',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ),
-            // A chave pelo usuário recria as telas a cada login (estado limpo).
-            SituacaoSessao.logado => TelaInicial(
-              key: ValueKey(dependencias.sessao.usuario?.id),
-            ),
-          },
+        theme: criarTemaV2(),
+        navigatorKey: _navegador,
+        navigatorObservers: [_observador],
+        onGenerateRoute: gerarRota,
+        builder: (context, child) => EstruturaComMenu(
+          navegador: _navegador,
+          observador: _observador,
+          child: child ?? const SizedBox.shrink(),
         ),
       ),
     );

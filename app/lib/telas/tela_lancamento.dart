@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/consulta_lancamento.dart';
 import '../dados/repositorio_presenca.dart';
@@ -11,6 +12,7 @@ import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
+import 'tema.dart';
 import 'tela_busca_aluno.dart';
 import 'tela_reposicao_avulsa.dart';
 
@@ -156,7 +158,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
             actions: [
               IconButton(
                 tooltip: 'Outro dia',
-                icon: const Icon(Icons.calendar_month_outlined),
+                icon: const Icon(Symbols.calendar_month),
                 onPressed: _quadros == null ? null : _escolherOutraData,
               ),
             ],
@@ -211,8 +213,8 @@ class _TelaLancamentoState extends State<TelaLancamento> {
           TextField(
             readOnly: true,
             decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Buscar outro aluno matriculado',
+              prefixIcon: Icon(Symbols.search),
+              hintText: 'Buscar outro aluno matriculado…',
               border: OutlineInputBorder(),
               isDense: true,
             ),
@@ -281,7 +283,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
         const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: () => _abrirReposicaoAvulsa(dados.turmaNome),
-          icon: const Icon(Icons.add),
+          icon: const Icon(Symbols.add),
           label: const Text('Reposição avulsa (outro dia)'),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
@@ -324,47 +326,71 @@ class _SeletorDias extends StatelessWidget {
                 selected: _estaSelecionado(dia),
                 button: true,
                 enabled: !dia.futuro,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(10),
-                  onTap: dia.futuro ? null : () => aoEscolher(dia),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: _estaSelecionado(dia)
-                            ? cores.onSurface
-                            : cores.outlineVariant,
-                        width: _estaSelecionado(dia) ? 2 : 1,
+                // v2: selecionado em azul; dia de aula em cartão; futuro só com contorno.
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _estaSelecionado(dia)
+                        ? CoresV2.tatame
+                        : dia.futuro
+                        ? Colors.transparent
+                        : CoresV2.cartao,
+                    borderRadius: BorderRadius.circular(14),
+                    border: dia.futuro
+                        ? Border.all(color: cores.outlineVariant, width: 1.5)
+                        : null,
+                    boxShadow: _estaSelecionado(dia) || dia.futuro
+                        ? null
+                        : sombraCartao,
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: dia.futuro ? null : () => aoEscolher(dia),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 48),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: _ConteudoDia(
+                            dia: dia,
+                            selecionado: _estaSelecionado(dia),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          obterDiaAbreviado(dia.data),
-                          style: TextStyle(
-                            color: dia.futuro ? cores.outline : null,
-                          ),
-                        ),
-                        Text(
-                          formatarDiaMes(dia.data),
-                          style: TextStyle(
-                            color: dia.futuro ? cores.outline : null,
-                          ),
-                        ),
-                        if (dia.tipo == TipoAula.reposicao)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Etiqueta(
-                              dia.aulaIdAvulsa == null ? 'repos.' : 'avulsa',
-                            ),
-                          ),
-                      ],
                     ),
                   ),
                 ),
               ),
             ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ConteudoDia extends StatelessWidget {
+  const _ConteudoDia({required this.dia, required this.selecionado});
+  final DiaDeAula dia;
+  final bool selecionado;
+
+  @override
+  Widget build(BuildContext context) {
+    final cor = selecionado
+        ? Colors.white
+        : dia.futuro
+        ? CoresV2.desativado
+        : CoresV2.grafite;
+    return Column(
+      children: [
+        Text(obterDiaAbreviado(dia.data), style: TextStyle(color: cor)),
+        Text(
+          formatarDiaMes(dia.data),
+          style: TextStyle(color: cor, fontFeatures: numerosFixos),
+        ),
+        if (dia.tipo == TipoAula.reposicao)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Etiqueta(dia.aulaIdAvulsa == null ? 'repos.' : 'avulsa'),
           ),
       ],
     );

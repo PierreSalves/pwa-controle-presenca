@@ -3,12 +3,14 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_turmas.dart';
 import '../dados/repositorio_usuarios.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'tema.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 
 String _descreverErroUsuario(Object erro) => switch (erro) {
@@ -86,12 +88,14 @@ class _TelaUsuariosState extends State<TelaUsuarios> {
     final euId = _dependencias.sessao.usuario?.id;
     return Scaffold(
       appBar: AppBar(
+        // No desktop o menu lateral faz o papel do voltar nas telas principais.
+        automaticallyImplyLeading: !ehDesktop(context),
         title: const Text('Usuários'),
         centerTitle: true,
         actions: [
           IconButton(
             tooltip: 'Novo usuário',
-            icon: const Icon(Icons.add),
+            icon: const Icon(Symbols.add),
             onPressed: usuarios == null
                 ? null
                 : () => setState(() => _aberto = _novo),
@@ -104,7 +108,7 @@ class _TelaUsuariosState extends State<TelaUsuarios> {
           children: [
             if (_erro != null) ...[
               Text(_erro!, style: TextStyle(color: cores.error)),
-              TextButton(
+              OutlinedButton(
                 onPressed: _carregar,
                 child: const Text('Tentar de novo'),
               ),
@@ -385,9 +389,12 @@ class _FormularioUsuarioState extends State<_FormularioUsuario> {
               ),
             ],
             const SizedBox(height: 12),
-            FilledButton(
-              onPressed: _salvando ? null : _salvar,
-              child: Text(novo ? 'Cadastrar' : 'Salvar'),
+            BotaoPrincipal(
+              rotulo: novo ? 'Cadastrar' : 'Salvar',
+              icone: novo ? Symbols.person_add : Symbols.check,
+              largo: true,
+              carregando: _salvando,
+              aoTocar: _salvar,
             ),
             if (!novo && !widget.ehVoce) ...[
               const SizedBox(height: 16),

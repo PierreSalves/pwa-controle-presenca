@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/consulta_inicio.dart';
@@ -14,6 +15,7 @@ import 'formatacao.dart';
 import 'menu_app.dart';
 import 'tela_escolher_turma.dart';
 import 'tela_lancamento.dart';
+import 'tema.dart';
 
 class TelaInicio extends StatefulWidget {
   const TelaInicio({super.key});
@@ -39,17 +41,21 @@ class _TelaInicioState extends State<TelaInicio> {
 
   @override
   Widget build(BuildContext context) {
+    final desktop = ehDesktop(context);
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: ListenableBuilder(
-          listenable: _dependencias.sessao,
-          // Sem logotipo cadastrado, mostra o nome da academia.
-          builder: (context, _) =>
-              Text(_dependencias.sessao.nomeAcademia ?? 'Controle de presença'),
-        ),
-      ),
-      drawer: const MenuApp(),
+      appBar: desktop
+          ? null
+          : AppBar(
+              centerTitle: true,
+              title: ListenableBuilder(
+                listenable: _dependencias.sessao,
+                // Sem logotipo cadastrado, mostra o nome da academia.
+                builder: (context, _) => Text(
+                  _dependencias.sessao.nomeAcademia ?? 'Controle de presença',
+                ),
+              ),
+            ),
+      drawer: obterMenuDoCelular(context),
       body: StreamBuilder<DadosInicio>(
         stream: _dados,
         builder: (context, snapshot) {
@@ -57,8 +63,172 @@ class _TelaInicioState extends State<TelaInicio> {
           if (dados == null) {
             return const Carregando();
           }
-          return LarguraCelular(child: _montarConteudo(context, dados));
+          return desktop
+              ? _montarDesktop(context, dados)
+              : LarguraCelular(child: _montarConteudo(context, dados));
         },
+      ),
+    );
+  }
+
+  /// D1: cabeçalho com status e botão principal, quatro indicadores e duas colunas.
+  Widget _montarDesktop(BuildContext context, DadosInicio dados) {
+    final titulo = Theme.of(context).textTheme.titleSmall
+        ?.copyWith(fontWeight: FontWeight.w600);
+    final lancar = dados.turmas.isEmpty ? null : () => abrirLancamento(context);
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1100),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(28, 22, 28, 28),
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: ListenableBuilder(
+                    listenable: _dependencias.sessao,
+                    builder: (context, _) => Text(
+                      'Início · ${_dependencias.sessao.nomeAcademia ?? 'Controle de presença'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const StatusEnvio(),
+                const SizedBox(width: 12),
+                BotaoPrincipal(
+                  rotulo: 'Lançar presença de hoje',
+                  icone: Symbols.check_box,
+                  aoTocar: lancar,
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: _Indicador(
+                    rotulo: 'Aulas ${dados.ano}',
+                    valor: '${dados.aulasNoAno}',
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _Indicador(
+                    rotulo: 'Freq. média',
+                    valor: dados.frequenciaMediaNoAno == null
+                        ? '—'
+                        : '${dados.frequenciaMediaNoAno}%',
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _Indicador(
+                    rotulo: 'Alunos ativos',
+                    valor: '${dados.alunosAtivos}',
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _Indicador(
+                    rotulo: 'Abaixo do mínimo',
+                    valor: '${dados.abaixoDoMinimo.length}',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Cartao(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Suas turmas', style: titulo),
+                        if (dados.turmas.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Nenhuma turma liberada para você. Fale com o professor.',
+                            ),
+                          ),
+                        for (final turma in dados.turmas)
+                          _LinhaTurmaDesktop(turma: turma),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Cartao(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text('Abaixo do mínimo (graduação)', style: titulo),
+                        if (dados.abaixoDoMinimo.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Ninguém abaixo do mínimo no semestre.',
+                            ),
+                          ),
+                        for (final a in dados.abaixoDoMinimo)
+                          InkWell(
+                            onTap: () => abrirFrequenciaSemestre(
+                              context,
+                              soAsTurmas: {a.turmaId},
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      formatarAluno(a.codigo, a.nome),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${a.frequencia.percentual}%',
+                                    style: const TextStyle(
+                                      color: CoresV2.ponta,
+                                      fontFeatures: numerosFixos,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (dados.sumidos.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _Aviso(
+                            texto:
+                                '${dados.sumidos.length} ${dados.sumidos.length == 1 ? 'aluno' : 'alunos'} '
+                                'sem vir há mais de ${dados.semanasSumido} semanas',
+                          ),
+                          for (final sumido in dados.sumidos)
+                            _LinhaSumido(
+                              sumido: sumido,
+                              mostrarTurma: dados.turmas.length > 1,
+                              hoje: _hoje,
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -71,13 +241,11 @@ class _TelaInicioState extends State<TelaInicio> {
       children: [
         const Align(alignment: Alignment.centerLeft, child: StatusEnvio()),
         const SizedBox(height: 12),
-        FilledButton.icon(
-          onPressed: dados.turmas.isEmpty
-              ? null
-              : () => abrirLancamento(context),
-          icon: const Icon(Icons.check_box_outlined),
-          label: const Text('Lançar presença de hoje'),
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+        BotaoPrincipal(
+          rotulo: 'Lançar presença de hoje',
+          icone: Symbols.check_box,
+          largo: true,
+          aoTocar: dados.turmas.isEmpty ? null : () => abrirLancamento(context),
         ),
         const SizedBox(height: 16),
         Text('Suas turmas', style: titulo),
@@ -160,18 +328,9 @@ class _Caixa extends StatelessWidget {
   final VoidCallback? aoTocar;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: aoTocar,
-    borderRadius: BorderRadius.circular(8),
-    child: Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: child,
-    ),
+  Widget build(BuildContext context) => Cartao(
+    aoTocar: aoTocar,
+    child: SizedBox(width: double.infinity, child: child),
   );
 }
 
@@ -185,8 +344,18 @@ class _Indicador extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(rotulo),
-        Text(valor, style: const TextStyle(fontWeight: FontWeight.w700)),
+        Text(
+          rotulo,
+          style: const TextStyle(color: CoresV2.nevoa, fontSize: 13),
+        ),
+        Text(
+          valor,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            fontFeatures: numerosFixos,
+          ),
+        ),
       ],
     ),
   );
@@ -246,6 +415,7 @@ class _LinhaSumido extends StatelessWidget {
             ),
           ),
           OutlinedButton(
+            style: estiloDestrutivo,
             onPressed: () => _encerrar(context),
             child: const Text('Encerrar'),
           ),
@@ -352,7 +522,7 @@ class _DialogoEncerrarState extends State<_DialogoEncerrar> {
             decoration: const InputDecoration(
               labelText: 'Data de fim',
               border: OutlineInputBorder(),
-              suffixIcon: Icon(Icons.calendar_month_outlined),
+              suffixIcon: Icon(Symbols.calendar_month),
             ),
             child: Text(formatarDataBr(_data)),
           ),
@@ -373,9 +543,43 @@ class _DialogoEncerrarState extends State<_DialogoEncerrar> {
         child: const Text('Cancelar'),
       ),
       FilledButton(
+        style: estiloConfirmarDestrutivo,
         onPressed: () => Navigator.of(context).pop(_data),
         child: const Text('Encerrar'),
       ),
     ],
+  );
+}
+
+/// Linha de turma no Início do desktop, com o atalho "Lançar" (botão secundário).
+class _LinhaTurmaDesktop extends StatelessWidget {
+  const _LinhaTurmaDesktop({required this.turma});
+  final TurmaNoInicio turma;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            [
+              turma.nome,
+              if (turma.diasDeAula.isNotEmpty) turma.diasDeAula.join(' '),
+            ].join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        OutlinedButton(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => TelaLancamento(turmaId: turma.id),
+            ),
+          ),
+          child: const Text('Lançar'),
+        ),
+      ],
+    ),
   );
 }

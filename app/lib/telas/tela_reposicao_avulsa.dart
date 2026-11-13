@@ -1,6 +1,7 @@
 // Tela 5 — Reposição avulsa: aula extra fora do dia fixo de reposição, em qualquer dia não futuro.
 // Conta na frequência como reposição (soma presença, não soma aula). Devolve o dia criado.
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/consulta_lancamento.dart';
 import '../dados/repositorio_presenca.dart';
@@ -96,7 +97,7 @@ class _TelaReposicaoAvulsaState extends State<TelaReposicaoAvulsa> {
         actions: [
           IconButton(
             tooltip: 'Fechar',
-            icon: const Icon(Icons.close),
+            icon: const Icon(Symbols.close),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -124,7 +125,7 @@ class _TelaReposicaoAvulsaState extends State<TelaReposicaoAvulsa> {
                 decoration: const InputDecoration(
                   labelText: 'Data',
                   border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.calendar_month_outlined),
+                  suffixIcon: Icon(Symbols.calendar_month),
                 ),
                 child: Text(
                   '${formatarDataBr(_data)} (${_nomesDia[obterDiaDaSemana(_data)]})',
@@ -132,12 +133,13 @@ class _TelaReposicaoAvulsaState extends State<TelaReposicaoAvulsa> {
               ),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _criando ? null : _criar,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-              ),
-              child: const Text('Criar e marcar presenças'),
+            BotaoPrincipal(
+              rotulo: 'Criar e marcar presenças',
+              icone: Symbols.add,
+              largo: true,
+              carregando: _criando,
+              rotuloCarregando: 'Criando…',
+              aoTocar: _criar,
             ),
           ],
         ),

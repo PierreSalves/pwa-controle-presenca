@@ -9,15 +9,22 @@ class ResumoAluno {
     required this.nome,
     required this.ativo,
     required this.turmas,
+    this.faixa,
+    this.grau = 0,
   });
 
-  factory ResumoAluno.lerJson(Map<String, dynamic> json) => ResumoAluno(
-    id: json['id'] as String,
-    codigo: json['codigo'] as String,
-    nome: json['nome'] as String,
-    ativo: json['ativo'] == 1,
-    turmas: ((json['turmas'] as List?) ?? const []).cast<String>(),
-  );
+  factory ResumoAluno.lerJson(Map<String, dynamic> json) {
+    final graduacao = json['graduacao'] as Map<String, dynamic>?;
+    return ResumoAluno(
+      id: json['id'] as String,
+      codigo: json['codigo'] as String,
+      nome: json['nome'] as String,
+      ativo: json['ativo'] == 1,
+      turmas: ((json['turmas'] as List?) ?? const []).cast<String>(),
+      faixa: graduacao?['faixa'] as String?,
+      grau: (graduacao?['grau'] as num?)?.toInt() ?? 0,
+    );
+  }
 
   final String id;
   final String codigo;
@@ -26,6 +33,10 @@ class ResumoAluno {
 
   /// Turmas com matrícula aberta.
   final List<String> turmas;
+
+  /// Faixa atual (a graduação mais recente); null sem graduação.
+  final String? faixa;
+  final int grau;
 }
 
 class MatriculaDoCadastro {

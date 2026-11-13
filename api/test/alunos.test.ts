@@ -147,6 +147,37 @@ describe('alunos: cadastro', () => {
     expect((await chamar(a.professor, 'DELETE', caminho)).status).toBe(204);
     expect((await chamar(a.professor, 'DELETE', caminho)).status).toBe(404);
   });
+
+  it('a lista traz a faixa atual: a graduação mais recente, sem as excluídas', async () => {
+    const a = await montarAcademia();
+    const id = await criarAluno(a.professor, '1', 'Ana');
+    await criarAluno(a.professor, '2', 'Bruno');
+    const graduar = (faixa: string, grau: number, data: string) =>
+      chamar(a.professor, 'POST', `/api/alunos/${id}/graduacoes`, { faixa, grau, data_graduacao: data });
+    await graduar('Azul', 2, '2026-06-05');
+    await graduar('Branca', 4, '2025-12-05');
+    const listar = async () =>
+      (
+        await (
+          await chamar(a.professor, 'GET', '/api/alunos')
+        ).json<{
+          alunos: { nome: string; graduacao: { faixa: string; grau: number } | null }[];
+        }>()
+      ).alunos;
+    expect(await listar()).toMatchObject([
+      { nome: 'Ana', graduacao: { faixa: 'Azul', grau: 2 } },
+      { nome: 'Bruno', graduacao: null },
+    ]);
+
+    const { graduacoes } = await (
+      await graduar('Roxa', 0, '2026-12-04')
+    ).json<{ graduacoes: { id: string; faixa: string }[] }>();
+    const roxa = graduacoes.find((g) => g.faixa === 'Roxa');
+    expect((await chamar(a.professor, 'DELETE', `/api/alunos/${id}/graduacoes/${roxa?.id}`)).status).toBe(
+      204,
+    );
+    expect((await listar())[0]?.graduacao).toEqual({ faixa: 'Azul', grau: 2 });
+  });
 });
 
 describe('alunos: importação', () => {

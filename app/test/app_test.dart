@@ -129,6 +129,28 @@ class _ApiFalsa {
             'nome': 'Ana',
             'ativo': 1,
             'turmas': ['Turma A'],
+            'graduacao': {'faixa': 'Azul', 'grau': 2},
+          },
+        ],
+      });
+    }
+    if (caminho.endsWith('/alunos/$alunoId') && req.method == 'GET') {
+      return _json({
+        'aluno': {
+          'id': alunoId,
+          'codigo': '10A',
+          'nome': 'Ana',
+          'ativo': 1,
+          'data_nascimento': null,
+        },
+        'matriculas': [],
+        'graduacoes': [
+          {
+            'id': '0190f5a0-0000-7000-8000-0000000000g1',
+            'faixa': 'Azul',
+            'grau': 2,
+            'data_graduacao': '2026-06-05',
+            'observacoes': null,
           },
         ],
       });
@@ -609,12 +631,24 @@ void main() {
     await esperar(tester);
     expect(find.text('Ativos · 1'), findsOneWidget);
 
-    // Abrir um cadastro mantém o menu lateral visível.
-    await tester.tap(find.byTooltip('Novo aluno'));
+    // D3: o cadastro abre ao lado da lista, com o menu lateral visível.
+    await tester.tap(find.text('Novo aluno'));
     await esperar(tester);
     expect(find.text('Código sugerido, pode editar'), findsOneWidget);
+    expect(find.text('(10A) Ana'), findsOneWidget);
     expect(find.text('Turmas'), findsOneWidget);
     expect(find.text('Salvar'), findsOneWidget);
+
+    // Trocar de aluno com algo digitado pergunta antes de descartar.
+    await tester.enterText(find.byType(TextFormField).at(1), 'Bruno');
+    await tester.tap(find.text('(10A) Ana'));
+    await esperar(tester);
+    expect(find.text('Descartar alterações?'), findsOneWidget);
+    await tester.tap(find.text('Descartar'));
+    await esperar(tester);
+    // Na lista e no cadastro: a faixa azul com 2 graus.
+    expect(find.text('Azul · 2º grau'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Faixa Azul, 2 grau')), findsNWidgets(2));
     await fecharApp(tester);
     semantica.dispose();
   });

@@ -177,8 +177,15 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Acessibilidade:** cada caixa tem o rótulo "Nome, dia dd/mm"; chevrons com dica ("Semana anterior", "Próxima semana").
 - **Uso:** só no desktop (≥ 1000 px); no celular o lançamento continua um dia por vez (2.8 e 2.10). Aluno escolhido na busca fica na grade enquanto a tela estiver aberta.
 
+### 2.21 Alunos lado a lado (`_montarDesktop` em `tela_alunos.dart`), desktop
+- **Aparência:**
+  - cabeçalho com o título "Alunos" (22 w600), "Importar planilha" (secundário) e "Novo aluno" (`BotaoPrincipal`);
+  - à esquerda, um `Cartao` de 380 px com a busca "Nome ou código…", a contagem "Ativos · N" e as linhas (`_LinhaAlunoDesktop`): "(código) Nome" e a `FaixaDoAluno` de 70 px à direita, quando o aluno tem graduação;
+  - à direita, um `Cartao` com o cadastro (`TelaAluno` com `embutido: true`): "(código) Nome" em 17 w600 e "Salvar" no topo, e o formulário abaixo; sem aluno escolhido, o convite "Escolha um aluno na lista ou cadastre um novo.".
+- **Estados:** linha escolhida com fundo `tatameClaro` e nome em w600; altura mínima de 48 px.
+- **Acessibilidade:** linha como botão com estado "selecionado"; a faixa mantém o rótulo "Faixa X, N grau".
+- **Uso:** trocar de aluno, abrir "Novo aluno" ou "Importar planilha" com algo não salvo pergunta "Descartar alterações?" (`confirmarDescarte`). Depois de salvar, o aluno fica escolhido e a lista se atualiza. No celular, a lista e o cadastro continuam em telas separadas.
+
 ## 3. Ainda não implementado (previsto na v2)
 
-- Alunos com lista e cadastro lado a lado no desktop (D3).
-- Faixa do aluno na lista de alunos (precisa da graduação na listagem da API).
 - Logotipo da academia no menu lateral e no Início (depende do upload no R2).

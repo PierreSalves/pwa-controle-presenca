@@ -33,8 +33,24 @@ const _situacoes = {
 
 class TelaAluno extends StatefulWidget {
   /// Sem [alunoId], cadastra um aluno novo.
-  const TelaAluno({super.key, this.alunoId});
+  const TelaAluno({
+    super.key,
+    this.alunoId,
+    this.embutido = false,
+    this.aoSalvar,
+    this.aoRegistrarAlteracoes,
+  });
   final String? alunoId;
+
+  /// Dentro da tela de Alunos no desktop (D3): sem barra própria; o título e o
+  /// Salvar ficam no topo do cartão.
+  final bool embutido;
+
+  /// Chamado com o id depois de salvar (a lista ao lado se atualiza).
+  final ValueChanged<String>? aoSalvar;
+
+  /// Entrega a consulta "há alterações não salvas?" para quem troca o aluno exibido.
+  final ValueChanged<bool Function()>? aoRegistrarAlteracoes;
 
   @override
   State<TelaAluno> createState() => _TelaAlunoState();
@@ -66,6 +82,7 @@ class _TelaAlunoState extends State<TelaAluno> {
     _dependencias = EscopoDependencias.obter(context);
     _hoje = obterHojeEmSaoPaulo(_dependencias.relogio());
     _id = widget.alunoId;
+    widget.aoRegistrarAlteracoes?.call(_temAlteracoes);
     unawaited(_carregar());
   }
 
@@ -170,6 +187,7 @@ class _TelaAlunoState extends State<TelaAluno> {
       final novo = _id == null;
       await _atualizar(await _dependencias.alunos.salvarAluno(dados, id: _id));
       if (!mounted) return;
+      widget.aoSalvar?.call(_id!);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(novo ? 'Aluno cadastrado.' : 'Alterações salvas.'),
@@ -314,37 +332,69 @@ class _TelaAlunoState extends State<TelaAluno> {
 
   @override
   Widget build(BuildContext context) {
+    final salvar = BotaoPrincipal(
+      rotulo: 'Salvar',
+      icone: Symbols.check,
+      carregando: _salvando,
+      aoTocar: _carregando || _erro != null ? null : _salvar,
+    );
+    final conteudo = _carregando
+        ? const Carregando()
+        : _erro != null
+        ? Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_erro!),
+                OutlinedButton(
+                  onPressed: _carregar,
+                  child: const Text('Tentar de novo'),
+                ),
+              ],
+            ),
+          )
+        : widget.embutido
+        ? _montarFormulario(context)
+        : LarguraCelular(child: _montarFormulario(context));
+    if (widget.embutido) {
+      final aluno = _aluno;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 14, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    aluno == null
+                        ? (_id == null ? 'Novo aluno' : 'Aluno')
+                        : formatarAluno(aluno.codigo, aluno.nome),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                salvar,
+              ],
+            ),
+          ),
+          Expanded(child: conteudo),
+        ],
+      );
+    }
     return ProtecaoAlteracoes(
       temAlteracoes: _temAlteracoes,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Aluno'),
           centerTitle: true,
-          actions: [
-            BotaoPrincipal(
-              rotulo: 'Salvar',
-              icone: Symbols.check,
-              carregando: _salvando,
-              aoTocar: _carregando || _erro != null ? null : _salvar,
-            ),
-          ],
+          actions: [salvar],
         ),
-        body: _carregando
-            ? const Carregando()
-            : _erro != null
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_erro!),
-                    OutlinedButton(
-                      onPressed: _carregar,
-                      child: const Text('Tentar de novo'),
-                    ),
-                  ],
-                ),
-              )
-            : LarguraCelular(child: _montarFormulario(context)),
+        body: conteudo,
       ),
     );
   }

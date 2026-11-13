@@ -141,6 +141,13 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - `app/lib/dados/repositorio_alunos.dart` fala direto com a API (`ClienteApi.enviar`), sem banco local: os dados sensíveis do aluno ficam **só na memória da tela**. Depois de salvar, matricular ou encerrar, o app roda uma sincronização para o lançamento ver o nome e as matrículas novas.
 - Sem internet, a tela mostra "Sem internet. O cadastro precisa de conexão." e um botão para tentar de novo.
 - O PUT do aluno grava todos os campos: os campos sem tela (ex.: `sexo`) voltam como vieram, para não serem apagados.
+- `app/lib/dados/repositorio_turmas.dart` (tela 10): salvar a turma faz só as chamadas necessárias, em ordem:
+  1. dados (`POST`/`PUT /api/turmas`);
+  2. quadro (`POST .../quadros`, só se algum dia mudou; vale a partir de hoje por padrão, e a mesma data corrige o último quadro);
+  3. regras (`PUT .../regras`, só se mudaram);
+  4. acessos (`PUT .../acessos`, só o professor e só se mudaram).
+
+  O menu "Turmas" abre a lista no padrão da tela 3, com "+" para criar.
 - Textos só com caracteres da fonte embutida: `test/telas/caracteres_test.dart` falha se aparecer um símbolo fora dela (seta, ✓, emoji).
 
 ### Contrato da API de sync (implementado em `api/src/rotas/sync.ts`)

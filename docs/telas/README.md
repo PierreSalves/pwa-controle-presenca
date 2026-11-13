@@ -5,6 +5,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 - Fonte editável: [`wireframes-fase1.html`](wireframes-fase1.html) (abra no navegador; `?tela=4` mostra uma tela só): conteúdo e regras de cada tela (v1 e v1.1).
 - **Linguagem visual: [`wireframes-v2.html`](wireframes-v2.html)** (v2): cores, tipografia, botões, menu lateral no desktop e requisitos de implementação. Imagem: [`img/v2.png`](img/v2.png).
 - **Relatórios: [`wireframes-relatorios.html`](wireframes-relatorios.html)** (v3): resultado de cada relatório da tela 7 (7a–7d), desktop (D5, D6) e a página impressa (P1). Imagem: [`img/relatorios.png`](img/relatorios.png).
+- **Senha do professor: [`wireframes-senha-professor.html`](wireframes-senha-professor.html)** (v4, proposta): o superadmin abre a academia (13a), redefine a senha de um professor (13b, 13c, D7). Imagem: [`img/senha-professor.png`](img/senha-professor.png).
 - **Aparência e componentes implementados: [`componentes.md`](componentes.md)**: cores, fonte, ícones, formas, layout e as características de cada componente visual do app.
 - Imagens: [`img/`](img/), geradas com `bash docs/telas/gerar-imagens.sh` (Git Bash; usa o Edge ou o navegador em `CHROME_EXECUTABLE`).
 - Mensalidades (Fase 2) terão wireframes próprios quando a fase começar.
@@ -17,6 +18,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 | 1.1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 8b e 8c: importar alunos colando a lista copiada da planilha (sem escolher arquivo), com relatório de códigos repetidos ou já cadastrados antes de gravar |
 | 3 | 13/11/2026 | **Aprovado** pelo responsável do projeto | Relatórios ([`wireframes-relatorios.html`](wireframes-relatorios.html)): tela 7 detalhada com atalhos de período, resultados semanal, mensal, anual e por aluno no celular (7a–7d) e no desktop (D5, D6), e a página impressa (P1) pelo navegador. Calculados no aparelho a partir das presenças |
 | 2 | 13/11/2026 | **Aprovado** pelo responsável do projeto | Nova linguagem visual para todas as telas (revisão com as skills frontend-design e high-end-visual-design, e conferida com a web-design-guidelines): menu lateral fixo no desktop (D1 a D3), cor de destaque em todo botão de ação (principal azul, secundário azul-claro, voltar em círculo, destrutivo vermelho-claro), fonte Lexend e a faixa do aluno como único destaque. Conteúdo e regras das telas seguem a v1 |
+| 4 | 13/11/2026 | Aguardando aprovação | Senha do professor ([`wireframes-senha-professor.html`](wireframes-senha-professor.html)): na tela 13, abrir a academia mostra os professores (13a) com o botão Redefinir senha; painel com a nova senha e Gerar senha (13b); confirmação com Copiar, mostrada uma vez (13c); desktop (D7) |
 
 ## Decisões de interface aprovadas
 

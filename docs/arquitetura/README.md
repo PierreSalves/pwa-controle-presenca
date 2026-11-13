@@ -236,6 +236,7 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `PUT /api/admin/academias/:id` | `nome`, `nome_curto`, `cabecalho_impressao`, `ativo`; desativar encerra as sessões de todos os usuários dela |
 | `GET`/`POST /api/admin/academias/:id/professores` | lista e cria professores |
 | `DELETE /api/admin/academias/:id/professores/:usuarioId` | desativa o professor e encerra as sessões |
+| `POST /api/admin/academias/:id/professores/:usuarioId/senha` | `senha` (8+); redefine a senha de um professor ativo da academia (esqueceu a senha) e encerra as sessões dele; assistente, professor desativado ou de outra academia → `404 usuario_nao_encontrado`. Atende o professor autônomo, que não tem outro professor para redefinir a senha dele |
 | `POST /api/admin/academias/:id/alunos/importacao` | carga inicial; mesmas regras de `POST /api/alunos/importacao` |
 
 ### Conflitos

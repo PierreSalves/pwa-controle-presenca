@@ -36,6 +36,9 @@ class ItemMenu {
 /// Itens do menu conforme a permissão (ordem do wireframe 12).
 List<ItemMenu> obterItensMenu(SessaoApp sessao) {
   final usuario = sessao.usuario;
+  if (usuario?.tipo == 'superadmin') {
+    return const [ItemMenu(Rotas.inicio, 'Academias', Symbols.apartment)];
+  }
   if (usuario?.tenantId == null) return const [];
   return [
     const ItemMenu(Rotas.inicio, 'Início', Symbols.home),

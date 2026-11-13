@@ -210,6 +210,15 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Aparência:** A4 (paisagem na semanal e na anual, retrato nas demais), fonte do sistema, cabeçalho com a academia, o cabeçalho de impressão da academia, a turma e o da turma, e à direita o relatório e o período; tabela com bordas finas `#c9ccc8`, cabeçalho repetido em cada página, rodapé "Gerado em … por …".
 - **Uso:** aberta numa aba nova pelo botão Imprimir / PDF; o navegador imprime ou salva em PDF. Sem logotipo enquanto a tela 14 não existir (mostra o nome da academia).
 
+### 2.26 Academias (`TelaAcademias` em `tela_academias.dart`), só o superadmin
+- **Aparência:**
+  - celular: barra "Academias" com o botão "+" (dica "Nova academia"); desktop: título "Academias" e "Nova academia" (`BotaoPrincipal`), com o menu lateral só com "Academias";
+  - `Cartao` com uma linha por academia: o nome e, abaixo em `nevoa` 13 com números fixos, "N alunos · N turmas · N usuários"; à direita a `Etiqueta` "ativa" ou "inativa";
+  - `Cartao` "Nova: nome · primeiro professor" que abre, no lugar, o formulário (nome da academia, nome curto opcional até 15, nome do professor, e-mail e senha inicial) com "Cancelar" e "Criar academia"; no celular estreito o botão desce para a linha de baixo;
+  - "Carga inicial (planilha de alunos)" (secundário, largura toda): com mais de uma academia, pergunta qual num diálogo e abre a importação (8b/8c) com o título "Carga inicial · academia".
+- **Acessibilidade:** erro vindo do servidor anunciado ao leitor de tela (região ao vivo); validação junto de cada campo.
+- **Uso:** online; nada vai para o banco do aparelho do superadmin.
+
 ## 3. Ainda não implementado (previsto na v2)
 
 - Logotipo da academia no menu lateral e no Início (depende do upload no R2).

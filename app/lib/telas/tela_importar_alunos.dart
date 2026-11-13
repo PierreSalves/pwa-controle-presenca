@@ -15,7 +15,11 @@ import 'tela_alunos.dart' show descreverErroOnline;
 const _maximoLinhas = 2000;
 
 class TelaImportarAlunos extends StatefulWidget {
-  const TelaImportarAlunos({super.key});
+  /// Sem [academiaId], importa para a academia de quem está logado; com ele, é a carga inicial
+  /// do administrador do sistema (tela 13).
+  const TelaImportarAlunos({super.key, this.academiaId, this.academiaNome});
+  final String? academiaId;
+  final String? academiaNome;
 
   @override
   State<TelaImportarAlunos> createState() => _TelaImportarAlunosState();
@@ -81,7 +85,7 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
     _linhas = linhas;
     await _executar(() async {
       final resultado = await EscopoDependencias.obter(context).alunos
-          .importarAlunos(_paraEnviar);
+          .importarAlunos(_paraEnviar, academiaId: widget.academiaId);
       _relatorio = resultado.relatorio;
     });
   }
@@ -94,13 +98,17 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
       final resultado = await dependencias.alunos.importarAlunos(
         _paraEnviar,
         confirmar: true,
+        academiaId: widget.academiaId,
       );
       if (resultado.importados == 0) {
         // Alguém cadastrou um código da lista nesse meio-tempo: mostra o relatório novo.
         _relatorio = resultado.relatorio;
         return;
       }
-      await dependencias.coordenador.sincronizar();
+      // Na carga inicial do administrador nada vai para o aparelho dele.
+      if (widget.academiaId == null) {
+        await dependencias.coordenador.sincronizar();
+      }
       mensageiro.showSnackBar(
         SnackBar(
           content: Text(
@@ -128,7 +136,14 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
         if (!saiu) _voltarParaCorrigir();
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Importar alunos'), centerTitle: true),
+        appBar: AppBar(
+          title: Text(
+            widget.academiaNome == null
+                ? 'Importar alunos'
+                : 'Carga inicial · ${widget.academiaNome}',
+          ),
+          centerTitle: true,
+        ),
         body: LarguraCelular(
           child: relatorio == null
               ? _montarColar(context)

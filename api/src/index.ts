@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { secureHeaders } from 'hono/secure-headers';
 import { rotasAutenticacao } from './rotas/autenticacao';
 import { rotasEu } from './rotas/eu';
+import { rotasSync } from './rotas/sync';
 import type { Contexto } from './tipos';
 
 const app = new Hono<Contexto>().basePath('/api');
@@ -19,6 +20,7 @@ app.get('/saude', async (c) => {
 
 app.route('/autenticacao', rotasAutenticacao);
 app.route('/eu', rotasEu);
+app.route('/sync', rotasSync);
 
 app.notFound((c) => c.json({ erro: 'rota_nao_encontrada' }, 404));
 

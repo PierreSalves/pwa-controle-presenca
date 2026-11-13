@@ -123,6 +123,24 @@ Local, além disso: tabela **`outbox`** (`id`, `tabela`, `registro_id`, `operaca
 
 Por que `server_version` e não a hora do celular para o pull: relógio de celular pode estar errado. O cursor do servidor nunca perde alterações.
 
+### Contrato da API de sync (implementado em `api/src/rotas/sync.ts`)
+Exige login e a permissão `lancar_presenca` (professor e assistente).
+
+**`GET /api/sync/pull?desde=<cursor>`** → `{ cursor, turmas_permitidas, turmas, turma_usuarios, quadros_aulas, matriculas, alunos, aulas, presencas }`
+- `desde=0` devolve tudo (primeira carga); depois, só o que tem `server_version > desde`, inclusive excluídos.
+- `alunos` traz só `id`, `codigo`, `nome`, `ativo` e colunas de sync (sem dados sensíveis).
+- Se `turmas_permitidas` mudar em relação ao que o app tem, o app apaga os dados das turmas que saíram e refaz o pull com `desde=0`.
+
+**`POST /api/sync/push`** com `{ operacoes: [{ id, tabela, registro }] }` (até 500) → `{ aceitos: [id], rejeitados: [{ id, erro }] }`
+- `tabela`: `aulas` (`id`, `turma_id`, `data_aula`, `tipo`, `excluido`, `updated_at`) ou `presencas` (`id`, `aula_id`, `aluno_id`, `excluido`, `updated_at`).
+- Códigos de rejeição: `dados_invalidos`, `tabela_nao_permitida`, `turma_sem_acesso`, `data_futura`, `dia_sem_aula_regular`, `id_aula_invalido`, `dia_sem_reposicao_fixa`, `aula_inexistente`, `aula_excluida`, `fora_da_matricula`. O app marca o item da outbox com o erro e avisa o usuário.
+- Aula regular e reposição fixa usam id **UUID v5** de `turma_id|data_aula|tipo` com o namespace fixo `6f1c2b8e-4a3d-5e7f-9b0a-1c2d3e4f5a6b`; a API recusa id diferente. Reposição avulsa usa UUID v7.
+- Presença é gravada por *upsert* na chave `(aula_id, aluno_id)`; vence o `updated_at` mais novo. `updated_at` do aparelho além de 5 min no futuro é limitado a "agora".
+- Todas as linhas aceitas num push recebem o mesmo `server_version`, numa única transação (cabe no limite de consultas por requisição do D1).
+- "Hoje" é calculado no fuso `America/Sao_Paulo`.
+
+**Regras compartilhadas:** os casos de teste de data futura, dia da semana, matrícula vigente, tipo do dia no quadro e id determinístico da aula ficam em [`docs/casos-regras/presenca.json`](../casos-regras/presenca.json) e rodam na API e no app.
+
 ### Conflitos
 - Presença é quase só inserção; chave única `presencas (aula_id, aluno_id)`: dois aparelhos marcando o mesmo aluno resultam num registro só.
 - Aula regular: id determinístico (UUID v5 de `turma_id` + `data_aula`) e no máximo uma por turma e data, evitando duas aulas iguais criadas offline.

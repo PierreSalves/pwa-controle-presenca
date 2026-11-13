@@ -127,7 +127,14 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - `banco_local.dart`: esquema drift (subconjunto do D1, sem dados sensíveis) + `outbox` + `estado_sync` (cursor e turmas permitidas). O código gerado (`banco_local.g.dart`) fica no repositório; depois de mudar o esquema, rodar `dart run build_runner build` em `app/`.
 - `repositorio_presenca.dart`: a tela de lançamento só fala com ele. Valida as mesmas regras da API (dia futuro, quadro, matrícula), grava a aula do quadro com o id determinístico e a presença, e põe na outbox na mesma transação. A outbox tem **uma linha por registro**: marcar e desmarcar antes do envio só atualiza a linha.
 - `servico_sincronizacao.dart`: push da outbox (apaga os aceitos, marca os recusados com o erro e não os reenvia; uma nova alteração do registro limpa o erro) e pull pelo cursor. Registro com alteração pendente não é sobrescrito pelo pull. Turma retirada é apagada do aparelho (com a outbox dela) e o pull recomeça do zero.
-- `abrir_banco.dart`: abre o banco no navegador (precisa de `web/sqlite3.wasm` e `web/drift_worker.js`, ainda não incluídos).
+- `abrir_banco.dart`: abre o banco no navegador com `web/sqlite3.wasm` e `web/drift_worker.js`, copiados das releases oficiais do drift (mesma versão do `pubspec.lock`; ao atualizar o drift, baixar os dois de novo da release `drift-<versão>` e conferir o SHA-256). Nos navegadores Chromium o drift usa um SharedWorker com IndexedDB. A pré-visualização do Claude Desktop não deixa SharedWorker fazer `fetch`; para testar o app ali, usar o Edge ou o Chrome.
+- `cliente_api.dart`: HTTP para `/api/...` no mesmo domínio. O token de acesso fica só na memória e é renovado pelo cookie (30 s antes de expirar ou depois de um 401), **uma renovação por vez**, porque o servidor gira o cookie a cada renovação e duas simultâneas encerrariam a sessão. Falha de rede → `SemConexao`; renovação recusada → `SessaoEncerrada`.
+- `consulta_lancamento.dart`: leitura para a tela de lançamento (dias de aula da semana pelo quadro, matriculados na data com a frequência da lista do lançamento e quem já foi marcado). Observa o banco e recalcula a cada marcação ou pull.
+
+### Sessão e sincronização no app (`app/lib/estado/`)
+- `sessao_app.dart`: o usuário logado fica no `estado_sync` do banco local, então o app **abre sem internet** e confere a sessão em seguida. Se o servidor responder que a sessão acabou (saiu, expirou, usuário revogado), apaga o banco local e volta ao login. O primeiro login precisa de internet e só termina depois da primeira carga (pull desde 0).
+- `coordenador_sincronizacao.dart`: uma rodada por vez (push e depois pull); um pedido durante uma rodada agenda outra logo depois. Roda após cada marcação e a cada 12 s com a tela de lançamento aberta. Indica online/offline para o status "Tudo enviado ✓ / N aguardando envio · sem internet".
+- Sair: tenta enviar a outbox antes; se ainda houver pendências, avisa que serão perdidas.
 
 ### Contrato da API de sync (implementado em `api/src/rotas/sync.ts`)
 Exige login e a permissão `lancar_presenca` (professor e assistente).
@@ -280,6 +287,10 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 - Os demais ficam recolhidos e na busca; marcar um deles o traz de volta para os frequentes.
 - Calculada no aparelho com as presenças sincronizadas (funciona offline).
 - Tipo `lista_lancamento` na tabela `regras`, escopo turma: `{ "percentual_minimo": 30, "ultimas_aulas": 8 }`.
+- Detalhes do cálculo (`api/src/regras/lista-lancamento.ts` e `app/lib/regras/lista_lancamento.dart`, casos em `docs/casos-regras/lista-lancamento.json`):
+  - entram na conta as últimas `ultimas_aulas` aulas **regulares** da turma **antes** do dia do lançamento e dentro da matrícula do aluno. A aula do próprio dia fica fora, para a lista não mudar de ordem durante a aula;
+  - percentual = presenças nessas aulas ÷ aulas, arredondado para baixo; reposições não entram;
+  - "última presença" (mostrada na busca) considera qualquer aula, regular ou reposição, até o dia.
 
 ### Regra: alunos sumidos
 - Aviso no início para alunos com matrícula aberta e sem presença há mais de `semanas` semanas (padrão 4), com atalho para encerrar a matrícula (data de fim sugerida = última presença).

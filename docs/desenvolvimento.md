@@ -140,6 +140,7 @@ Correção de bug vem com um teste que falhava antes da correção.
 - Áreas de toque de no mínimo 48 px; textos simples, sem jargão técnico.
 - Toda ação que depende de internet avisa claramente quando não há conexão.
 - A tela de lançamento sempre mostra o status de envio.
+- **Aparência e componentes:** as telas usam os tokens e componentes registrados em [`docs/telas/componentes.md`](telas/componentes.md); componente novo ou mudança de aparência atualiza esse arquivo no mesmo PR.
 - **Wireframes em HTML:** todo wireframe ou proposta de tela é um arquivo HTML em `docs/telas/`; as imagens de `docs/telas/img/` são geradas dele (`bash docs/telas/gerar-imagens.sh`).
 
 ### 10.1 Revisão de interface (web-design-guidelines)
@@ -170,6 +171,7 @@ Não se aplicam ao projeto: Title Case (a interface é pt-BR, com só a primeira
 
 - [ ] Tela segue o wireframe aprovado em `docs/telas/`
 - [ ] Revisão com a `web-design-guidelines` feita e registrada no PR (seção 10.1)
+- [ ] `docs/telas/componentes.md` atualizado, se mudou algum componente ou a aparência
 - [ ] Funciona no celular (testado em tela estreita)
 - [ ] Testes obrigatórios escritos e passando
 - [ ] Formatação e análise sem avisos

@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_alunos.dart';
@@ -247,6 +248,7 @@ class _TelaAlunoState extends State<TelaAluno> {
             child: const Text('Cancelar'),
           ),
           FilledButton(
+            style: estiloConfirmarDestrutivo,
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Encerrar'),
           ),
@@ -293,6 +295,7 @@ class _TelaAlunoState extends State<TelaAluno> {
             child: const Text('Cancelar'),
           ),
           FilledButton(
+            style: estiloConfirmarDestrutivo,
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Excluir'),
           ),
@@ -318,11 +321,11 @@ class _TelaAlunoState extends State<TelaAluno> {
           title: const Text('Aluno'),
           centerTitle: true,
           actions: [
-            TextButton(
-              onPressed: _carregando || _erro != null || _salvando
-                  ? null
-                  : _salvar,
-              child: const Text('Salvar'),
+            BotaoPrincipal(
+              rotulo: 'Salvar',
+              icone: Symbols.check,
+              carregando: _salvando,
+              aoTocar: _carregando || _erro != null ? null : _salvar,
             ),
           ],
         ),
@@ -334,7 +337,7 @@ class _TelaAlunoState extends State<TelaAluno> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(_erro!),
-                    TextButton(
+                    OutlinedButton(
                       onPressed: _carregar,
                       child: const Text('Tentar de novo'),
                     ),
@@ -431,7 +434,7 @@ class _TelaAlunoState extends State<TelaAluno> {
                     labelText: 'Nascimento',
                     border: OutlineInputBorder(),
                     isDense: true,
-                    suffixIcon: Icon(Icons.calendar_month_outlined),
+                    suffixIcon: Icon(Symbols.calendar_month),
                   ),
                   child: Text(
                     _nascimento == null ? '' : formatarDataBr(_nascimento!),
@@ -509,9 +512,9 @@ class _TelaAlunoState extends State<TelaAluno> {
               ),
             Align(
               alignment: Alignment.centerLeft,
-              child: TextButton.icon(
+              child: OutlinedButton.icon(
                 onPressed: _matricular,
-                icon: const Icon(Icons.add),
+                icon: const Icon(Symbols.add),
                 label: const Text('Matricular'),
               ),
             ),
@@ -520,7 +523,13 @@ class _TelaAlunoState extends State<TelaAluno> {
             for (final g in aluno.graduacoes) ...[
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(_descreverGraduacao(g)),
+                title: Row(
+                  children: [
+                    FaixaDoAluno(faixa: g.faixa, grau: g.grau),
+                    const SizedBox(width: 10),
+                    Flexible(child: Text(_descreverGraduacao(g))),
+                  ],
+                ),
                 trailing: Text(
                   '${g.dataGraduacao.substring(5, 7)}/${g.dataGraduacao.substring(0, 4)}',
                   style: TextStyle(color: cores.onSurfaceVariant, fontSize: 14),
@@ -531,9 +540,9 @@ class _TelaAlunoState extends State<TelaAluno> {
             ],
             Align(
               alignment: Alignment.centerLeft,
-              child: TextButton.icon(
+              child: OutlinedButton.icon(
                 onPressed: _adicionarGraduacao,
-                icon: const Icon(Icons.add),
+                icon: const Icon(Symbols.add),
                 label: const Text('Graduação'),
               ),
             ),
@@ -622,7 +631,7 @@ class _DialogoMatriculaState extends State<_DialogoMatricula> {
             decoration: const InputDecoration(
               labelText: 'Início',
               border: OutlineInputBorder(),
-              suffixIcon: Icon(Icons.calendar_month_outlined),
+              suffixIcon: Icon(Symbols.calendar_month),
             ),
             child: Text(formatarDataBr(_inicio)),
           ),
@@ -703,7 +712,7 @@ class _DialogoGraduacaoState extends State<_DialogoGraduacao> {
             decoration: const InputDecoration(
               labelText: 'Data',
               border: OutlineInputBorder(),
-              suffixIcon: Icon(Icons.calendar_month_outlined),
+              suffixIcon: Icon(Symbols.calendar_month),
             ),
             child: Text(formatarDataBr(_data)),
           ),

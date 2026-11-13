@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_turmas.dart';
@@ -266,11 +267,11 @@ class _TelaTurmaState extends State<TelaTurma> {
           title: const Text('Turma'),
           centerTitle: true,
           actions: [
-            TextButton(
-              onPressed: _carregando || _erro != null || _salvando
-                  ? null
-                  : _salvar,
-              child: const Text('Salvar'),
+            BotaoPrincipal(
+              rotulo: 'Salvar',
+              icone: Symbols.check,
+              carregando: _salvando,
+              aoTocar: _carregando || _erro != null ? null : _salvar,
             ),
           ],
         ),
@@ -282,7 +283,7 @@ class _TelaTurmaState extends State<TelaTurma> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(_erro!),
-                    TextButton(
+                    OutlinedButton(
                       onPressed: _carregar,
                       child: const Text('Tentar de novo'),
                     ),
@@ -453,7 +454,7 @@ class _TelaTurmaState extends State<TelaTurma> {
                 trailing: _ehProfessor
                     ? IconButton(
                         tooltip: 'Tirar acesso de ${u.nome}',
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Symbols.close),
                         onPressed: () => setState(() => _acessos.remove(u)),
                       )
                     : null,
@@ -463,9 +464,9 @@ class _TelaTurmaState extends State<TelaTurma> {
             if (_ehProfessor)
               Align(
                 alignment: Alignment.centerLeft,
-                child: TextButton.icon(
+                child: OutlinedButton.icon(
                   onPressed: _adicionarAcesso,
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(Symbols.add),
                   label: const Text('Dar acesso'),
                 ),
               ),

@@ -2,6 +2,7 @@
 // relatório da API (códigos repetidos ou já cadastrados impedem; nome repetido é aviso) e importar.
 // Nada é gravado enquanto houver erro. Online.
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_alunos.dart';
@@ -247,14 +248,15 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
                   child: const Text('Voltar e corrigir'),
                 ),
                 const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: r.podeImportar && !_trabalhando ? _importar : null,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                  child: Text(
-                    total == 1 ? 'Importar 1 aluno' : 'Importar $total alunos',
-                  ),
+                BotaoPrincipal(
+                  rotulo: total == 1
+                      ? 'Importar 1 aluno'
+                      : 'Importar $total alunos',
+                  icone: Symbols.upload,
+                  largo: true,
+                  carregando: _trabalhando && r.podeImportar,
+                  rotuloCarregando: 'Importando…',
+                  aoTocar: r.podeImportar ? _importar : null,
                 ),
               ],
             ),

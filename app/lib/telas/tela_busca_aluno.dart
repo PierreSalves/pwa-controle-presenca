@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/consulta_lancamento.dart';
 import '../dados/repositorio_presenca.dart';
@@ -103,8 +104,8 @@ class _TelaBuscaAlunoState extends State<TelaBuscaAluno> {
                 TextField(
                   autofocus: true,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
-                    hintText: 'Nome ou código do aluno',
+                    prefixIcon: Icon(Symbols.search),
+                    hintText: 'Nome ou código do aluno…',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),

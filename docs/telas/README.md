@@ -4,6 +4,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 
 - Fonte editável: [`wireframes-fase1.html`](wireframes-fase1.html) (abra no navegador; `?tela=4` mostra uma tela só): conteúdo e regras de cada tela (v1 e v1.1).
 - **Linguagem visual: [`wireframes-v2.html`](wireframes-v2.html)** (v2): cores, tipografia, botões, menu lateral no desktop e requisitos de implementação. Imagem: [`img/v2.png`](img/v2.png).
+- **Aparência e componentes implementados: [`componentes.md`](componentes.md)**: cores, fonte, ícones, formas, layout e as características de cada componente visual do app.
 - Imagens: [`img/`](img/), geradas com `bash docs/telas/gerar-imagens.sh` (Git Bash; usa o Edge ou o navegador em `CHROME_EXECUTABLE`).
 - Mensalidades (Fase 2) terão wireframes próprios quando a fase começar.
 

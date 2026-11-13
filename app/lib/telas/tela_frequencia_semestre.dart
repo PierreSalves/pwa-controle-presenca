@@ -7,6 +7,7 @@ import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
+import 'tema.dart';
 
 class TelaFrequenciaSemestre extends StatefulWidget {
   const TelaFrequenciaSemestre({super.key, required this.turmaId});
@@ -112,7 +113,7 @@ class _LinhaFrequencia extends StatelessWidget {
             label: abaixo ? 'abaixo do mínimo' : null,
             child: Text(
               percentual == null ? 'sem aulas' : '$percentual%',
-              style: estilo,
+              style: estilo.copyWith(fontFeatures: numerosFixos),
             ),
           ),
         ],

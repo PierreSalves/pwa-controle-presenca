@@ -3,11 +3,13 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_alunos.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'tema.dart';
 import 'formatacao.dart';
 import 'tela_aluno.dart';
 import 'tela_importar_alunos.dart';
@@ -97,12 +99,14 @@ class _TelaAlunosState extends State<TelaAlunos> {
     final alunos = _alunos;
     return Scaffold(
       appBar: AppBar(
+        // No desktop o menu lateral faz o papel do voltar nas telas principais.
+        automaticallyImplyLeading: !ehDesktop(context),
         title: const Text('Alunos'),
         centerTitle: true,
         actions: [
           IconButton(
             tooltip: 'Novo aluno',
-            icon: const Icon(Icons.add),
+            icon: const Icon(Symbols.add),
             onPressed: () => _abrirAluno(),
           ),
         ],
@@ -113,8 +117,8 @@ class _TelaAlunosState extends State<TelaAlunos> {
           children: [
             TextField(
               decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Nome ou código',
+                prefixIcon: Icon(Symbols.search),
+                hintText: 'Nome ou código…',
                 border: OutlineInputBorder(),
                 isDense: true,
               ),
@@ -123,7 +127,7 @@ class _TelaAlunosState extends State<TelaAlunos> {
             const SizedBox(height: 8),
             if (_erro != null) ...[
               Text(_erro!, style: TextStyle(color: cores.error)),
-              TextButton(
+              OutlinedButton(
                 onPressed: _carregar,
                 child: const Text('Tentar de novo'),
               ),

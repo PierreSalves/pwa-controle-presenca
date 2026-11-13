@@ -15,7 +15,7 @@ class TelaInicial extends StatelessWidget {
     if (dependencias.sessao.usuario?.tenantId == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Controle de presença')),
-        drawer: const MenuApp(),
+        drawer: obterMenuDoCelular(context),
         body: const Center(
           child: Padding(
             padding: EdgeInsets.all(24),

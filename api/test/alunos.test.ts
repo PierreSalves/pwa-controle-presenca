@@ -2,7 +2,7 @@ import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { obterHojeEmSaoPaulo } from '../src/regras/presenca';
 import { somarDiasNaData } from '../src/util/datas';
-import { comToken, criarTenant, criarUsuario, entrar, requisitar } from './apoio';
+import { comToken, criarTenant, criarUsuario, entrar, liberarTurma, requisitar } from './apoio';
 
 const HOJE = obterHojeEmSaoPaulo();
 
@@ -236,6 +236,163 @@ describe('alunos: importação', () => {
     const a = await montarAcademia();
     expect((await chamar(a.professor, 'POST', '/api/alunos/importacao', { alunos: [] })).status).toBe(400);
     expect((await chamar(a.professor, 'POST', '/api/alunos/importacao', { alunos: 'x' })).status).toBe(400);
+  });
+});
+
+describe('alunos: importação com matrícula na turma', () => {
+  const lista = [
+    { codigo: '(1)', nome: 'Ana' },
+    { codigo: '2', nome: 'Bruno' },
+  ];
+
+  async function contarAlunos(tenantId: string): Promise<number> {
+    const linha = await env.DB.prepare('SELECT COUNT(*) AS n FROM alunos WHERE tenant_id = ?1')
+      .bind(tenantId)
+      .first<{ n: number }>();
+    return linha?.n ?? 0;
+  }
+
+  it('o relatório mostra a turma e a data; ao confirmar, cria alunos e matrículas que chegam no pull', async () => {
+    const a = await montarAcademia();
+    const turmaId = await criarTurma(a.professor, 'Adulto');
+    const inicio = somarDiasNaData(HOJE, -30);
+    const pedido = { alunos: lista, turma_id: turmaId, data_inicio: inicio };
+
+    let resposta = await chamar(a.professor, 'POST', '/api/alunos/importacao', pedido);
+    expect(resposta.status).toBe(200);
+    expect(await resposta.json()).toMatchObject({
+      importados: 0,
+      relatorio: { pode_importar: true },
+      matricula: { turma_id: turmaId, turma_nome: 'Adulto', data_inicio: inicio },
+    });
+    expect(await contarAlunos(a.tenantId)).toBe(0);
+
+    const antes = await (
+      await chamar(a.professor, 'GET', '/api/sync/pull?desde=0')
+    ).json<{ cursor: number }>();
+
+    resposta = await chamar(a.professor, 'POST', '/api/alunos/importacao', { ...pedido, confirmar: true });
+    expect(resposta.status).toBe(201);
+    expect(await resposta.json()).toMatchObject({ importados: 2, matricula: { turma_nome: 'Adulto' } });
+
+    const gravadas = await env.DB.prepare(
+      `SELECT a.codigo, m.turma_id, m.data_inicio, m.data_fim, m.situacao, m.server_version = a.server_version AS mesma
+         FROM matriculas m JOIN alunos a ON a.id = m.aluno_id
+        WHERE m.tenant_id = ?1 ORDER BY a.codigo`,
+    )
+      .bind(a.tenantId)
+      .all();
+    expect(gravadas.results).toEqual([
+      {
+        codigo: '1',
+        turma_id: turmaId,
+        data_inicio: inicio,
+        data_fim: null,
+        situacao: 'matriculado',
+        mesma: 1,
+      },
+      {
+        codigo: '2',
+        turma_id: turmaId,
+        data_inicio: inicio,
+        data_fim: null,
+        situacao: 'matriculado',
+        mesma: 1,
+      },
+    ]);
+
+    // O aparelho que já tinha sincronizado recebe alunos e matrículas a partir do cursor anterior.
+    const pull = await (
+      await chamar(a.professor, 'GET', `/api/sync/pull?desde=${antes.cursor}`)
+    ).json<{ alunos: unknown[]; matriculas: { data_inicio: string }[] }>();
+    expect(pull.alunos).toHaveLength(2);
+    expect(pull.matriculas.map((m) => m.data_inicio)).toEqual([inicio, inicio]);
+  });
+
+  it('sem turma só cadastra os alunos, como antes', async () => {
+    const a = await montarAcademia();
+    const resposta = await chamar(a.professor, 'POST', '/api/alunos/importacao', {
+      alunos: lista,
+      confirmar: true,
+    });
+    expect(resposta.status).toBe(201);
+    expect(await resposta.json()).toMatchObject({ importados: 2, matricula: null });
+    const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM matriculas WHERE tenant_id = ?1')
+      .bind(a.tenantId)
+      .first<{ n: number }>();
+    expect(n?.n).toBe(0);
+  });
+
+  it('recusa turma de outra academia e turma que a assistente não acessa, sem gravar nada', async () => {
+    const a = await montarAcademia('Academia A');
+    const b = await montarAcademia('Academia B');
+    const turmaDeB = await criarTurma(b.professor, 'Kids B');
+    const turmaSemAcesso = await criarTurma(a.professor, 'Competição');
+    const turmaLiberada = await criarTurma(a.professor, 'Adulto');
+    await liberarTurma(a.tenantId, turmaLiberada, a.assistente.id);
+
+    for (const [token, turmaId] of [
+      [a.professor, turmaDeB],
+      [a.assistente.token, turmaSemAcesso],
+    ] as const) {
+      const resposta = await chamar(token, 'POST', '/api/alunos/importacao', {
+        alunos: lista,
+        turma_id: turmaId,
+        data_inicio: HOJE,
+        confirmar: true,
+      });
+      expect(resposta.status).toBe(404);
+      expect(await resposta.json()).toEqual({ erro: 'turma_nao_encontrada' });
+    }
+    expect(await contarAlunos(a.tenantId)).toBe(0);
+
+    const resposta = await chamar(a.assistente.token, 'POST', '/api/alunos/importacao', {
+      alunos: lista,
+      turma_id: turmaLiberada,
+      data_inicio: HOJE,
+      confirmar: true,
+    });
+    expect(resposta.status).toBe(201);
+  });
+
+  it('exige turma e data juntas e válidas', async () => {
+    const a = await montarAcademia();
+    const turmaId = await criarTurma(a.professor, 'Adulto');
+    for (const extra of [
+      { turma_id: turmaId },
+      { data_inicio: HOJE },
+      { turma_id: turmaId, data_inicio: '13/11/2026' },
+      { turma_id: turmaId, data_inicio: '2026-02-30' },
+      { turma_id: 'x', data_inicio: HOJE },
+    ]) {
+      const resposta = await chamar(a.professor, 'POST', '/api/alunos/importacao', {
+        alunos: lista,
+        ...extra,
+      });
+      expect(resposta.status).toBe(400);
+    }
+  });
+
+  it('se a gravação das matrículas falhar, nenhum aluno fica gravado', async () => {
+    const a = await montarAcademia();
+    const turmaId = await criarTurma(a.professor, 'Adulto');
+    // Simula uma falha no meio do batch: a inserção das matrículas é recusada.
+    await env.DB.prepare(
+      `CREATE TRIGGER falhar_matricula BEFORE INSERT ON matriculas
+       BEGIN SELECT RAISE(ABORT, 'falha simulada'); END`,
+    ).run();
+    try {
+      const resposta = await chamar(a.professor, 'POST', '/api/alunos/importacao', {
+        alunos: lista,
+        turma_id: turmaId,
+        data_inicio: HOJE,
+        confirmar: true,
+      });
+      expect(resposta.status).toBe(500);
+    } finally {
+      await env.DB.prepare('DROP TRIGGER falhar_matricula').run();
+    }
+    expect(await contarAlunos(a.tenantId)).toBe(0);
   });
 });
 

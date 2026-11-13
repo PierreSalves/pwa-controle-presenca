@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Importar e matricular</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+</head>
+<body>
+<style>
+/* Acréscimos da importação com matrícula (o resto vem da v2) */
+.g,.sec,.intro,.nota{max-width:1580px}
+.nota{margin:0 auto;padding:0 24px 12px}
+.nota ul{margin:6px 0 0;padding-left:20px;color:var(--nevoa)}
+.colado{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;min-height:110px}
+.grupo{font-weight:600;font-size:14px;margin:4px 0 -4px}
+.campo.off{box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+.campo.off span{color:var(--desativado)}
+.lista{background:var(--cartao);border-radius:14px;box-shadow:var(--sombra);padding:4px 0}
+.lista .it{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px}
+.lista .it.at{background:var(--tatame-claro);color:var(--tatame);font-weight:600}
+.info{background:var(--tatame-claro);color:var(--tatame);border-radius:14px;padding:10px 12px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+.info i{font-size:20px;margin-top:1px}
+.erf{background:var(--ponta-claro);color:var(--ponta);border-radius:8px;padding:6px 10px;font-size:13px}
+.avf{background:var(--aviso-claro);color:var(--aviso);border-radius:8px;padding:6px 10px;font-size:13px}
+.bp.off{background:var(--linha);color:var(--desativado)}
+.bp.off .ic{background:rgba(0,0,0,.06)}
+.novo{outline:2px dashed var(--aviso);outline-offset:4px;border-radius:12px}
+</style>
+
+<div class="intro">
+  <h1>Importar alunos e matricular numa turma · v1.2 (aprovada)</h1>
+  <p>Altera as telas <b>8b</b> e <b>8c</b> (v1.1): ao importar a lista colada da planilha, o usuário pode escolher <b>uma turma</b> para matricular todos os alunos importados e <b>uma data inicial</b> única para essas matrículas. Visual da v2. O que é novo aparece com <span class="novo" style="padding:0 6px">contorno tracejado</span>.</p>
+  <p>As mesmas telas servem à <b>carga inicial do administrador do sistema</b> (tela 13), com as turmas da academia escolhida.</p>
+</div>
+
+<div class="nota"><div class="cartao">
+  <div class="h">Regras</div>
+  <ul>
+    <li><b>Turma é opcional.</b> Padrão: <i>Não matricular (só cadastrar)</i>, exatamente como hoje.</li>
+    <li><b>Data inicial</b> só fica habilitada com turma escolhida; vem preenchida com <b>hoje</b>, em dd/mm/aaaa, e abre o calendário ao tocar. Pode ser uma data passada (ex.: alunos que já treinam desde o começo do semestre).</li>
+    <li><b>Lista de turmas:</b> professor vê todas as turmas da academia; assistente vê só as que acessa (a API confere de novo). Na carga inicial, as turmas da academia escolhida; se ela ainda não tem turmas, o campo fica desabilitado com o aviso "A academia ainda não tem turmas".</li>
+    <li><b>Relatório (8c)</b> mostra, antes de gravar, em qual turma e desde quando os alunos serão matriculados. O botão vira "Importar e matricular N alunos".</li>
+    <li><b>Aluno que já existe:</b> código já cadastrado continua <b>impedindo</b> a importação (regra da v1.1), então todos os importados são alunos novos e nunca há matrícula repetida na turma. Para matricular um aluno que já existe, continua sendo pela tela 9.</li>
+    <li><b>Tudo ou nada:</b> alunos e matrículas são gravados juntos; se algo der errado, nada é gravado. Os aparelhos recebem as matrículas na próxima sincronização.</li>
+    <li><b>Online</b>, como hoje. <b>Acessibilidade:</b> campos com rótulo visível e 48 px de toque.</li>
+  </ul>
+</div></div>
+
+<div class="sec"><h2>Celular</h2><p>8b com a turma escolhida, a lista de turmas aberta, e o relatório 8c com e sem turma.</p></div>
+<div class="g">
+
+  <div><p class="rot">8b. Importar alunos · colar a lista (com turma)</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Importar alunos</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div class="mu" style="font-size:14px">Na planilha, selecione as colunas código e nome, copie e cole aqui. Uma linha por aluno.</div>
+      <div class="colado">(01) Augusto E. B. Torres<br>(03) Lucas V. S. da Mata<br>10A&nbsp;&nbsp;Lucas A. Costelinha<br>...</div>
+      <div class="mu">Código e nome separados por tab, ponto e vírgula ou espaço; "(10A)" vira "10A".</div>
+      <div class="novo" style="display:flex;flex-direction:column;gap:10px">
+        <div class="grupo">Matricular numa turma <span class="mu" style="font-weight:400">(opcional)</span></div>
+        <div class="campo"><b>Turma</b><span>Adulto</span> <i class="ti ti-chevron-down" style="float:right"></i></div>
+        <div class="campo"><b>Matriculados desde</b><span>13/11/2026</span> <i class="ti ti-calendar" style="float:right"></i></div>
+        <div class="mu">Todos os alunos da lista serão matriculados nessa turma a partir dessa data.</div>
+      </div>
+      <div style="flex:1"></div>
+      <span class="bs lg">Conferir lista</span>
+    </div>
+  </div></div>
+
+  <div><p class="rot">8b. Escolher a turma (lista aberta)</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Importar alunos</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div class="colado" style="min-height:70px;opacity:.6">(01) Augusto E. B. Torres<br>(03) Lucas V. S. da Mata<br>...</div>
+      <div class="grupo">Matricular numa turma <span class="mu" style="font-weight:400">(opcional)</span></div>
+      <div class="campo foco"><b>Turma</b><span>Não matricular (só cadastrar)</span> <i class="ti ti-chevron-up" style="float:right"></i></div>
+      <div class="lista novo">
+        <div class="it at"><i class="ti ti-check"></i>Não matricular (só cadastrar)</div>
+        <div class="it"><span style="width:20px"></span>Adulto</div>
+        <div class="it"><span style="width:20px"></span>Kids</div>
+        <div class="it"><span style="width:20px"></span>Competição</div>
+      </div>
+      <div class="campo off"><b>Matriculados desde</b><span>13/11/2026</span> <i class="ti ti-calendar" style="float:right"></i></div>
+      <div class="mu">Sem turma, a data fica desabilitada e os alunos só são cadastrados.</div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">8c. Importar alunos · relatório (com turma)</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Importar alunos</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div>32 linhas lidas</div>
+      <div class="avf">Aviso: nome repetido "Ana Souza" (linhas 7 e 21)</div>
+      <div class="info novo"><i class="ti ti-school"></i><span>Os 32 alunos serão matriculados na turma <b>Adulto</b> a partir de <b>13/11/2026</b>.</span></div>
+      <div class="mu">Tudo certo para importar.</div>
+      <div style="flex:1"></div>
+      <span class="bs lg">Voltar e corrigir</span>
+      <span class="bp lg novo">Importar e matricular 32 alunos<span class="ic"><i class="ti ti-upload"></i></span></span>
+    </div>
+  </div></div>
+
+  <div><p class="rot">8c. Relatório com erro (sem turma)</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Importar alunos</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div>95 linhas lidas</div>
+      <div class="erf">Código 10A repetido nas linhas 12 e 40</div>
+      <div class="erf">Código 03 já cadastrado (linha 2: Lucas V. S. da Mata)</div>
+      <div class="avf">Aviso: nome repetido "Ana Souza" (linhas 7 e 51)</div>
+      <div class="info novo" style="background:var(--cartao);color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)"><i class="ti ti-user-plus"></i><span>Só cadastro: nenhuma matrícula será criada.</span></div>
+      <div class="mu">Corrija na planilha e cole de novo. Nada é gravado enquanto houver erro.</div>
+      <div style="flex:1"></div>
+      <span class="bs lg">Voltar e corrigir</span>
+      <span class="bp lg off">Importar 95 alunos<span class="ic"><i class="ti ti-upload"></i></span></span>
+    </div>
+  </div></div>
+
+</div>
+
+<div class="sec desk"><h2>Desktop</h2><p>Mesma tela ao lado do menu lateral fixo (área de até 880 px, alinhada à esquerda, como hoje). Com espaço, a lista colada e a turma ficam lado a lado; o relatório mostra a matrícula no topo, junto do botão principal. Na carga inicial do administrador, o menu é o dele (Academias) e o título "Carga inicial · Academia".</p></div>
+<div class="g desk">
+
+  <div><p class="rot">D8. Importar alunos · colar a lista (com turma)</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav"><i class="ti ti-home"></i>Início</div>
+      <div class="nav"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav at"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Importar alunos</span></div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;max-width:840px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="mu" style="font-size:14px">Na planilha, selecione as colunas código e nome, copie e cole aqui. Uma linha por aluno.</div>
+          <div class="colado" style="min-height:220px">(01) Augusto E. B. Torres<br>(03) Lucas V. S. da Mata<br>10A&nbsp;&nbsp;Lucas A. Costelinha<br>(11) Beatriz Nogueira<br>...</div>
+          <div class="mu">Código e nome separados por tab, ponto e vírgula ou espaço; "(10A)" vira "10A".</div>
+        </div>
+        <div class="novo" style="display:flex;flex-direction:column;gap:10px;align-self:start">
+          <div class="grupo">Matricular numa turma <span class="mu" style="font-weight:400">(opcional)</span></div>
+          <div class="campo"><b>Turma</b><span>Adulto</span> <i class="ti ti-chevron-down" style="float:right"></i></div>
+          <div class="campo"><b>Matriculados desde</b><span>13/11/2026</span> <i class="ti ti-calendar" style="float:right"></i></div>
+          <div class="mu">Todos os alunos da lista serão matriculados nessa turma a partir dessa data.</div>
+        </div>
+      </div>
+      <div><span class="bs" style="min-width:220px">Conferir lista</span></div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">D9. Importar alunos · relatório (com turma)</p><div class="dk">
+    <div class="lado">
+      <div class="logo" style="margin-bottom:10px"><i class="ti ti-photo"></i>Logotipo</div>
+      <div class="nav"><i class="ti ti-home"></i>Início</div>
+      <div class="nav"><i class="ti ti-checkbox"></i>Lançar presença</div>
+      <div class="nav"><i class="ti ti-chart-bar"></i>Relatórios</div>
+      <div class="nav at"><i class="ti ti-users"></i>Alunos</div>
+      <div class="nav"><i class="ti ti-school"></i>Turmas</div>
+      <div style="flex:1"></div>
+      <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+    </div>
+    <div class="princ">
+      <div class="cab"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Importar alunos</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:840px">
+        <div>32 linhas lidas</div>
+        <div class="info novo"><i class="ti ti-school"></i><span>Os 32 alunos serão matriculados na turma <b>Adulto</b> a partir de <b>13/11/2026</b>.</span></div>
+        <div class="avf">Aviso: nome repetido "Ana Souza" (linhas 7 e 21)</div>
+        <div class="mu">Tudo certo para importar.</div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+          <span class="bs">Voltar e corrigir</span>
+          <span class="bp novo">Importar e matricular 32 alunos<span class="ic"><i class="ti ti-upload"></i></span></span>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+</div>
+
+<script>
+// ?parte=desktop mostra só o desktop (para gerar img/importacao-desktop.png)
+if (new URLSearchParams(location.search).get('parte') === 'desktop') document.querySelectorAll('body > div:not(.desk)').forEach(function (e) { e.style.display = 'none'; });
+</script>
+</body>
+
+</html>

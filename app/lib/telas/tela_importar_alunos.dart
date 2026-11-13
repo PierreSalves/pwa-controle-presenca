@@ -1,4 +1,5 @@
-// Telas 8b e 8c — Importar alunos: colar a lista copiada da planilha (código + nome), conferir o
+// Telas 8b e 8c (v1.2) e D8/D9 no desktop — Importar alunos: colar a lista copiada da planilha
+// (código + nome), escolher opcionalmente uma turma e a data inicial para matricular todos, conferir o
 // relatório da API (códigos repetidos ou já cadastrados impedem; nome repetido é aviso) e importar.
 // Nada é gravado enquanto houver erro. Online.
 import 'package:material_ui/material_ui.dart';
@@ -8,8 +9,12 @@ import '../dados/cliente_api.dart';
 import '../dados/repositorio_alunos.dart';
 import '../estado/dependencias.dart';
 import '../regras/lista_colada.dart';
+import '../regras/presenca.dart';
 import 'componentes.dart';
+import 'formatacao.dart';
+import 'relatorios/partes_relatorio.dart' show CampoData;
 import 'tela_alunos.dart' show descreverErroOnline;
+import 'tema.dart';
 
 /// Limite da API por importação.
 const _maximoLinhas = 2000;
@@ -28,9 +33,45 @@ class TelaImportarAlunos extends StatefulWidget {
 class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
   final _texto = TextEditingController();
   List<LinhaColada>? _linhas;
-  RelatorioImportacao? _relatorio;
+  ResultadoImportacao? _resultado;
   bool _trabalhando = false;
   String? _erro;
+
+  /// Turmas em que pode matricular; `null` enquanto carrega.
+  List<TurmaParaMatricula>? _turmas;
+  bool _falhouTurmas = false;
+  String? _turmaId;
+  late String _dataInicio;
+  bool _iniciado = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_iniciado) return;
+    _iniciado = true;
+    final dependencias = EscopoDependencias.obter(context);
+    _dataInicio = obterHojeEmSaoPaulo(dependencias.relogio());
+    _carregarTurmas(dependencias);
+  }
+
+  Future<void> _carregarTurmas(Dependencias dependencias) async {
+    try {
+      final turmas = await dependencias.alunos.buscarTurmas(
+        academiaId: widget.academiaId,
+      );
+      if (mounted) setState(() => _turmas = turmas);
+    } on SessaoEncerrada {
+      await dependencias.sessao.encerrarLocalmente();
+    } catch (_) {
+      // Sem a lista, dá para importar sem matricular.
+      if (mounted) {
+        setState(() {
+          _turmas = const [];
+          _falhouTurmas = true;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -69,6 +110,17 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
     if (mounted) setState(() => _trabalhando = false);
   }
 
+  Future<ResultadoImportacao> _enviar(
+    RepositorioAlunos alunos, {
+    bool confirmar = false,
+  }) => alunos.importarAlunos(
+    _paraEnviar,
+    confirmar: confirmar,
+    academiaId: widget.academiaId,
+    turmaId: _turmaId,
+    dataInicio: _turmaId == null ? null : _dataInicio,
+  );
+
   Future<void> _conferir() async {
     final linhas = lerListaColada(_texto.text);
     if (linhas.isEmpty) {
@@ -83,11 +135,8 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
       return;
     }
     _linhas = linhas;
-    await _executar(() async {
-      final resultado = await EscopoDependencias.obter(context).alunos
-          .importarAlunos(_paraEnviar, academiaId: widget.academiaId);
-      _relatorio = resultado.relatorio;
-    });
+    final alunos = EscopoDependencias.obter(context).alunos;
+    await _executar(() async => _resultado = await _enviar(alunos));
   }
 
   Future<void> _importar() async {
@@ -95,26 +144,26 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
     final mensageiro = ScaffoldMessenger.of(context);
     final navegador = Navigator.of(context);
     await _executar(() async {
-      final resultado = await dependencias.alunos.importarAlunos(
-        _paraEnviar,
-        confirmar: true,
-        academiaId: widget.academiaId,
-      );
+      final resultado = await _enviar(dependencias.alunos, confirmar: true);
       if (resultado.importados == 0) {
         // Alguém cadastrou um código da lista nesse meio-tempo: mostra o relatório novo.
-        _relatorio = resultado.relatorio;
+        _resultado = resultado;
         return;
       }
       // Na carga inicial do administrador nada vai para o aparelho dele.
       if (widget.academiaId == null) {
         await dependencias.coordenador.sincronizar();
       }
+      final n = resultado.importados;
+      final importados = n == 1 ? '1 aluno importado' : '$n alunos importados';
+      final matricula = resultado.matricula;
       mensageiro.showSnackBar(
         SnackBar(
           content: Text(
-            resultado.importados == 1
-                ? '1 aluno importado.'
-                : '${resultado.importados} alunos importados.',
+            matricula == null
+                ? '$importados.'
+                : '$importados e ${n == 1 ? 'matriculado' : 'matriculados'} '
+                      'na turma ${matricula.turmaNome}.',
           ),
         ),
       );
@@ -123,15 +172,15 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
   }
 
   void _voltarParaCorrigir() => setState(() {
-    _relatorio = null;
+    _resultado = null;
     _erro = null;
   });
 
   @override
   Widget build(BuildContext context) {
-    final relatorio = _relatorio;
+    final resultado = _resultado;
     return PopScope(
-      canPop: relatorio == null,
+      canPop: resultado == null,
       onPopInvokedWithResult: (saiu, _) {
         if (!saiu) _voltarParaCorrigir();
       },
@@ -145,9 +194,9 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
           centerTitle: true,
         ),
         body: LarguraCelular(
-          child: relatorio == null
+          child: resultado == null
               ? _montarColar(context)
-              : _montarRelatorio(context, relatorio),
+              : _montarRelatorio(context, resultado),
         ),
       ),
     );
@@ -156,8 +205,8 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
   Widget _montarColar(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
     final apoio = TextStyle(color: cores.onSurfaceVariant, fontSize: 13);
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    final lista = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'Na planilha, selecione as colunas código e nome, copie e cole aqui. '
@@ -184,23 +233,120 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
           '"(10A)" vira "10A".',
           style: apoio,
         ),
-        if (_erro != null) ...[
-          const SizedBox(height: 8),
-          Text(_erro!, style: TextStyle(color: cores.error)),
-        ],
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: _trabalhando ? null : _conferir,
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size.fromHeight(48),
+      ],
+    );
+    final conferir = OutlinedButton(
+      onPressed: _trabalhando ? null : _conferir,
+      style: OutlinedButton.styleFrom(minimumSize: const Size(220, 48)),
+      child: const Text('Conferir lista'),
+    );
+    final erro = _erro == null
+        ? null
+        : Text(_erro!, style: TextStyle(color: cores.error));
+
+    // No desktop (D8), lista colada e turma lado a lado.
+    if (ehDesktop(context)) {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: lista),
+              const SizedBox(width: 20),
+              SizedBox(width: 340, child: _montarMatricula(context)),
+            ],
           ),
-          child: const Text('Conferir lista'),
-        ),
+          if (erro != null) ...[const SizedBox(height: 8), erro],
+          const SizedBox(height: 16),
+          Align(alignment: Alignment.centerLeft, child: conferir),
+        ],
+      );
+    }
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        lista,
+        const SizedBox(height: 16),
+        _montarMatricula(context),
+        if (erro != null) ...[const SizedBox(height: 8), erro],
+        const SizedBox(height: 16),
+        conferir,
       ],
     );
   }
 
-  Widget _montarRelatorio(BuildContext context, RelatorioImportacao r) {
+  /// Turma (opcional) e data inicial das matrículas dos importados.
+  Widget _montarMatricula(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final apoio = TextStyle(color: cores.onSurfaceVariant, fontSize: 13);
+    final turmas = _turmas;
+    final semTurmas = turmas != null && turmas.isEmpty;
+    final String ajuda;
+    if (_falhouTurmas) {
+      ajuda = 'Não foi possível carregar as turmas; dá para importar sem matricular.';
+    } else if (semTurmas) {
+      ajuda = widget.academiaId == null
+          ? 'Nenhuma turma disponível para matricular.'
+          : 'A academia ainda não tem turmas.';
+    } else if (_turmaId == null) {
+      ajuda =
+          'Sem turma, a data fica desabilitada e os alunos só são cadastrados.';
+    } else {
+      ajuda = 'Todos os alunos da lista serão matriculados nessa turma a partir dessa data.';
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text.rich(
+          TextSpan(
+            text: 'Matricular numa turma ',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+            children: [
+              TextSpan(
+                text: '(opcional)',
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: cores.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        DropdownButtonFormField<String?>(
+          key: ValueKey('turmas-${turmas?.length}'),
+          initialValue: _turmaId,
+          isExpanded: true,
+          decoration: const InputDecoration(labelText: 'Turma', isDense: true),
+          items: [
+            const DropdownMenuItem<String?>(
+              value: null,
+              child: Text('Não matricular (só cadastrar)'),
+            ),
+            for (final t in turmas ?? const <TurmaParaMatricula>[])
+              DropdownMenuItem<String?>(value: t.id, child: Text(t.nome)),
+          ],
+          onChanged: turmas == null || semTurmas || _trabalhando
+              ? null
+              : (id) => setState(() => _turmaId = id),
+        ),
+        const SizedBox(height: 10),
+        CampoData(
+          rotulo: 'Matriculados desde',
+          data: _dataInicio,
+          aoEscolher: _turmaId == null || _trabalhando
+              ? null
+              : (data) => setState(() => _dataInicio = data),
+        ),
+        const SizedBox(height: 6),
+        Text(ajuda, style: apoio),
+      ],
+    );
+  }
+
+  Widget _montarRelatorio(BuildContext context, ResultadoImportacao resultado) {
+    final r = resultado.relatorio;
     final cores = Theme.of(context).colorScheme;
     final apoio = TextStyle(color: cores.onSurfaceVariant, fontSize: 13);
     final erros = [
@@ -217,7 +363,35 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
         'Aviso: nome repetido "${n.nome}" (${_juntarLinhas(n.linhas)})',
     ];
     final total = _linhas!.length;
-    // Botões no rodapé, como no wireframe 8c; com muitos erros, a tela rola.
+    final matricula = resultado.matricula;
+    final alunos = total == 1 ? '1 aluno' : '$total alunos';
+    final voltar = OutlinedButton(
+      onPressed: _trabalhando ? null : _voltarParaCorrigir,
+      style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
+      child: const Text('Voltar e corrigir'),
+    );
+    final desktop = ehDesktop(context);
+    final importar = BotaoPrincipal(
+      rotulo: matricula == null
+          ? 'Importar $alunos'
+          : 'Importar e matricular $alunos',
+      icone: Symbols.upload,
+      largo: !desktop,
+      carregando: _trabalhando && r.podeImportar,
+      rotuloCarregando: 'Importando…',
+      aoTocar: r.podeImportar ? _importar : null,
+    );
+    final cartaoMatricula = _CartaoMatricula(
+      texto: matricula == null
+          ? 'Só cadastro: nenhuma matrícula será criada.'
+          : null,
+      turma: matricula?.turmaNome,
+      data: matricula == null ? null : formatarDataBr(matricula.dataInicio),
+      alunos: total == 1
+          ? 'O aluno será matriculado'
+          : 'Os $total alunos serão matriculados',
+    );
+    // Botões no rodapé no celular (8c) e alinhados à direita no desktop (D9); com muitos erros, rola.
     return CustomScrollView(
       slivers: [
         SliverPadding(
@@ -229,6 +403,8 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
               children: [
                 Text('$total ${total == 1 ? 'linha lida' : 'linhas lidas'}'),
                 const SizedBox(height: 8),
+                // No desktop a matrícula vem logo no topo (D9); no celular, depois dos erros (8c).
+                if (desktop) ...[cartaoMatricula, const SizedBox(height: 6)],
                 for (final e in erros) ...[
                   _Faixa(
                     texto: e,
@@ -245,6 +421,7 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
                   ),
                   const SizedBox(height: 6),
                 ],
+                if (!desktop) ...[cartaoMatricula, const SizedBox(height: 6)],
                 Text(
                   r.podeImportar ? 'Tudo certo para importar.' : 'Corrija na planilha e cole de novo. Nada é gravado enquanto houver erro.',
                   style: apoio,
@@ -253,31 +430,90 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
                   const SizedBox(height: 8),
                   Text(_erro!, style: TextStyle(color: cores.error)),
                 ],
-                const Spacer(),
-                const SizedBox(height: 16),
-                OutlinedButton(
-                  onPressed: _trabalhando ? null : _voltarParaCorrigir,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
+                if (desktop) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [voltar, const SizedBox(width: 12), importar],
                   ),
-                  child: const Text('Voltar e corrigir'),
-                ),
-                const SizedBox(height: 8),
-                BotaoPrincipal(
-                  rotulo: total == 1
-                      ? 'Importar 1 aluno'
-                      : 'Importar $total alunos',
-                  icone: Symbols.upload,
-                  largo: true,
-                  carregando: _trabalhando && r.podeImportar,
-                  rotuloCarregando: 'Importando…',
-                  aoTocar: r.podeImportar ? _importar : null,
-                ),
+                ] else ...[
+                  const Spacer(),
+                  const SizedBox(height: 16),
+                  voltar,
+                  const SizedBox(height: 8),
+                  importar,
+                ],
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Turma e data das matrículas (azul-claro) ou o aviso de que é só cadastro (neutro).
+class _CartaoMatricula extends StatelessWidget {
+  const _CartaoMatricula({
+    required this.texto,
+    required this.turma,
+    required this.data,
+    required this.alunos,
+  });
+
+  /// Texto do aviso sem matrícula; com turma, `null`.
+  final String? texto;
+  final String? turma;
+  final String? data;
+  final String alunos;
+
+  @override
+  Widget build(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final comTurma = texto == null;
+    final cor = comTurma
+        ? CoresWireframe.etiquetaTexto
+        : cores.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: comTurma ? CoresWireframe.etiquetaFundo : cores.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: comTurma ? null : Border.all(color: cores.outlineVariant),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            comTurma ? Symbols.school : Symbols.person_add,
+            color: cor,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: comTurma
+                ? Text.rich(
+                    TextSpan(
+                      style: TextStyle(color: cor, fontSize: 14),
+                      children: [
+                        TextSpan(text: '$alunos na turma '),
+                        TextSpan(
+                          text: turma,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const TextSpan(text: ' a partir de '),
+                        TextSpan(
+                          text: data,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const TextSpan(text: '.'),
+                      ],
+                    ),
+                  )
+                : Text(texto!, style: TextStyle(color: cor, fontSize: 14)),
+          ),
+        ],
+      ),
     );
   }
 }

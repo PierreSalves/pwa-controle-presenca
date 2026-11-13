@@ -149,7 +149,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - Sem internet, a tela mostra "Sem internet. O cadastro precisa de conexão." e um botão para tentar de novo.
 - O PUT do aluno grava todos os campos: os campos sem tela (ex.: `sexo`) voltam como vieram, para não serem apagados.
 - `app/lib/dados/repositorio_usuarios.dart` (tela 11, só professor): o cadastro e a edição abrem na própria lista, como no wireframe ("Novo: nome · e-mail · tipo · turmas"). Salvar faz o `PUT` dos dados e, se as turmas mudaram, o `PUT .../turmas`. Redefinir a senha (quem esqueceu) encerra as sessões da pessoa. O professor não muda o próprio tipo nem se desativa (a API recusa e a tela já bloqueia).
-- Importação (telas 8b e 8c): o usuário cola as colunas código e nome copiadas da planilha. `app/lib/regras/lista_colada.dart` separa cada linha por tab, ponto e vírgula ou espaço, ignora linhas em branco e o cabeçalho, e guarda o número da linha colada; a API (`POST /api/alunos/importacao`) faz o relatório e só grava com `confirmar: true` e sem erros. A tela traduz as linhas do relatório para as linhas do texto colado.
+- Importação (telas 8b e 8c): o usuário cola as colunas código e nome copiadas da planilha. `app/lib/regras/lista_colada.dart` separa cada linha por tab, ponto e vírgula ou espaço, ignora linhas em branco e o cabeçalho, e guarda o número da linha colada; a API (`POST /api/alunos/importacao`) faz o relatório e só grava com `confirmar: true` e sem erros. A tela traduz as linhas do relatório para as linhas do texto colado. Opcionalmente (v1.2) o usuário escolhe uma turma e a data inicial (padrão hoje, em dd/mm/aaaa) para matricular todos os importados: a lista de turmas vem de `GET /api/turmas` (assistente só vê as que acessa) ou, na carga inicial, de `GET /api/admin/academias/:id/turmas`; o relatório mostra a turma e a data antes de gravar e, depois de importar, o app sincroniza para receber alunos e matrículas.
 - `app/lib/dados/repositorio_turmas.dart` (tela 10): salvar a turma faz só as chamadas necessárias, em ordem:
   1. dados (`POST`/`PUT /api/turmas`);
   2. quadro (`POST .../quadros`, só se algum dia mudou; vale a partir de hoje por padrão, e a mesma data corrige o último quadro);
@@ -205,7 +205,7 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `PUT /api/alunos/:id` | altera |
 | `DELETE /api/alunos/:id` | exclusão lógica do aluno e das matrículas dele; o código fica livre |
 | `POST /api/alunos/:id/graduacoes` · `DELETE /api/alunos/:id/graduacoes/:gid` | faixa, grau e data |
-| `POST /api/alunos/importacao` | `{ alunos: [{ codigo, nome }], confirmar }` (até 2.000 linhas; `(10A)` vira `10A`). Sem `confirmar`, só o relatório: linhas incompletas, códigos repetidos na planilha, códigos já cadastrados e nomes repetidos (este só avisa). Com `confirmar: true`, grava tudo se não houver bloqueio |
+| `POST /api/alunos/importacao` | `{ alunos: [{ codigo, nome }], turma_id?, data_inicio?, confirmar }` (até 2.000 linhas; `(10A)` vira `10A`). Sem `confirmar`, só o relatório: linhas incompletas, códigos repetidos na planilha, códigos já cadastrados e nomes repetidos (este só avisa). Com `confirmar: true`, grava tudo se não houver bloqueio. `turma_id` e `data_inicio` (AAAA-MM-DD) vêm juntos ou nenhum (`400 dados_invalidos`); a turma precisa ser da academia do token e, para a assistente, estar entre as que ela acessa (`404 turma_nao_encontrada`). Resposta: `{ relatorio, matricula: { turma_id, turma_nome, data_inicio } | null, importados }`. Alunos e matrículas (`matriculado`, sem fim) são gravados no mesmo batch, com o mesmo `server_version`, então chegam juntos no próximo pull; se algo falhar, nada é gravado. Como código já cadastrado bloqueia a importação, todo aluno importado é novo e não tem outra matrícula na turma |
 
 **Matrículas** (`api/src/rotas/matriculas.ts`). Exige `gerenciar_matriculas` e acesso à turma.
 
@@ -237,7 +237,8 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `GET`/`POST /api/admin/academias/:id/professores` | lista e cria professores |
 | `DELETE /api/admin/academias/:id/professores/:usuarioId` | desativa o professor e encerra as sessões |
 | `POST /api/admin/academias/:id/professores/:usuarioId/senha` | `senha` (8+); redefine a senha de um professor ativo da academia (esqueceu a senha) e encerra as sessões dele; assistente, professor desativado ou de outra academia → `404 usuario_nao_encontrado`. Atende o professor autônomo, que não tem outro professor para redefinir a senha dele |
-| `POST /api/admin/academias/:id/alunos/importacao` | carga inicial; mesmas regras de `POST /api/alunos/importacao` |
+| `GET /api/admin/academias/:id/turmas` | `{ turmas: [{ id, nome }] }`, para escolher a turma da carga inicial |
+| `POST /api/admin/academias/:id/alunos/importacao` | carga inicial; mesmas regras de `POST /api/alunos/importacao`, podendo matricular em qualquer turma da academia |
 
 ### Conflitos
 - Presença é quase só inserção; chave única `presencas (aula_id, aluno_id)`: dois aparelhos marcando o mesmo aluno resultam num registro só.
@@ -383,6 +384,7 @@ Decisões de modelagem:
 ## Importação das planilhas
 - As planilhas atuais são modelos impressos sem dados digitados; importar só a **lista de alunos** (código + nome) a partir das abas da presença semanal/anual.
 - Antes de gravar, gerar um relatório de **códigos duplicados** e nomes repetidos para o professor resolver.
+- Opcionalmente, matricular todos os alunos importados numa turma a partir de uma data única (v1.2).
 
 ## Decisões pendentes
 1. Se tenant e turma tiverem `cabecalho_impressao`, aparecem os dois ou o da turma substitui o do tenant? (Sugestão: os dois, tenant em cima.)

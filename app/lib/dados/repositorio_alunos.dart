@@ -227,6 +227,19 @@ class RelatorioImportacao {
   final bool podeImportar;
 }
 
+/// Resposta da importação: relatório, turma e data das matrículas (sem turma, `null`) e quantos
+/// alunos foram gravados (0 quando só conferiu ou havia erro).
+class ResultadoImportacao {
+  const ResultadoImportacao({
+    required this.relatorio,
+    required this.matricula,
+    required this.importados,
+  });
+  final RelatorioImportacao relatorio;
+  final ({String turmaNome, String dataInicio})? matricula;
+  final int importados;
+}
+
 class TurmaParaMatricula {
   const TurmaParaMatricula({required this.id, required this.nome});
   final String id;
@@ -260,10 +273,14 @@ class RepositorioAlunos {
   /// Sem [confirmar], só confere e devolve o relatório. Com [confirmar], grava se não houver
   /// erro e devolve quantos alunos foram importados (0 se o relatório impediu).
   /// Com [academiaId], é a carga inicial feita pelo administrador do sistema (tela 13).
-  Future<({RelatorioImportacao relatorio, int importados})> importarAlunos(
+  /// Sem [confirmar], só confere. Com [turmaId] e [dataInicio] (AAAA-MM-DD), matricula todos os
+  /// importados na turma; turma de outra academia ou sem acesso: [ErroApi] `turma_nao_encontrada`.
+  Future<ResultadoImportacao> importarAlunos(
     List<({String codigo, String nome})> linhas, {
     bool confirmar = false,
     String? academiaId,
+    String? turmaId,
+    String? dataInicio,
   }) async {
     final resposta = await _cliente.enviar(
       'POST',
@@ -274,13 +291,22 @@ class RepositorioAlunos {
         'alunos': [
           for (final l in linhas) {'codigo': l.codigo, 'nome': l.nome},
         ],
+        'turma_id': ?turmaId,
+        if (turmaId != null) 'data_inicio': dataInicio,
         if (confirmar) 'confirmar': true,
       },
     );
-    return (
+    final matricula = resposta['matricula'] as Map<String, dynamic>?;
+    return ResultadoImportacao(
       relatorio: RelatorioImportacao.lerJson(
         resposta['relatorio'] as Map<String, dynamic>,
       ),
+      matricula: matricula == null
+          ? null
+          : (
+              turmaNome: matricula['turma_nome'] as String,
+              dataInicio: matricula['data_inicio'] as String,
+            ),
       importados: (resposta['importados'] as int?) ?? 0,
     );
   }
@@ -319,8 +345,13 @@ class RepositorioAlunos {
       _cliente.enviar('DELETE', 'alunos/$alunoId/graduacoes/$graduacaoId');
 
   /// Turmas em que o usuário pode matricular (o professor vê todas da academia).
-  Future<List<TurmaParaMatricula>> buscarTurmas() async {
-    final resposta = await _cliente.enviar('GET', 'turmas');
+  /// Turmas em que o usuário pode matricular. Com [academiaId], as turmas da academia na carga
+  /// inicial do administrador do sistema.
+  Future<List<TurmaParaMatricula>> buscarTurmas({String? academiaId}) async {
+    final resposta = await _cliente.enviar(
+      'GET',
+      academiaId == null ? 'turmas' : 'admin/academias/$academiaId/turmas',
+    );
     return [
       for (final t in (resposta['turmas'] as List).cast<Map<String, dynamic>>())
         TurmaParaMatricula(id: t['id'] as String, nome: t['nome'] as String),

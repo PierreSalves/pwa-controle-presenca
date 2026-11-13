@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
+import { gerarUuidV7 } from '../src/util/ids';
 import { comToken, criarTenant, criarUsuario, entrar, requisitar, SENHA_PADRAO } from './apoio';
 
 function chamar(token: string, metodo: string, caminho: string, corpo?: unknown): Promise<Response> {
@@ -394,5 +395,55 @@ describe('administrador do sistema', () => {
     const inexistente = '/api/admin/academias/01900000-0000-7000-8000-000000000000';
     expect((await chamar(admin.token, 'PUT', inexistente, { nome: 'X', ativo: 1 })).status).toBe(404);
     expect((await chamar(admin.token, 'GET', `${inexistente}/professores`)).status).toBe(404);
+  });
+});
+
+async function criarAcademiaComTurma(admin: string, turma: string) {
+  const { academia } = await (
+    await chamar(admin, 'POST', '/api/admin/academias', {
+      nome: `Academia ${turma}`,
+      professor: { nome: 'Prof.', email: novoEmail(), senha: SENHA_PADRAO },
+    })
+  ).json<{ academia: { id: string } }>();
+  const turmaId = gerarUuidV7();
+  await env.DB.prepare('INSERT INTO turmas (id, tenant_id, nome) VALUES (?1, ?2, ?3)')
+    .bind(turmaId, academia.id, turma)
+    .run();
+  return { tenantId: academia.id, turmaId };
+}
+
+describe('administrador: carga inicial com matrícula', () => {
+  it('lista as turmas da academia e matricula os alunos importados; recusa turma de outra academia', async () => {
+    const admin = await entrarComo(null, 'superadmin');
+    const a = await criarAcademiaComTurma(admin.token, 'Adulto');
+    const b = await criarAcademiaComTurma(admin.token, 'Kids');
+    const base = `/api/admin/academias/${a.tenantId}`;
+
+    const { turmas } = await (
+      await chamar(admin.token, 'GET', `${base}/turmas`)
+    ).json<{ turmas: unknown[] }>();
+    expect(turmas).toEqual([{ id: a.turmaId, nome: 'Adulto' }]);
+    const professor = await entrarComo(a.tenantId, 'professor');
+    expect((await chamar(professor.token, 'GET', `${base}/turmas`)).status).toBe(403);
+
+    const pedido = { alunos: [{ codigo: '1', nome: 'Ana' }], data_inicio: '2026-08-01', confirmar: true };
+    let resposta = await chamar(admin.token, 'POST', `${base}/alunos/importacao`, {
+      ...pedido,
+      turma_id: b.turmaId,
+    });
+    expect(resposta.status).toBe(404);
+    expect(await resposta.json()).toEqual({ erro: 'turma_nao_encontrada' });
+
+    resposta = await chamar(admin.token, 'POST', `${base}/alunos/importacao`, {
+      ...pedido,
+      turma_id: a.turmaId,
+    });
+    expect(resposta.status).toBe(201);
+    const matriculas = await env.DB.prepare(
+      'SELECT turma_id, data_inicio FROM matriculas WHERE tenant_id = ?1',
+    )
+      .bind(a.tenantId)
+      .all();
+    expect(matriculas.results).toEqual([{ turma_id: a.turmaId, data_inicio: '2026-08-01' }]);
   });
 });

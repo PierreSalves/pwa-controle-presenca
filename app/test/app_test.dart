@@ -84,6 +84,7 @@ class _ApiFalsa {
   final List<Map<String, dynamic>> alunosCriados = [];
   final List<Map<String, dynamic>> quadrosCriados = [];
   int alunosImportados = 0;
+  final List<Map<String, dynamic>> importacoes = [];
   String tipoUsuario = 'assistente';
   final List<Map<String, dynamic>> usuariosCriados = [];
   final List<Map<String, dynamic>> academias = [
@@ -238,6 +239,9 @@ class _ApiFalsa {
       academias.add(nova);
       return _json({'academia': nova}, 201);
     }
+    if (caminho.contains('/admin/academias/') && caminho.endsWith('/turmas')) {
+      return _json({'turmas': []});
+    }
     if (caminho.contains('/admin/academias/') &&
         caminho.endsWith('/alunos/importacao')) {
       cargasIniciais.add(caminho);
@@ -302,8 +306,16 @@ class _ApiFalsa {
       };
       final grava = corpo['confirmar'] == true && repetidos.isEmpty;
       if (grava) alunosImportados += alunos.length;
+      importacoes.add(corpo);
       return _json({
         'relatorio': relatorio,
+        'matricula': corpo['turma_id'] == null
+            ? null
+            : {
+                'turma_id': corpo['turma_id'],
+                'turma_nome': 'Adulto',
+                'data_inicio': corpo['data_inicio'],
+              },
         'importados': grava ? alunos.length : 0,
       }, grava ? 201 : 200);
     }
@@ -461,6 +473,22 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 100)),
     );
     await tester.pumpAndSettle();
+  }
+
+  /// O botão fica abaixo da lista e da turma: rola até ele antes de tocar.
+  Future<void> tocarConferir(WidgetTester tester) async {
+    final botao = find.text('Conferir lista');
+    await tester.scrollUntilVisible(
+      botao,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.tap(botao);
   }
 
   Future<void> abrirApp(WidgetTester tester) async {
@@ -688,7 +716,7 @@ void main() {
       find.byType(TextField),
       '20\tAna\n\n20\tBia\n21\tCaio',
     );
-    await tester.tap(find.text('Conferir lista'));
+    await tocarConferir(tester);
     await esperar(tester);
     expect(find.text('3 linhas lidas'), findsOneWidget);
     expect(find.text('Código 20 repetido nas linhas 1 e 3'), findsOneWidget);
@@ -703,7 +731,7 @@ void main() {
       find.byType(TextField),
       '20\tAna\n22\tBia\n21\tCaio',
     );
-    await tester.tap(find.text('Conferir lista'));
+    await tocarConferir(tester);
     await esperar(tester);
     expect(find.text('Tudo certo para importar.'), findsOneWidget);
     await tester.tap(find.text('Importar 3 alunos'));
@@ -714,6 +742,82 @@ void main() {
       find.text('Importar planilha'),
       findsOneWidget,
     ); // voltou para a lista
+    await fecharApp(tester);
+  });
+
+  testWidgets(
+    'importa e matricula todos na turma escolhida, com a data de hoje',
+    (tester) async {
+      await entrar(tester);
+      await tester.tap(find.byTooltip('Abrir menu de navegação'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Alunos'));
+      await esperar(tester);
+      await tester.tap(find.text('Importar planilha'));
+      await esperar(tester);
+
+      // Sem turma, a data fica desabilitada.
+      expect(find.text('Não matricular (só cadastrar)'), findsOneWidget);
+      expect(find.text('12/11/2026'), findsOneWidget);
+      expect(
+        find.text(
+          'Sem turma, a data fica desabilitada e os alunos só são cadastrados.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.byType(TextField), '20\tAna\n21\tCaio');
+      await tester.tap(find.text('Não matricular (só cadastrar)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Turma $turmaId').last);
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          'Todos os alunos da lista serão matriculados nessa turma a partir dessa data.',
+        ),
+        findsOneWidget,
+      );
+
+      await tocarConferir(tester);
+      await esperar(tester);
+      expect(api.importacoes.last['turma_id'], turmaId);
+      expect(api.importacoes.last['data_inicio'], '2026-11-12');
+      expect(
+        find.textContaining(
+          'Os 2 alunos serão matriculados na turma Adulto a partir de 12/11/2026',
+          findRichText: true,
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Importar e matricular 2 alunos'));
+      await esperar(tester);
+      expect(api.importacoes.last['confirmar'], true);
+      expect(api.importacoes.last['turma_id'], turmaId);
+      expect(
+        find.text('2 alunos importados e matriculados na turma Adulto.'),
+        findsOneWidget,
+      );
+      await fecharApp(tester);
+    },
+  );
+
+  testWidgets('sem turma o relatório avisa que é só cadastro', (tester) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alunos'));
+    await esperar(tester);
+    await tester.tap(find.text('Importar planilha'));
+    await esperar(tester);
+    await tester.enterText(find.byType(TextField), '20\tAna');
+    await tocarConferir(tester);
+    await esperar(tester);
+    expect(api.importacoes.last.containsKey('turma_id'), isFalse);
+    expect(
+      find.text('Só cadastro: nenhuma matrícula será criada.'),
+      findsOneWidget,
+    );
+    expect(find.text('Importar 1 aluno'), findsOneWidget);
     await fecharApp(tester);
   });
 
@@ -814,6 +918,43 @@ void main() {
     );
     expect(find.bySemanticsLabel('Carregando…'), findsOneWidget);
   });
+
+  testWidgets(
+    'no desktop a importação põe lista e turma lado a lado (D8, D9)',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await entrar(tester);
+      await tester.tap(find.text('Alunos'));
+      await esperar(tester);
+      await tester.tap(find.text('Importar planilha'));
+      await esperar(tester);
+
+      // D8: a turma fica à direita da lista colada, na mesma altura.
+      final lista = tester.getRect(find.byType(TextField));
+      final turma = tester.getRect(find.text('Não matricular (só cadastrar)'));
+      expect(turma.left, greaterThan(lista.right));
+      expect(turma.top, lessThan(lista.bottom));
+
+      await tester.enterText(find.byType(TextField), '20\tAna');
+      await tester.tap(find.text('Não matricular (só cadastrar)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Turma $turmaId').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Conferir lista'));
+      await esperar(tester);
+
+      // D9: botões lado a lado, alinhados à direita.
+      final voltar = tester.getRect(find.text('Voltar e corrigir'));
+      final importar = tester.getRect(
+        find.text('Importar e matricular 1 aluno'),
+      );
+      expect(importar.left, greaterThan(voltar.right));
+      expect((importar.center.dy - voltar.center.dy).abs(), lessThan(4));
+      await fecharApp(tester);
+    },
+  );
 
   testWidgets('no desktop o menu lateral fica fixo e acompanha as telas', (
     tester,
@@ -1024,6 +1165,7 @@ void main() {
     await tester.tap(find.text('Equipe Nova').last);
     await esperar(tester);
     expect(find.text('Carga inicial · Equipe Nova'), findsOneWidget);
+    expect(find.text('A academia ainda não tem turmas.'), findsOneWidget);
     await fecharApp(tester);
   });
 

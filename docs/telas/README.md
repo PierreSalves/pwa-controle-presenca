@@ -2,7 +2,8 @@
 
 Wireframes das telas da Fase 1. São a referência para implementar o app: **nenhuma tela é implementada sem wireframe aprovado e registrado aqui** (veja [regras de desenvolvimento](../desenvolvimento.md#10-interface)).
 
-- Fonte editável: [`wireframes-fase1.html`](wireframes-fase1.html) (abra no navegador; `?tela=4` mostra uma tela só).
+- Fonte editável: [`wireframes-fase1.html`](wireframes-fase1.html) (abra no navegador; `?tela=4` mostra uma tela só): conteúdo e regras de cada tela (v1 e v1.1).
+- **Linguagem visual: [`wireframes-v2.html`](wireframes-v2.html)** (v2): cores, tipografia, botões, menu lateral no desktop e requisitos de implementação. Imagem: [`img/v2.png`](img/v2.png).
 - Imagens: [`img/`](img/), geradas com `bash docs/telas/gerar-imagens.sh` (Git Bash; usa o Edge ou o navegador em `CHROME_EXECUTABLE`).
 - Mensalidades (Fase 2) terão wireframes próprios quando a fase começar.
 
@@ -12,8 +13,12 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 |---|---|---|---|
 | 1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 1 a 14 (celular), 2b e 4b, e D1 a D4 (desktop). Inclui logotipo e ícone da academia, reposição fixa no quadro e lista do lançamento por frequência |
 | 1.1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 8b e 8c: importar alunos colando a lista copiada da planilha (sem escolher arquivo), com relatório de códigos repetidos ou já cadastrados antes de gravar |
+| 2 | 13/11/2026 | **Aprovado** pelo responsável do projeto | Nova linguagem visual para todas as telas (revisão com as skills frontend-design e high-end-visual-design, e conferida com a web-design-guidelines): menu lateral fixo no desktop (D1 a D3), cor de destaque em todo botão de ação (principal azul, secundário azul-claro, voltar em círculo, destrutivo vermelho-claro), fonte Lexend e a faixa do aluno como único destaque. Conteúdo e regras das telas seguem a v1 |
 
 ## Decisões de interface aprovadas
+
+- **Visual da v2 vale para todas as telas.** As telas da v1 continuam definindo conteúdo e regras; cores, botões, tipografia e o menu lateral do desktop seguem [`wireframes-v2.html`](wireframes-v2.html), inclusive os requisitos de implementação no fim do arquivo (área de toque de 48 px, contraste, foco visível, movimento reduzido, rotas com endereço no desktop).
+- **Todo botão de ação tem cor de destaque:** principal em pílula azul com ícone no círculo; secundário azul-claro; voltar em círculo azul-claro; ação que apaga ou encerra em vermelho-claro.
 
 - **Celular primeiro.** Menu escondido (ícone ☰); a partir de ~1000 px de largura, menu lateral fixo (versão desktop).
 - **Lançamento mostra um dia por vez no celular** e a **grade da semana no desktop** (parecida com a planilha atual). Dia futuro e aluno fora do período da matrícula ficam bloqueados.

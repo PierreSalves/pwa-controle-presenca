@@ -1,6 +1,8 @@
 // Navegação da v2: cada item do menu é uma rota com endereço (/alunos, /turmas...), para recarregar
 // manter a tela e o voltar do navegador funcionar. No desktop (a partir de 1000 px) o menu lateral
 // fica fixo em volta do navegador interno, então continua visível ao abrir um aluno ou uma turma.
+import 'dart:typed_data';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -13,6 +15,7 @@ import 'tela_escolher_turma.dart';
 import 'tela_inicial.dart';
 import 'tela_relatorios.dart';
 import 'tela_alunos.dart';
+import 'tela_dados_academia.dart';
 import 'tela_turmas.dart';
 import 'tela_usuarios.dart';
 import 'tema.dart';
@@ -24,6 +27,7 @@ abstract final class Rotas {
   static const alunos = '/alunos';
   static const turmas = '/turmas';
   static const usuarios = '/usuarios';
+  static const academia = '/academia';
 }
 
 class ItemMenu {
@@ -48,6 +52,8 @@ List<ItemMenu> obterItensMenu(SessaoApp sessao) {
     const ItemMenu(Rotas.turmas, 'Turmas', Symbols.school),
     if (usuario?.tipo == 'professor')
       const ItemMenu(Rotas.usuarios, 'Usuários', Symbols.manage_accounts),
+    if (usuario?.tipo == 'professor')
+      const ItemMenu(Rotas.academia, 'Dados da academia', Symbols.storefront),
   ];
 }
 
@@ -69,6 +75,7 @@ class PortaoSessao extends StatelessWidget {
       Rotas.alunos => const TelaAlunos(),
       Rotas.turmas => const TelaTurmas(),
       Rotas.usuarios => const TelaUsuarios(),
+      Rotas.academia => const TelaDadosAcademia(),
       _ => const TelaInicial(),
     };
   }
@@ -178,6 +185,7 @@ class EstruturaComMenu extends StatelessWidget {
               navegador: navegador,
               observador: observador,
               nomeAcademia: sessao.nomeAcademia,
+              logotipo: sessao.iconeAcademia,
             ),
             // Contêiner próprio de acessibilidade: a barreira de cada rota bloqueia o que vem antes
             // dela no mesmo contêiner, e sem isto o menu lateral sumiria para o leitor de tela.
@@ -195,9 +203,13 @@ class _MenuLateral extends StatelessWidget {
     required this.navegador,
     required this.observador,
     required this.nomeAcademia,
+    required this.logotipo,
   });
 
   final List<ItemMenu> itens;
+
+  /// Ícone 512 px da academia; null mostra só o nome.
+  final Uint8List? logotipo;
   final GlobalKey<NavigatorState> navegador;
   final ObservadorRotas observador;
   final String? nomeAcademia;
@@ -219,7 +231,7 @@ class _MenuLateral extends StatelessWidget {
               builder: (context, ativa, _) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Sem logotipo cadastrado, mostra o nome da academia.
+                  // Com logotipo, o ícone da academia ao lado do nome; sem, só o nome.
                   Container(
                     height: 48,
                     alignment: Alignment.center,
@@ -229,11 +241,31 @@ class _MenuLateral extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: CoresV2.linha, width: 1.5),
                     ),
-                    child: Text(
-                      nomeAcademia ?? 'Controle de presença',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (logotipo != null) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.memory(
+                              logotipo!,
+                              width: 34,
+                              height: 34,
+                              excludeFromSemantics: true,
+                              filterQuality: FilterQuality.medium,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Flexible(
+                          child: Text(
+                            nomeAcademia ?? 'Controle de presença',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   for (final item in itens)

@@ -208,7 +208,7 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 
 ### 2.25 Página impressa (`gerarHtmlRelatorio` em `relatorios/html_relatorio.dart`)
 - **Aparência:** A4 (paisagem na semanal e na anual, retrato nas demais), fonte do sistema, cabeçalho com a academia, o cabeçalho de impressão da academia, a turma e o da turma, e à direita o relatório e o período; tabela com bordas finas `#c9ccc8`, cabeçalho repetido em cada página, rodapé "Gerado em … por …".
-- **Uso:** aberta numa aba nova pelo botão Imprimir / PDF; o navegador imprime ou salva em PDF. Sem logotipo enquanto a tela 14 não existir (mostra o nome da academia).
+- **Uso:** aberta numa aba nova pelo botão Imprimir / PDF; o navegador imprime ou salva em PDF. Com logotipo cadastrado (tela 14), o original aparece à esquerda do nome da academia, até 140 × 56 px; sem ele, só o nome.
 
 ### 2.26 Academias (`TelaAcademias` em `tela_academias.dart`), só o superadmin
 - **Aparência:**
@@ -219,6 +219,17 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Acessibilidade:** erro vindo do servidor anunciado ao leitor de tela (região ao vivo); validação junto de cada campo.
 - **Uso:** online; nada vai para o banco do aparelho do superadmin.
 
+### 2.27 Dados da academia (`TelaDadosAcademia` em `tela_dados_academia.dart`), só o professor
+- **Aparência:**
+  - celular: barra "Dados da academia" (título à esquerda, para caber) com "Salvar" (`BotaoPrincipal`); desktop: título e "Salvar" no topo;
+  - campos "Nome", "Nome curto no celular" (até 15, com a ajuda "Aparece embaixo do ícone do app instalado.") e "Cabeçalho de impressão (opcional)";
+  - `Cartao` "Logotipo": sem logotipo, a área azul-clara "Enviar logotipo" com "PNG ou JPG · até 1 MB"; com logotipo, "Trocar logotipo" (secundário) e "Remover" (destrutivo, com confirmação); enquanto envia, o indicador "Enviando o logotipo…";
+  - "Prévia do ícone do app": o ícone 512 px num quadrado de cantos arredondados e num círculo, de 64 px, com sombra de cartão.
+- **Acessibilidade:** área de envio lida como botão "Enviar logotipo, PNG ou JPG até 1 MB"; prévias com rótulo; erros com a próxima ação ("Escolha outro arquivo", "Diminua a imagem").
+- **Uso:** o logotipo é enviado na hora em que é escolhido; os campos de texto só com "Salvar" (sair com alteração pergunta antes). O ícone aparece no menu lateral ao lado do nome da academia, e o logotipo original no cabeçalho da página impressa (2.25).
+
 ## 3. Ainda não implementado (previsto na v2)
 
-- Logotipo da academia no menu lateral e no Início (depende do upload no R2).
+
+- Convite para instalar o app depois do login, com o nome curto e o ícone da academia no manifesto, e a tela 2b (instalar no iPhone).
+- Meus dados e troca de senha (tela 12) ainda sem tela no app.

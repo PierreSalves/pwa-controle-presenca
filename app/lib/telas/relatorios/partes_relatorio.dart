@@ -65,6 +65,7 @@ void imprimirRelatorio(
       cabecalhoTurma: turma.cabecalhoImpressao,
       geradoEm: dependencias.relogio(),
       geradoPor: usuario == null ? '' : '${usuario.nome} (${usuario.tipo})',
+      logotipo: sessao.logotipoAcademia,
     ),
   );
   if (!dependencias.abrirImpressao(html)) {

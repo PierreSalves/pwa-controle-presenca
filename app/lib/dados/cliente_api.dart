@@ -2,6 +2,7 @@
 // a sessão continua pelo cookie de renovação (httpOnly), que o navegador envia sozinho.
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -223,6 +224,14 @@ class ClienteApi implements ClienteSync {
         }),
       ),
     );
+  }
+
+  /// Arquivo binário autenticado (ex.: `eu/logotipo/512`).
+  Future<Uint8List> buscarBytes(String caminho) async {
+    final resposta = await _enviarAutenticado(
+      (cabecalhos) => _http.get(_montarUrl(caminho), headers: cabecalhos),
+    );
+    return resposta.bodyBytes;
   }
 
   /// Dados do usuário logado e da academia (`GET /api/eu`).

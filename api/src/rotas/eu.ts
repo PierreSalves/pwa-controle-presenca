@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { autenticar } from '../middleware/autenticar';
 import { ehSenhaValida, gerarHashSenha, validarSenha } from '../seguranca/senha';
+import { obterVersaoDaChave } from './academia';
 import type { Contexto } from '../tipos';
 import { responderErro } from '../util/erros';
 import { obterAgoraIso } from '../util/tempo';
@@ -18,9 +19,14 @@ rotasEu.get('/', async (c) => {
     .bind(id)
     .first();
   const tenant = tenantId
-    ? await c.env.DB.prepare('SELECT id, nome, cabecalho_impressao FROM tenants WHERE id = ?1')
+    ? await c.env.DB.prepare('SELECT id, nome, cabecalho_impressao, icone_512_key FROM tenants WHERE id = ?1')
         .bind(tenantId)
-        .first()
+        .first<{
+          id: string;
+          nome: string;
+          cabecalho_impressao: string | null;
+          icone_512_key: string | null;
+        }>()
     : null;
   const turmas = tenantId
     ? (
@@ -35,7 +41,41 @@ rotasEu.get('/', async (c) => {
           .all()
       ).results
     : [];
-  return c.json({ usuario, tenant, turmas });
+  // logotipo_versao muda a cada envio: o app baixa o ícone de novo só quando ela muda.
+  const academia = tenant
+    ? {
+        id: tenant.id,
+        nome: tenant.nome,
+        cabecalho_impressao: tenant.cabecalho_impressao,
+        logotipo_versao: obterVersaoDaChave(tenant.icone_512_key),
+      }
+    : null;
+  return c.json({ usuario, tenant: academia, turmas });
+});
+
+const COLUNAS_DO_LOGOTIPO: Record<string, string> = {
+  original: 'logotipo_key',
+  '192': 'icone_192_key',
+  '512': 'icone_512_key',
+};
+
+/** Logotipo da própria academia (qualquer usuário dela): `original`, `192` ou `512`. */
+rotasEu.get('/logotipo/:tamanho', async (c) => {
+  const { tenantId } = c.get('usuario');
+  const coluna = COLUNAS_DO_LOGOTIPO[c.req.param('tamanho')];
+  if (!tenantId || !coluna) return responderErro(c, 404, 'logotipo_nao_encontrado');
+  const linha = await c.env.DB.prepare(`SELECT ${coluna} AS chave FROM tenants WHERE id = ?1`)
+    .bind(tenantId)
+    .first<{ chave: string | null }>();
+  const objeto = linha?.chave ? await c.env.ARQUIVOS.get(linha.chave) : null;
+  if (!objeto) return responderErro(c, 404, 'logotipo_nao_encontrado');
+  return new Response(objeto.body, {
+    headers: {
+      'Content-Type': objeto.httpMetadata?.contentType ?? 'application/octet-stream',
+      'Cache-Control': 'private, max-age=31536000, immutable',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
 });
 
 /** Troca a própria senha. Encerra as outras sessões do usuário. */

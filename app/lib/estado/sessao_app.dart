@@ -19,6 +19,9 @@ class SessaoApp extends ChangeNotifier {
   static const _chaveUsuario = 'usuario';
   static const _chaveAcademia = 'academia';
   static const _chaveCabecalho = 'academia_cabecalho';
+  static const _chaveIcone = 'academia_icone';
+  static const _chaveLogotipo = 'academia_logotipo';
+  static const _chaveLogotipoVersao = 'academia_logotipo_versao';
 
   SituacaoSessao _situacao = SituacaoSessao.carregando;
   SituacaoSessao get situacao => _situacao;
@@ -34,6 +37,48 @@ class SessaoApp extends ChangeNotifier {
   String? _cabecalhoAcademia;
   String? get cabecalhoAcademia => _cabecalhoAcademia;
 
+  /// Ícone 512 px da academia (menu lateral e prévia do ícone) e o logotipo original (relatórios
+  /// impressos), guardados no aparelho para aparecer também sem internet; null sem logotipo.
+  Uint8List? _iconeAcademia;
+  Uint8List? get iconeAcademia => _iconeAcademia;
+  Uint8List? _logotipoAcademia;
+  Uint8List? get logotipoAcademia => _logotipoAcademia;
+  String? _logotipoVersao;
+
+  /// Troca o logotipo guardado (depois do envio na tela 14, sem esperar a próxima conexão).
+  Future<void> definirLogotipo({
+    required Uint8List? icone,
+    required Uint8List? original,
+    required String? versao,
+  }) async {
+    _iconeAcademia = icone;
+    _logotipoAcademia = original;
+    _logotipoVersao = versao;
+    String converter(Uint8List? bytes) =>
+        bytes == null ? '' : base64Encode(bytes);
+    await _gravarEstado(_chaveIcone, converter(icone));
+    await _gravarEstado(_chaveLogotipo, converter(original));
+    await _gravarEstado(_chaveLogotipoVersao, versao ?? '');
+    notifyListeners();
+  }
+
+  /// Baixa o ícone e o logotipo de novo só quando a versão do servidor muda.
+  Future<void> _atualizarLogotipo(String? versao) async {
+    if (versao == _logotipoVersao) return;
+    if (versao == null) {
+      await definirLogotipo(icone: null, original: null, versao: null);
+      return;
+    }
+    await definirLogotipo(
+      icone: await _cliente.buscarBytes('eu/logotipo/512'),
+      original: await _cliente.buscarBytes('eu/logotipo/original'),
+      versao: versao,
+    );
+  }
+
+  Uint8List? _converterEstado(String? base64) =>
+      base64 == null || base64.isEmpty ? null : base64Decode(base64);
+
   Future<void> _gravarEstado(String chave, String valor) => _banco
       .into(_banco.estadoSync)
       .insertOnConflictUpdate(
@@ -43,6 +88,9 @@ class SessaoApp extends ChangeNotifier {
   Future<String?> _obterEstado(String chave) async => (await (_banco.select(
     _banco.estadoSync,
   )..where((e) => e.chave.equals(chave))).getSingleOrNull())?.valor;
+
+  /// Atualiza nome, cabeçalho e logotipo da academia (ex.: depois de salvar na tela 14).
+  Future<void> atualizarAcademia() => _atualizarAcademia();
 
   /// Busca o nome da academia na API e guarda no aparelho; sem internet, mantém o guardado.
   Future<void> _atualizarAcademia() async {
@@ -60,6 +108,7 @@ class SessaoApp extends ChangeNotifier {
         await _gravarEstado(_chaveAcademia, nome);
         notifyListeners();
       }
+      await _atualizarLogotipo(tenant?['logotipo_versao'] as String?);
     } on SemConexao {
       // segue com o nome guardado
     } on ErroApi {
@@ -95,6 +144,10 @@ class SessaoApp extends ChangeNotifier {
     _cabecalhoAcademia = cabecalho == null || cabecalho.isEmpty
         ? null
         : cabecalho;
+    _iconeAcademia = _converterEstado(await _obterEstado(_chaveIcone));
+    _logotipoAcademia = _converterEstado(await _obterEstado(_chaveLogotipo));
+    final versao = await _obterEstado(_chaveLogotipoVersao);
+    _logotipoVersao = versao == null || versao.isEmpty ? null : versao;
     _definir(
       SituacaoSessao.logado,
       UsuarioLogado.lerJson(jsonDecode(gravado.valor) as Map<String, dynamic>),
@@ -117,6 +170,9 @@ class SessaoApp extends ChangeNotifier {
     await _banco.apagarTudo();
     _nomeAcademia = null;
     _cabecalhoAcademia = null;
+    _iconeAcademia = null;
+    _logotipoAcademia = null;
+    _logotipoVersao = null;
     await _gravarEstado(_chaveUsuario, jsonEncode(usuario.converterEmJson()));
     if (usuario.tenantId != null) {
       try {
@@ -142,6 +198,9 @@ class SessaoApp extends ChangeNotifier {
     await _banco.apagarTudo();
     _nomeAcademia = null;
     _cabecalhoAcademia = null;
+    _iconeAcademia = null;
+    _logotipoAcademia = null;
+    _logotipoVersao = null;
     _definir(SituacaoSessao.deslogado, null);
   }
 }

@@ -1,0 +1,124 @@
+{
+  "descricao": "Casos da lista do lançamento (frequentes × pouco frequentes). Os mesmos casos rodam na API (TypeScript) e no app (Dart). Para cada aluno matriculado na data: entram na conta as últimas N aulas regulares da turma antes da data e dentro da matrícula do aluno; percentual = presenças nessas aulas ÷ aulas (arredondado para baixo); com menos de N aulas o aluno é novo e sempre aparece; última presença = data da aula mais recente (regular ou reposição, até a data) em que esteve presente.",
+  "casos": [
+    {
+      "nome": "frequente acima do mínimo e pouco frequente abaixo",
+      "data": "2026-11-12",
+      "parametros": { "percentual_minimo": 50, "ultimas_aulas": 4 },
+      "aulas": [
+        { "id": "a1", "data": "2026-11-03", "tipo": "regular" },
+        { "id": "a2", "data": "2026-11-05", "tipo": "regular" },
+        { "id": "a3", "data": "2026-11-10", "tipo": "regular" },
+        { "id": "a4", "data": "2026-11-11", "tipo": "regular" }
+      ],
+      "presencas": [
+        { "aula_id": "a1", "aluno_id": "ana" },
+        { "aula_id": "a2", "aluno_id": "ana" },
+        { "aula_id": "a3", "aluno_id": "ana" },
+        { "aula_id": "a2", "aluno_id": "bia" }
+      ],
+      "alunos": [
+        { "id": "ana", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] },
+        { "id": "bia", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "ana", "percentual": 75, "novo": false, "frequente": true, "ultima_presenca": "2026-11-10" },
+        { "aluno_id": "bia", "percentual": 25, "novo": false, "frequente": false, "ultima_presenca": "2026-11-05" }
+      ]
+    },
+    {
+      "nome": "exatamente no mínimo é frequente; só as últimas N aulas contam",
+      "data": "2026-11-12",
+      "parametros": { "percentual_minimo": 50, "ultimas_aulas": 2 },
+      "aulas": [
+        { "id": "a1", "data": "2026-11-03", "tipo": "regular" },
+        { "id": "a2", "data": "2026-11-05", "tipo": "regular" },
+        { "id": "a3", "data": "2026-11-10", "tipo": "regular" }
+      ],
+      "presencas": [
+        { "aula_id": "a1", "aluno_id": "ana" },
+        { "aula_id": "a2", "aluno_id": "ana" },
+        { "aula_id": "a3", "aluno_id": "bia" }
+      ],
+      "alunos": [
+        { "id": "ana", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] },
+        { "id": "bia", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "ana", "percentual": 50, "novo": false, "frequente": true, "ultima_presenca": "2026-11-05" },
+        { "aluno_id": "bia", "percentual": 50, "novo": false, "frequente": true, "ultima_presenca": "2026-11-10" }
+      ]
+    },
+    {
+      "nome": "matrícula nova com menos de N aulas sempre aparece",
+      "data": "2026-11-12",
+      "parametros": { "percentual_minimo": 30, "ultimas_aulas": 3 },
+      "aulas": [
+        { "id": "a1", "data": "2026-11-03", "tipo": "regular" },
+        { "id": "a2", "data": "2026-11-05", "tipo": "regular" },
+        { "id": "a3", "data": "2026-11-10", "tipo": "regular" }
+      ],
+      "presencas": [],
+      "alunos": [
+        { "id": "novo", "matriculas": [{ "data_inicio": "2026-11-05", "data_fim": null }] },
+        { "id": "hoje", "matriculas": [{ "data_inicio": "2026-11-12", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "novo", "percentual": 0, "novo": true, "frequente": true, "ultima_presenca": null },
+        { "aluno_id": "hoje", "percentual": 0, "novo": true, "frequente": true, "ultima_presenca": null }
+      ]
+    },
+    {
+      "nome": "aula do próprio dia e reposições não entram no percentual; reposição conta como última presença",
+      "data": "2026-11-12",
+      "parametros": { "percentual_minimo": 30, "ultimas_aulas": 2 },
+      "aulas": [
+        { "id": "a1", "data": "2026-11-05", "tipo": "regular" },
+        { "id": "a2", "data": "2026-11-10", "tipo": "regular" },
+        { "id": "r1", "data": "2026-11-11", "tipo": "reposicao" },
+        { "id": "a3", "data": "2026-11-12", "tipo": "regular" }
+      ],
+      "presencas": [
+        { "aula_id": "r1", "aluno_id": "ana" },
+        { "aula_id": "a3", "aluno_id": "bia" }
+      ],
+      "alunos": [
+        { "id": "ana", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] },
+        { "id": "bia", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": null }] }
+      ],
+      "esperado": [
+        { "aluno_id": "ana", "percentual": 0, "novo": false, "frequente": false, "ultima_presenca": "2026-11-11" },
+        { "aluno_id": "bia", "percentual": 0, "novo": false, "frequente": false, "ultima_presenca": "2026-11-12" }
+      ]
+    },
+    {
+      "nome": "fora da matrícula na data não entra na lista; aulas fora do período da matrícula não contam",
+      "data": "2026-11-12",
+      "parametros": { "percentual_minimo": 50, "ultimas_aulas": 2 },
+      "aulas": [
+        { "id": "a1", "data": "2026-10-01", "tipo": "regular" },
+        { "id": "a2", "data": "2026-10-06", "tipo": "regular" },
+        { "id": "a3", "data": "2026-11-05", "tipo": "regular" },
+        { "id": "a4", "data": "2026-11-10", "tipo": "regular" }
+      ],
+      "presencas": [
+        { "aula_id": "a1", "aluno_id": "volta" },
+        { "aula_id": "a2", "aluno_id": "volta" },
+        { "aula_id": "a4", "aluno_id": "volta" }
+      ],
+      "alunos": [
+        { "id": "saiu", "matriculas": [{ "data_inicio": "2026-01-01", "data_fim": "2026-11-11" }] },
+        {
+          "id": "volta",
+          "matriculas": [
+            { "data_inicio": "2026-01-01", "data_fim": "2026-10-10" },
+            { "data_inicio": "2026-11-01", "data_fim": null }
+          ]
+        }
+      ],
+      "esperado": [
+        { "aluno_id": "volta", "percentual": 50, "novo": false, "frequente": true, "ultima_presenca": "2026-11-10" }
+      ]
+    }
+  ]
+}

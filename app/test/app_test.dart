@@ -24,6 +24,7 @@ class _ApiFalsa {
   final List<List<dynamic>> envios = [];
   final List<Map<String, dynamic>> matriculasEncerradas = [];
   final List<Map<String, dynamic>> alunosCriados = [];
+  final List<Map<String, dynamic>> quadrosCriados = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -86,6 +87,53 @@ class _ApiFalsa {
         'matriculas': [],
         'graduacoes': [],
       }, 201);
+    }
+    if (caminho.endsWith('/api/turmas') && req.method == 'GET') {
+      return _json({
+        'turmas': [
+          {'id': turmaId, 'nome': 'Turma $turmaId', 'alunos_matriculados': 1},
+        ],
+      });
+    }
+    if (caminho.endsWith('/quadros') && req.method == 'POST') {
+      quadrosCriados.add(jsonDecode(req.body) as Map<String, dynamic>);
+      return _json({'quadros': []}, 201);
+    }
+    if (caminho.endsWith('/api/turmas/$turmaId') && req.method == 'PUT') {
+      return _json({
+        'turma': {'id': turmaId},
+      });
+    }
+    if (caminho.endsWith('/api/turmas/$turmaId')) {
+      return _json({
+        'turma': {
+          'id': turmaId,
+          'nome': 'Turma $turmaId',
+          'frequencia_minima': 75,
+          'cabecalho_impressao': null,
+        },
+        'quadros': [
+          {
+            'id': 'q1',
+            'vigencia_inicio': '2026-01-01',
+            'vigencia_fim': null,
+            'domingo': 0,
+            'segunda': 0,
+            'terca': 0,
+            'quarta': 1,
+            'quinta': 1,
+            'sexta': 0,
+            'sabado': 2,
+          },
+        ],
+        'regras': {
+          'lista_lancamento': {'percentual_minimo': 30, 'ultimas_aulas': 8},
+          'alunos_sumidos': {'semanas': 4},
+        },
+        'acessos': [
+          {'id': 'u1', 'nome': 'Carla', 'tipo': 'assistente'},
+        ],
+      });
     }
     if (caminho.endsWith('/sync/pull')) return _json(montarPull());
     if (caminho.endsWith('/sync/push')) {
@@ -307,6 +355,39 @@ void main() {
     expect(api.alunosCriados.single['nome'], 'Bruno Lima');
     expect(find.text('Aluno cadastrado.'), findsOneWidget);
     expect(find.text('Matricular'), findsOneWidget);
+    await fecharApp(tester);
+  });
+
+  testWidgets('muda o quadro de aulas da turma a partir de hoje', (
+    tester,
+  ) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Turmas'));
+    await esperar(tester);
+    expect(find.text('1 aluno'), findsOneWidget);
+
+    await tester.tap(find.text('Turma $turmaId'));
+    await esperar(tester);
+    expect(find.text('Quadro de aulas · desde 01/01/2026'), findsOneWidget);
+    await tester.tap(find.text('seg'));
+    await tester.pump();
+    expect(find.text('Quadro de aulas · desde 12/11/2026'), findsOneWidget);
+
+    await tester.dragUntilVisible(
+      find.text('Só professor altera os acessos'),
+      find.byType(ListView),
+      const Offset(0, -200),
+    );
+    expect(find.text('Carla (assistente)'), findsOneWidget);
+    expect(find.byTooltip('Tirar acesso de Carla'), findsNothing); // assistente
+    await tester.tap(find.text('Salvar'));
+    await esperar(tester);
+    expect(api.quadrosCriados.single['vigencia_inicio'], '2026-11-12');
+    expect((api.quadrosCriados.single['dias'] as Map)['segunda'], 1);
+    expect((api.quadrosCriados.single['dias'] as Map)['sabado'], 2);
+    expect(find.text('Alterações salvas.'), findsOneWidget);
     await fecharApp(tester);
   });
 }

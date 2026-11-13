@@ -167,8 +167,18 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 ### 2.19 Proteção de alterações (`ProtecaoAlteracoes`)
 - Não é visual por si: ao voltar com algo mudado, mostra o diálogo "Descartar alterações?" ("Continuar editando" ou "Descartar"). Usado no cadastro do aluno e da turma.
 
+### 2.20 Grade da semana (`GradeSemana` em `grade_semana.dart`), desktop
+- **Aparência:**
+  - cabeçalho com voltar (se a tela foi empilhada), chevrons de semana anterior e próxima (círculos azul-claros), título "Turma · dd/mm a dd/mm/aaaa" em 20 w600 com números fixos, `StatusEnvio` e "Reposição avulsa" (secundário);
+  - campo de busca "Adicionar aluno pouco frequente à grade…" (máx. 520 px);
+  - `Cartao` com uma tabela: coluna do aluno flexível ("(código) Nome · N%", com a `Etiqueta` "novo") e uma coluna de 96 px por dia de aula ("qua 11/11"; reposição com `Etiqueta` "repos." ou "avulsa");
+  - linhas separadas por `linha`, a linha "Pouco frequentes (N)" com chevron que abre o resto, e o rodapé "Presentes" com o total por dia ("–" no futuro).
+- **Estados:** caixa marcada em `tatame`; dia futuro e dia fora da matrícula desativados e esmaecidos (opacidade 0,4); cabeçalho do dia futuro em `desativado`; próxima semana desativada quando ainda não começou.
+- **Acessibilidade:** cada caixa tem o rótulo "Nome, dia dd/mm"; chevrons com dica ("Semana anterior", "Próxima semana").
+- **Uso:** só no desktop (≥ 1000 px); no celular o lançamento continua um dia por vez (2.8 e 2.10). Aluno escolhido na busca fica na grade enquanto a tela estiver aberta.
+
 ## 3. Ainda não implementado (previsto na v2)
 
-- Lançamento em grade da semana no desktop (D2) e Alunos com lista e cadastro lado a lado (D3).
+- Alunos com lista e cadastro lado a lado no desktop (D3).
 - Faixa do aluno na lista de alunos (precisa da graduação na listagem da API).
 - Logotipo da academia no menu lateral e no Início (depende do upload no R2).

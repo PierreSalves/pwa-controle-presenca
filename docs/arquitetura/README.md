@@ -179,6 +179,29 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `PUT /api/matriculas/:id` | altera período e situação; usado também para encerrar (alunos sumidos) |
 | `DELETE /api/matriculas/:id` | exclusão lógica (lançada por engano) |
 
+**Usuários** (`api/src/rotas/usuarios.ts`, tela 11). Só professor (`gerenciar_usuarios` e `gerenciar_acessos`). O professor cria o usuário com uma senha inicial e passa para a pessoa (sem autocadastro nem e-mail na Fase 1).
+
+| Rota | O que faz |
+|---|---|
+| `GET /api/usuarios` | usuários da academia com as turmas de cada um |
+| `POST /api/usuarios` | `nome`, `email`, `tipo` (`professor`/`assistente`), `senha` (8+), `turma_ids` opcional; e-mail é único no sistema → `409 email_ja_existe` |
+| `PUT /api/usuarios/:id` | `nome`, `email`, `tipo`, `ativo`; desativar encerra as sessões na hora; o professor não muda o próprio tipo nem se desativa → `409 nao_pode_alterar_o_proprio_acesso` |
+| `POST /api/usuarios/:id/senha` | redefine a senha de outro usuário (esqueceu a senha) e encerra as sessões dele |
+| `PUT /api/usuarios/:id/turmas` | lista completa de `turma_ids` que o usuário acessa |
+
+**Dados da academia** (`api/src/rotas/academia.ts`, tela 14). Só professor (`editar_tenant`): `GET /api/academia` e `PUT /api/academia` (`nome`, `nome_curto` até 15 caracteres, `cabecalho_impressao`). O envio do logotipo e a geração dos ícones no R2 ficam numa etapa própria.
+
+**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`).
+
+| Rota | O que faz |
+|---|---|
+| `GET /api/admin/academias` | academias com número de usuários ativos, alunos e turmas |
+| `POST /api/admin/academias` | cria a academia e o primeiro professor (`professor: { nome, email, senha }`) numa gravação só |
+| `PUT /api/admin/academias/:id` | `nome`, `nome_curto`, `cabecalho_impressao`, `ativo`; desativar encerra as sessões de todos os usuários dela |
+| `GET`/`POST /api/admin/academias/:id/professores` | lista e cria professores |
+| `DELETE /api/admin/academias/:id/professores/:usuarioId` | desativa o professor e encerra as sessões |
+| `POST /api/admin/academias/:id/alunos/importacao` | carga inicial; mesmas regras de `POST /api/alunos/importacao` |
+
 ### Conflitos
 - Presença é quase só inserção; chave única `presencas (aula_id, aluno_id)`: dois aparelhos marcando o mesmo aluno resultam num registro só.
 - Aula regular: id determinístico (UUID v5 de `turma_id` + `data_aula`) e no máximo uma por turma e data, evitando duas aulas iguais criadas offline.

@@ -2,10 +2,13 @@ import { Hono } from 'hono';
 import { secureHeaders } from 'hono/secure-headers';
 import { rotasAutenticacao } from './rotas/autenticacao';
 import { rotasEu } from './rotas/eu';
+import { rotasAcademia } from './rotas/academia';
+import { rotasAdmin } from './rotas/admin';
 import { rotasAlunos } from './rotas/alunos';
 import { rotasMatriculas } from './rotas/matriculas';
 import { rotasSync } from './rotas/sync';
 import { rotasTurmas } from './rotas/turmas';
+import { rotasUsuarios } from './rotas/usuarios';
 import type { Contexto } from './tipos';
 
 const app = new Hono<Contexto>().basePath('/api');
@@ -27,6 +30,9 @@ app.route('/sync', rotasSync);
 app.route('/turmas', rotasTurmas);
 app.route('/alunos', rotasAlunos);
 app.route('/matriculas', rotasMatriculas);
+app.route('/usuarios', rotasUsuarios);
+app.route('/academia', rotasAcademia);
+app.route('/admin', rotasAdmin);
 
 app.notFound((c) => c.json({ erro: 'rota_nao_encontrada' }, 404));
 

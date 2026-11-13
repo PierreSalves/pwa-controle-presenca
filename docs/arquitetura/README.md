@@ -140,7 +140,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 
 ### Interface e navegação no app (v2)
 - Aparência e componentes: [`docs/telas/componentes.md`](../telas/componentes.md) (tokens em `app/lib/telas/tema.dart`, componentes em `componentes.dart`).
-- Rotas com endereço (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`) em `app/lib/telas/navegacao.dart`, com `usePathUrlStrategy` (sem `#`). Cada rota passa pelo `PortaoSessao` (sem login, mostra a tela de entrar); rota sem permissão cai no Início. O Worker (`not_found_handling: single-page-application`) e o service worker devolvem o `index.html` para qualquer endereço.
+- Rotas com endereço (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`, `/academia`, `/meus-dados`) em `app/lib/telas/navegacao.dart`, com `usePathUrlStrategy` (sem `#`). Cada rota passa pelo `PortaoSessao` (sem login, mostra a tela de entrar); rota sem permissão cai no Início. O Worker (`not_found_handling: single-page-application`) e o service worker devolvem o `index.html` para qualquer endereço.
 - No desktop (≥ 1000 px) o menu lateral fica em volta do navegador interno (`MaterialApp.builder`), por isso continua visível ao abrir um aluno ou uma turma. O navegador é um contêiner próprio de acessibilidade: a barreira de cada rota bloqueia, no mesmo contêiner, o que é desenhado antes dela.
 - Ao sair ou ter a sessão encerrada, a pilha volta para `/`.
 

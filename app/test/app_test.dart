@@ -108,6 +108,7 @@ class _ApiFalsa {
   };
   Map<String, dynamic>? logotipoEnviado;
   final List<Map<String, dynamic>> academiaSalva = [];
+  final List<Map<String, dynamic>> senhasTrocadas = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -146,6 +147,14 @@ class _ApiFalsa {
       });
     }
     if (caminho.endsWith('/sair')) return http.Response('', 204);
+    if (caminho.endsWith('/eu/senha')) {
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      if (corpo['senha_atual'] != 'segredo123') {
+        return _json({'erro': 'senha_atual_incorreta'}, 400);
+      }
+      senhasTrocadas.add(corpo);
+      return http.Response('', 204);
+    }
     if (caminho.endsWith('/eu/logotipo/512') ||
         caminho.endsWith('/eu/logotipo/original')) {
       return http.Response.bytes(pngDeTeste, 200);
@@ -1084,6 +1093,75 @@ void main() {
   ) async {
     await entrar(tester);
     expect(find.text('Instale o app da Academia Teste'), findsNothing);
+    await fecharApp(tester);
+  });
+
+  testWidgets('meus dados: consulta e troca de senha com erros no campo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(420, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await esperar(tester);
+    await tester.tap(find.text('Meus dados e senha'));
+    await esperar(tester);
+    // Dados só para consulta.
+    expect(find.text('Carla'), findsOneWidget);
+    expect(find.text('carla@exemplo.com'), findsOneWidget);
+    expect(find.text('assistente'), findsOneWidget);
+    expect(find.text('Academia Teste'), findsOneWidget);
+    expect(
+      find.text('Para mudar nome ou e-mail, fale com o professor.'),
+      findsOneWidget,
+    );
+
+    final campos = find.byType(TextFormField);
+    // Confirmação diferente: erro no campo, nada enviado.
+    await tester.enterText(campos.at(0), 'segredo123');
+    await tester.enterText(campos.at(1), 'novasenha1');
+    await tester.enterText(campos.at(2), 'novasenha2');
+    await tester.tap(find.text('Trocar senha').last);
+    await esperar(tester);
+    expect(find.text('As senhas não conferem.'), findsOneWidget);
+    expect(api.senhasTrocadas, isEmpty);
+
+    // Senha atual errada: erro do servidor no campo da senha atual.
+    await tester.enterText(campos.at(0), 'errada');
+    await tester.enterText(campos.at(2), 'novasenha1');
+    await tester.tap(find.text('Trocar senha').last);
+    await esperar(tester);
+    expect(find.text('Senha atual incorreta.'), findsOneWidget);
+    expect(api.senhasTrocadas, isEmpty);
+
+    // Certo: envia, limpa os campos e confirma.
+    await tester.enterText(campos.at(0), 'segredo123');
+    await tester.tap(find.text('Trocar senha').last);
+    await esperar(tester);
+    expect(api.senhasTrocadas.single, {
+      'senha_atual': 'segredo123',
+      'senha_nova': 'novasenha1',
+    });
+    expect(find.text('Senha trocada.'), findsOneWidget);
+    expect(find.text('Senha atual incorreta.'), findsNothing);
+    expect(
+      tester.widget<TextFormField>(campos.at(0)).controller!.text,
+      isEmpty,
+    );
+    await fecharApp(tester);
+  });
+
+  testWidgets('Meus dados e senha está no menu do superadmin', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    api.tipoUsuario = 'superadmin';
+    await entrar(tester);
+    await tester.tap(find.text('Meus dados e senha'));
+    await esperar(tester);
+    expect(find.text('administrador do sistema'), findsOneWidget);
+    expect(find.text('Academia'), findsNothing);
     await fecharApp(tester);
   });
 }

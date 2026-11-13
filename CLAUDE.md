@@ -104,5 +104,6 @@ Rodar a partir da raiz do repositório (Git Bash ou PowerShell). Pré-requisitos
 | App: rodar em desenvolvimento | `cd app && flutter run -d edge` |
 | Tudo junto (app + API no Worker local) | `cd app && flutter build web` e depois `cd api && npm run dev` → http://localhost:8811 (a 8799 é usada por outro projeto) |
 | Imagens dos wireframes | `bash docs/telas/gerar-imagens.sh` |
+| Publicar em produção (precisa do `npx wrangler login`) | `cd api && npx wrangler d1 migrations apply DB --remote`, depois `cd app && flutter build web` e `cd api && npm run deploy` |
 
 O CI (`.github/workflows/ci.yml`) roda tudo isso em cada PR.

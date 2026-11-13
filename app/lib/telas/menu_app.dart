@@ -1,8 +1,9 @@
 // Tela 12 — Menu: itens conforme a permissão, na ordem do wireframe. Nesta etapa existem Início,
-// Lançar presença e Sair; os demais entram com as telas correspondentes.
+// Lançar presença, Alunos e Sair; os demais entram com as telas correspondentes.
 import 'package:material_ui/material_ui.dart';
 
 import '../estado/dependencias.dart';
+import 'tela_alunos.dart';
 import 'tela_escolher_turma.dart';
 
 class MenuApp extends StatelessWidget {
@@ -48,6 +49,16 @@ class MenuApp extends StatelessWidget {
                 aoTocar: () {
                   Navigator.of(context).pop();
                   abrirLancamento(context);
+                },
+              ),
+              _ItemMenu(
+                icone: Icons.people_outline,
+                texto: 'Alunos',
+                aoTocar: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(builder: (_) => const TelaAlunos()),
+                  );
                 },
               ),
             ],

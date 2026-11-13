@@ -88,10 +88,6 @@ rotasSync.get('/pull', async (c) => {
            FROM turmas WHERE tenant_id = ?1 AND id ${naLista} AND (?3 = 0 OR server_version > ?3)`,
       )
       .bind(tenantId, lista, desde, obterHojeEmSaoPaulo()),
-        `SELECT id, nome, frequencia_minima, cabecalho_impressao, excluido, updated_at, server_version
-           FROM turmas WHERE tenant_id = ?1 AND id ${naLista} AND (?3 = 0 OR server_version > ?3)`,
-      )
-      .bind(tenantId, lista, desde),
     db
       .prepare(
         `SELECT id, turma_id, usuario_id, excluido, updated_at, server_version

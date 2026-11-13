@@ -141,6 +141,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - `app/lib/dados/repositorio_alunos.dart` fala direto com a API (`ClienteApi.enviar`), sem banco local: os dados sensíveis do aluno ficam **só na memória da tela**. Depois de salvar, matricular ou encerrar, o app roda uma sincronização para o lançamento ver o nome e as matrículas novas.
 - Sem internet, a tela mostra "Sem internet. O cadastro precisa de conexão." e um botão para tentar de novo.
 - O PUT do aluno grava todos os campos: os campos sem tela (ex.: `sexo`) voltam como vieram, para não serem apagados.
+- `app/lib/dados/repositorio_usuarios.dart` (tela 11, só professor): o cadastro e a edição abrem na própria lista, como no wireframe ("Novo: nome · e-mail · tipo · turmas"). Salvar faz o `PUT` dos dados e, se as turmas mudaram, o `PUT .../turmas`. Redefinir a senha (quem esqueceu) encerra as sessões da pessoa. O professor não muda o próprio tipo nem se desativa (a API recusa e a tela já bloqueia).
 - Importação (telas 8b e 8c): o usuário cola as colunas código e nome copiadas da planilha. `app/lib/regras/lista_colada.dart` separa cada linha por tab, ponto e vírgula ou espaço, ignora linhas em branco e o cabeçalho, e guarda o número da linha colada; a API (`POST /api/alunos/importacao`) faz o relatório e só grava com `confirmar: true` e sem erros. A tela traduz as linhas do relatório para as linhas do texto colado.
 - `app/lib/dados/repositorio_turmas.dart` (tela 10): salvar a turma faz só as chamadas necessárias, em ordem:
   1. dados (`POST`/`PUT /api/turmas`);

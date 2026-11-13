@@ -6,6 +6,8 @@ import 'package:controle_presenca/dados/cliente_api.dart';
 import 'package:controle_presenca/estado/dependencias.dart';
 import 'package:controle_presenca/main.dart';
 import 'package:controle_presenca/plataforma/imagens.dart';
+import 'package:controle_presenca/plataforma/instalacao.dart';
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:controle_presenca/telas/componentes.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
@@ -41,6 +43,38 @@ class _ImagensFalsas implements ServicoImagens {
     iconesGerados.add(tamanho);
     return pngDeTeste;
   }
+}
+
+/// Instalação falsa: o teste decide se é iPhone e se o navegador ofereceu o convite.
+class _InstalacaoFalsa implements ServicoInstalacao {
+  bool iphone = false;
+  int convites = 0;
+  final List<({String? titulo, int? icone, String? chave})> identidades = [];
+  final _disponivel = ValueNotifier(false);
+
+  set disponivel(bool valor) => _disponivel.value = valor;
+
+  @override
+  bool get estaInstalado => false;
+
+  @override
+  bool get ehIphone => iphone;
+
+  @override
+  ValueListenable<bool> get conviteDisponivel => _disponivel;
+
+  @override
+  Future<bool> convidar() async {
+    convites++;
+    return true;
+  }
+
+  @override
+  void definirIdentidade({
+    required String? titulo,
+    required Uint8List? icone,
+    required String? chave,
+  }) => identidades.add((titulo: titulo, icone: icone?.length, chave: chave));
 }
 
 /// API falsa: login da Carla, pull com a turma de apoio.dart e push aceitando tudo.
@@ -334,10 +368,12 @@ void main() {
   late Dependencias dependencias;
   late List<String> impressos;
   late _ImagensFalsas imagens;
+  late _InstalacaoFalsa instalacao;
 
   setUp(() {
     impressos = [];
     imagens = _ImagensFalsas();
+    instalacao = _InstalacaoFalsa();
     banco = BancoLocal(
       DatabaseConnection(
         NativeDatabase.memory(),
@@ -354,6 +390,7 @@ void main() {
       ),
       relogio: () => agora,
       imagens: imagens,
+      instalacao: instalacao,
       abrirImpressao: (html) {
         impressos.add(html);
         return true;
@@ -989,6 +1026,64 @@ void main() {
     await tester.tap(find.byTooltip('Abrir menu de navegação'));
     await esperar(tester);
     expect(find.text('Dados da academia'), findsNothing);
+    await fecharApp(tester);
+  });
+
+  testWidgets('convite de instalação no início: instalar e agora não', (
+    tester,
+  ) async {
+    instalacao.disponivel = true;
+    await entrar(tester);
+    // A identidade da academia vai para o manifesto e o iPhone logo depois do login.
+    expect(instalacao.identidades.last.titulo, 'Academia Teste');
+    expect(instalacao.identidades.last.chave, isNotNull);
+
+    expect(find.text('Instale o app da Academia Teste'), findsOneWidget);
+    await tester.tap(find.text('Instalar'));
+    await esperar(tester);
+    expect(instalacao.convites, 1);
+
+    await tester.tap(find.text('Agora não'));
+    await esperar(tester);
+    expect(find.text('Instale o app da Academia Teste'), findsNothing);
+    expect(dependencias.sessao.conviteDispensado, isTrue);
+
+    // Ao sair, a identidade volta ao padrão da TghServices.
+    await tester.runAsync(dependencias.sessao.encerrarLocalmente);
+    await esperar(tester);
+    expect(instalacao.identidades.last, (
+      titulo: null,
+      icone: null,
+      chave: null,
+    ));
+    await fecharApp(tester);
+  });
+
+  testWidgets('no iPhone, Instalar abre o passo a passo (tela 2b)', (
+    tester,
+  ) async {
+    instalacao.iphone = true;
+    await entrar(tester);
+    await tester.tap(find.text('Instalar'));
+    await esperar(tester);
+    expect(find.text('Instalar no iPhone'), findsOneWidget);
+    expect(find.text('1. Toque em Compartilhar'), findsOneWidget);
+    expect(
+      find.text('2. Escolha “Adicionar à Tela de Início”'),
+      findsOneWidget,
+    );
+    expect(instalacao.convites, 0);
+    await tester.tap(find.byTooltip('Fechar'));
+    await esperar(tester);
+    expect(find.text('Instale o app da Academia Teste'), findsOneWidget);
+    await fecharApp(tester);
+  });
+
+  testWidgets('sem convite do navegador e fora do iPhone, nada de convite', (
+    tester,
+  ) async {
+    await entrar(tester);
+    expect(find.text('Instale o app da Academia Teste'), findsNothing);
     await fecharApp(tester);
   });
 }

@@ -3,6 +3,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { rotasAutenticacao } from './rotas/autenticacao';
 import { rotasEu } from './rotas/eu';
 import { rotasAcademia } from './rotas/academia';
+import { rotasManifesto } from './rotas/manifesto';
 import { rotasAdmin } from './rotas/admin';
 import { rotasAlunos } from './rotas/alunos';
 import { rotasMatriculas } from './rotas/matriculas';
@@ -32,6 +33,7 @@ app.route('/alunos', rotasAlunos);
 app.route('/matriculas', rotasMatriculas);
 app.route('/usuarios', rotasUsuarios);
 app.route('/academia', rotasAcademia);
+app.route('/manifesto', rotasManifesto);
 app.route('/admin', rotasAdmin);
 
 app.notFound((c) => c.json({ erro: 'rota_nao_encontrada' }, 404));

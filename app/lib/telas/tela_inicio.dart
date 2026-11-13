@@ -11,6 +11,7 @@ import '../dados/consulta_inicio.dart';
 import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
+import 'convite_instalacao.dart';
 import 'formatacao.dart';
 import 'menu_app.dart';
 import 'tela_escolher_turma.dart';
@@ -239,6 +240,8 @@ class _TelaInicioState extends State<TelaInicio> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Tela 2: o convite para instalar vem antes do status (some se instalado ou dispensado).
+        const ConviteInstalacao(),
         const Align(alignment: Alignment.centerLeft, child: StatusEnvio()),
         const SizedBox(height: 12),
         BotaoPrincipal(

@@ -14,6 +14,7 @@ import '../dados/repositorio_usuarios.dart';
 import '../dados/repositorio_presenca.dart';
 import '../dados/servico_sincronizacao.dart';
 import '../plataforma/imagens.dart';
+import '../plataforma/instalacao.dart';
 import '../plataforma/impressao.dart' as impressao;
 import 'coordenador_sincronizacao.dart';
 import 'sessao_app.dart';
@@ -25,8 +26,10 @@ class Dependencias {
     DateTime Function()? relogio,
     bool Function(String html)? abrirImpressao,
     ServicoImagens? imagens,
+    ServicoInstalacao? instalacao,
   }) : relogio = relogio ?? DateTime.now,
        imagens = imagens ?? criarServicoImagens(),
+       instalacao = instalacao ?? criarServicoInstalacao(),
        abrirImpressao = abrirImpressao ?? impressao.abrirImpressao {
     sessao = SessaoApp(banco, cliente);
     repositorio = RepositorioPresenca(banco, relogio: this.relogio);
@@ -63,6 +66,9 @@ class Dependencias {
 
   /// Seletor de arquivos e geração dos ícones (canvas do navegador).
   final ServicoImagens imagens;
+
+  /// Convite de instalação, iPhone e identidade da academia no app instalável.
+  final ServicoInstalacao instalacao;
   late final CoordenadorSincronizacao coordenador;
 }
 

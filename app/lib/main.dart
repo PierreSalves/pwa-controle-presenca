@@ -64,6 +64,28 @@ class _ControlePresencaAppState extends State<ControlePresencaApp> {
       );
     }
     _situacao = nova;
+    _definirIdentidade();
+  }
+
+  String? _identidade;
+
+  /// Título e ícone do iPhone e o manifesto do app instalável com os da academia (tela 2):
+  /// depois do login, a cada mudança de nome curto ou logotipo, e de volta ao padrão ao sair.
+  void _definirIdentidade() {
+    final sessao = widget.dependencias.sessao;
+    final logado =
+        sessao.situacao == SituacaoSessao.logado &&
+        sessao.usuario?.tenantId != null;
+    final chave = logado
+        ? '${sessao.usuario!.tenantId}:${sessao.nomeCurto}:${sessao.logotipoVersao}'
+        : null;
+    if (chave == _identidade) return;
+    _identidade = chave;
+    widget.dependencias.instalacao.definirIdentidade(
+      titulo: logado ? sessao.nomeCurto ?? sessao.nomeAcademia : null,
+      icone: logado ? sessao.iconeAcademia : null,
+      chave: chave,
+    );
   }
 
   @override

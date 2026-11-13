@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { autenticar } from '../middleware/autenticar';
 import { ehSenhaValida, gerarHashSenha, validarSenha } from '../seguranca/senha';
 import { obterVersaoDaChave } from './academia';
+import { calcularNomeCurto } from './manifesto';
 import type { Contexto } from '../tipos';
 import { responderErro } from '../util/erros';
 import { obterAgoraIso } from '../util/tempo';
@@ -19,11 +20,14 @@ rotasEu.get('/', async (c) => {
     .bind(id)
     .first();
   const tenant = tenantId
-    ? await c.env.DB.prepare('SELECT id, nome, cabecalho_impressao, icone_512_key FROM tenants WHERE id = ?1')
+    ? await c.env.DB.prepare(
+        'SELECT id, nome, nome_curto, cabecalho_impressao, icone_512_key FROM tenants WHERE id = ?1',
+      )
         .bind(tenantId)
         .first<{
           id: string;
           nome: string;
+          nome_curto: string | null;
           cabecalho_impressao: string | null;
           icone_512_key: string | null;
         }>()
@@ -46,6 +50,8 @@ rotasEu.get('/', async (c) => {
     ? {
         id: tenant.id,
         nome: tenant.nome,
+        // Nome embaixo do ícone do app instalado (o iPhone usa o que o app informa).
+        nome_curto: calcularNomeCurto(tenant),
         cabecalho_impressao: tenant.cabecalho_impressao,
         logotipo_versao: obterVersaoDaChave(tenant.icone_512_key),
       }

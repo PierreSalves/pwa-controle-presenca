@@ -228,8 +228,14 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Acessibilidade:** área de envio lida como botão "Enviar logotipo, PNG ou JPG até 1 MB"; prévias com rótulo; erros com a próxima ação ("Escolha outro arquivo", "Diminua a imagem").
 - **Uso:** o logotipo é enviado na hora em que é escolhido; os campos de texto só com "Salvar" (sair com alteração pergunta antes). O ícone aparece no menu lateral ao lado do nome da academia, e o logotipo original no cabeçalho da página impressa (2.25).
 
+### 2.28 Convite de instalação (`ConviteInstalacao` em `convite_instalacao.dart`), tela 2
+- **Aparência:** `Cartao` no topo do Início do celular, antes do status de envio: ícone `install_mobile` em `tatame`, "Instale o app da <academia>" em w600, o apoio "Abre direto, funciona sem internet e fica com o ícone da academia." em `nevoa` 13, e dois botões da mesma largura: "Instalar" (preenchido) e "Agora não" (secundário).
+- **Quando aparece:** depois do login, se o navegador ofereceu a instalação ou se é iPhone; some se o app já está instalado ou depois do "Agora não" (guardado no aparelho até sair).
+- **Uso:** "Instalar" chama o convite do navegador; no iPhone, abre a tela 2b.
+
+### 2.29 Instalar no iPhone (`TelaInstalarIphone`), tela 2b
+- **Aparência:** barra "Instalar no iPhone" com o fechar (X, dica "Fechar") em círculo azul-claro; `Cartao` com os três passos, cada um com o ícone em quadrado `tatameClaro` (compartilhar, adicionar, confirmar), o título numerado em w600 e uma explicação em `nevoa` 13; nota final sobre o iPhone não ter botão de instalar.
+
 ## 3. Ainda não implementado (previsto na v2)
 
-
-- Convite para instalar o app depois do login, com o nome curto e o ícone da academia no manifesto, e a tela 2b (instalar no iPhone).
 - Meus dados e troca de senha (tela 12) ainda sem tela no app.

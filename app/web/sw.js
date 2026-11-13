@@ -6,9 +6,9 @@
 //   a lista do que carregou (flutter_bootstrap.js) e ele guarda esses arquivos.
 'use strict';
 
-const CACHE = 'controle-presenca-app-v1';
+const CACHE = 'controle-presenca-app-v2';
 const ESPERA_REDE_MS = 4000;
-const ESSENCIAIS = ['./', 'index.html', 'flutter_bootstrap.js', 'manifest.json', 'favicon.png'];
+const ESSENCIAIS = ['./', 'index.html', 'flutter_bootstrap.js', 'instalacao.js', 'favicon.png'];
 
 function ehDoApp(url) {
   return url.origin === self.location.origin && !url.pathname.startsWith('/api/');

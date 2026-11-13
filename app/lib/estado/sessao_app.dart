@@ -22,6 +22,8 @@ class SessaoApp extends ChangeNotifier {
   static const _chaveIcone = 'academia_icone';
   static const _chaveLogotipo = 'academia_logotipo';
   static const _chaveLogotipoVersao = 'academia_logotipo_versao';
+  static const _chaveNomeCurto = 'academia_nome_curto';
+  static const _chaveConviteDispensado = 'convite_instalacao_dispensado';
 
   SituacaoSessao _situacao = SituacaoSessao.carregando;
   SituacaoSessao get situacao => _situacao;
@@ -37,6 +39,20 @@ class SessaoApp extends ChangeNotifier {
   String? _cabecalhoAcademia;
   String? get cabecalhoAcademia => _cabecalhoAcademia;
 
+  /// Nome embaixo do ícone do app instalado (o cadastrado ou o começo do nome).
+  String? _nomeCurto;
+  String? get nomeCurto => _nomeCurto;
+
+  /// A pessoa tocou em "Agora não" no convite de instalação (tela 2).
+  bool _conviteDispensado = false;
+  bool get conviteDispensado => _conviteDispensado;
+
+  Future<void> dispensarConvite() async {
+    _conviteDispensado = true;
+    await _gravarEstado(_chaveConviteDispensado, '1');
+    notifyListeners();
+  }
+
   /// Ícone 512 px da academia (menu lateral e prévia do ícone) e o logotipo original (relatórios
   /// impressos), guardados no aparelho para aparecer também sem internet; null sem logotipo.
   Uint8List? _iconeAcademia;
@@ -44,6 +60,9 @@ class SessaoApp extends ChangeNotifier {
   Uint8List? _logotipoAcademia;
   Uint8List? get logotipoAcademia => _logotipoAcademia;
   String? _logotipoVersao;
+
+  /// Muda a cada logotipo novo (vem da API).
+  String? get logotipoVersao => _logotipoVersao;
 
   /// Troca o logotipo guardado (depois do envio na tela 14, sem esperar a próxima conexão).
   Future<void> definirLogotipo({
@@ -108,6 +127,12 @@ class SessaoApp extends ChangeNotifier {
         await _gravarEstado(_chaveAcademia, nome);
         notifyListeners();
       }
+      final nomeCurto = tenant?['nome_curto'] as String?;
+      if (nomeCurto != _nomeCurto) {
+        _nomeCurto = nomeCurto;
+        await _gravarEstado(_chaveNomeCurto, nomeCurto ?? '');
+        notifyListeners();
+      }
       await _atualizarLogotipo(tenant?['logotipo_versao'] as String?);
     } on SemConexao {
       // segue com o nome guardado
@@ -145,6 +170,9 @@ class SessaoApp extends ChangeNotifier {
         ? null
         : cabecalho;
     _iconeAcademia = _converterEstado(await _obterEstado(_chaveIcone));
+    final nomeCurto = await _obterEstado(_chaveNomeCurto);
+    _nomeCurto = nomeCurto == null || nomeCurto.isEmpty ? null : nomeCurto;
+    _conviteDispensado = await _obterEstado(_chaveConviteDispensado) == '1';
     _logotipoAcademia = _converterEstado(await _obterEstado(_chaveLogotipo));
     final versao = await _obterEstado(_chaveLogotipoVersao);
     _logotipoVersao = versao == null || versao.isEmpty ? null : versao;
@@ -172,6 +200,8 @@ class SessaoApp extends ChangeNotifier {
     _cabecalhoAcademia = null;
     _iconeAcademia = null;
     _logotipoAcademia = null;
+    _nomeCurto = null;
+    _conviteDispensado = false;
     _logotipoVersao = null;
     await _gravarEstado(_chaveUsuario, jsonEncode(usuario.converterEmJson()));
     if (usuario.tenantId != null) {
@@ -200,6 +230,8 @@ class SessaoApp extends ChangeNotifier {
     _cabecalhoAcademia = null;
     _iconeAcademia = null;
     _logotipoAcademia = null;
+    _nomeCurto = null;
+    _conviteDispensado = false;
     _logotipoVersao = null;
     _definir(SituacaoSessao.deslogado, null);
   }

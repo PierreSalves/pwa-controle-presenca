@@ -20,7 +20,7 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Controle de presença - TghServices">
   <!-- Mesma cor do fundo do app: a barra do navegador e a do app instalado não destoam da tela. -->
-  <meta name="theme-color" content="#F9F9F9">
+  <meta name="theme-color" content="#F5F6F4">
 
   <!--
     Uncomment the tag below to lay the app out underneath the parts of the
@@ -37,14 +37,19 @@
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Controle de presença">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <!-- Depois do login o app troca o título e o ícone pelos da academia (iPhone: Adicionar à Tela de Início). -->
+  <meta name="apple-mobile-web-app-title" content="Controle de presença" id="titulo-ios">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" id="icone-ios">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
   <title>Controle de presença</title>
-  <link rel="manifest" href="manifest.json">
+  <!-- Manifesto por academia, montado pela API (docs/arquitetura/README.md, "Logotipo e ícone do app por
+       academia"). use-credentials: o navegador manda o cookie que diz a academia; sem ele, vem o padrão. -->
+  <link rel="manifest" href="/api/manifesto" crossorigin="use-credentials" id="manifesto">
+  <!-- Guarda o convite de instalação do navegador para o app mostrar no Início (sem script inline: CSP). -->
+  <script src="instalacao.js"></script>
 </head>
 <body>
   <!--

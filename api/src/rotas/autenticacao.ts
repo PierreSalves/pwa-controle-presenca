@@ -13,6 +13,7 @@ import type { Contexto } from '../tipos';
 import { responderErro } from '../util/erros';
 import { gerarUuidV7 } from '../util/ids';
 import { obterAgoraIso, somarSegundos } from '../util/tempo';
+import { assinarAcademia, CAMINHO_COOKIE_MANIFESTO, COOKIE_MANIFESTO } from '../seguranca/cookie_manifesto';
 
 export const COOKIE_RENOVACAO = 'cp_renovacao';
 const CAMINHO_COOKIE = '/api/autenticacao';
@@ -33,6 +34,21 @@ let hashFicticio: Promise<string> | undefined;
 function obterHashFicticio(): Promise<string> {
   hashFicticio ??= gerarHashSenha('senha-ficticia-para-igualar-tempo');
   return hashFicticio;
+}
+
+/** Cookie do manifesto do app instalável (só a academia, assinado); sem academia, apaga. */
+async function definirCookieManifesto(c: Context, tenantId: string | null, segredo: string) {
+  if (!tenantId) {
+    deleteCookie(c, COOKIE_MANIFESTO, { path: CAMINHO_COOKIE_MANIFESTO });
+    return;
+  }
+  setCookie(c, COOKIE_MANIFESTO, await assinarAcademia(tenantId, segredo), {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'Strict',
+    path: CAMINHO_COOKIE_MANIFESTO,
+    maxAge: DURACAO_SESSAO_SEGUNDOS,
+  });
 }
 
 function definirCookieRenovacao(c: Context, token: string) {
@@ -105,6 +121,7 @@ rotasAutenticacao.post('/entrar', async (c) => {
   ]);
 
   definirCookieRenovacao(c, tokenRenovacao);
+  await definirCookieManifesto(c, usuario.tenant_id, c.env.JWT_SEGREDO);
   return c.json({
     ...(await emitirTokenAcesso(c.env.JWT_SEGREDO, usuario, sessaoId)),
     usuario: {
@@ -135,6 +152,7 @@ rotasAutenticacao.post('/renovar', async (c) => {
     .first<{ sessao_id: string; id: string; tenant_id: string | null; tipo: string }>();
   if (!sessao) {
     deleteCookie(c, COOKIE_RENOVACAO, { path: CAMINHO_COOKIE });
+    deleteCookie(c, COOKIE_MANIFESTO, { path: CAMINHO_COOKIE_MANIFESTO });
     return responderErro(c, 401, 'sessao_encerrada');
   }
 
@@ -152,6 +170,7 @@ rotasAutenticacao.post('/renovar', async (c) => {
     .run();
 
   definirCookieRenovacao(c, novoToken);
+  await definirCookieManifesto(c, sessao.tenant_id, c.env.JWT_SEGREDO);
   return c.json(await emitirTokenAcesso(c.env.JWT_SEGREDO, sessao, sessao.sessao_id));
 });
 
@@ -165,5 +184,6 @@ rotasAutenticacao.post('/sair', async (c) => {
       .run();
   }
   deleteCookie(c, COOKIE_RENOVACAO, { path: CAMINHO_COOKIE });
+  deleteCookie(c, COOKIE_MANIFESTO, { path: CAMINHO_COOKIE_MANIFESTO });
   return c.body(null, 204);
 });

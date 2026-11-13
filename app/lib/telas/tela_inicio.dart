@@ -320,6 +320,8 @@ class _TelaInicioState extends State<TelaInicio> {
             const Divider(height: 1),
           ],
         ],
+        const SizedBox(height: 8),
+        const RodapeCopyright(),
       ],
     );
   }

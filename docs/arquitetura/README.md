@@ -227,7 +227,7 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 
 **Dados da academia** (`api/src/rotas/academia.ts`, tela 14). Só professor (`editar_tenant`): `GET /api/academia` e `PUT /api/academia` (`nome`, `nome_curto` até 15 caracteres, `cabecalho_impressao`). Logotipo: `PUT /api/academia/logotipo` com `{ logotipo, icone_192, icone_512 }` em base64. O app gera os dois ícones num canvas do navegador (fundo branco, logotipo inteiro dentro de 56% do lado, a área segura do ícone redondo). A API confere o tipo pelos primeiros bytes (PNG ou JPEG; nunca pelo nome) e o tamanho de cada ícone pelo cabeçalho PNG; acima de 1 MB → `413 logotipo_grande_demais`, imagem inválida → `400 imagem_invalida`. Os arquivos vão para o R2 (binding `ARQUIVOS`, bucket `controle-presenca-arquivos`) em `academias/<tenant>/<versão>/`, com uma versão nova a cada envio; os da versão anterior são apagados. `DELETE /api/academia/logotipo` remove. Qualquer usuário da academia baixa o próprio logotipo em `GET /api/eu/logotipo/original|192|512`, e o `GET /api/eu` traz `logotipo_versao`: o app só baixa de novo quando ela muda e guarda o ícone e o original no aparelho (menu lateral, prévia e relatórios impressos funcionam offline).
 
-**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`). No app (`app/lib/telas/tela_academias.dart`), o superadmin cai direto em Academias depois do login (único item do menu); a carga inicial reaproveita as telas 8b e 8c apontando para `/api/admin/academias/:id/alunos/importacao`.
+**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`). No app (`app/lib/telas/tela_academias.dart`), o superadmin cai direto em Academias depois do login (único item do menu); a carga inicial reaproveita as telas 8b e 8c apontando para `/api/admin/academias/:id/alunos/importacao`. Tocar numa academia abre a tela dela (`app/lib/telas/tela_academia.dart`, 13a; no desktop, ao lado da lista, D7a): professores com o último acesso, novo professor, carga inicial e **Redefinir senha**. A redefinição abre um painel de baixo no celular (13b, 13c) ou um diálogo no desktop (D7b, D7c); **Gerar senha** sorteia uma senha fácil de ditar (`tatame-7429`, com `Random.secure`) e a confirmação mostra a senha uma única vez, com **Copiar**.
 
 | Rota | O que faz |
 |---|---|
@@ -236,6 +236,7 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `PUT /api/admin/academias/:id` | `nome`, `nome_curto`, `cabecalho_impressao`, `ativo`; desativar encerra as sessões de todos os usuários dela |
 | `GET`/`POST /api/admin/academias/:id/professores` | lista e cria professores |
 | `DELETE /api/admin/academias/:id/professores/:usuarioId` | desativa o professor e encerra as sessões |
+| `POST /api/admin/academias/:id/professores/:usuarioId/senha` | `senha` (8+); redefine a senha de um professor ativo da academia (esqueceu a senha) e encerra as sessões dele; assistente, professor desativado ou de outra academia → `404 usuario_nao_encontrado`. Atende o professor autônomo, que não tem outro professor para redefinir a senha dele |
 | `POST /api/admin/academias/:id/alunos/importacao` | carga inicial; mesmas regras de `POST /api/alunos/importacao` |
 
 ### Conflitos
@@ -337,7 +338,7 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 
 ### Logotipo e ícone do app por academia
 - Endereço único para todos; a academia é conhecida **depois do login**.
-- O login mostra o logotipo da TghServices. Após o login, app e relatórios mostram o logotipo da academia.
+- O login mostra o nome do app ("Controle de presença"); a TghServices aparece só como copyright discreto no fim das telas. Após o login, app e relatórios mostram o logotipo da academia.
 - O convite para instalar o PWA só aparece **após o login**. O manifesto (`/api/manifesto`, pedido com credenciais) é montado pelo Worker com o `nome_curto` e os ícones da academia do usuário; o `apple-touch-icon` é trocado pelo app após o login. Sem logotipo, usa o ícone da TghServices.
 - **Como o manifesto sabe a academia:** o navegador busca o manifesto sem o token de acesso, só com cookies, e o cookie da sessão vale só em `/api/autenticacao`. Por isso o login e a renovação gravam o cookie `cp_manifesto` (`HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/manifesto`) com o id da academia assinado por HMAC (`api/src/seguranca/cookie_manifesto.ts`, chave derivada do `JWT_SEGREDO` com contexto próprio). Ele não dá acesso a nada além do nome e do ícone; sair, sessão encerrada ou superadmin apagam o cookie. Sem cookie válido, ou com a academia desativada, vem o manifesto padrão.
 - `GET /api/manifesto`: `name`, `short_name` (o `nome_curto` ou, sem ele, as primeiras palavras inteiras do nome que cabem em 12 letras) e os ícones `/api/manifesto/icone/192|512?v=<versão>` (`purpose: any maskable`, porque os ícones gerados já têm a margem do ícone redondo). `GET /api/manifesto/icone/:tamanho` serve o ícone pelo mesmo cookie.

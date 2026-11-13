@@ -28,7 +28,8 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 - **Lista do lançamento por frequência:** aparecem só os alunos **frequentes** (padrão: presentes em ao menos 30% das últimas 8 aulas), ordenados pela frequência. Os pouco frequentes ficam recolhidos e na **busca**; ao serem marcados, voltam para a lista. Matrícula nova (menos de 8 aulas) sempre aparece. Parâmetros configuráveis por turma.
 - **Alunos sumidos:** o início avisa quem não vem há mais de 4 semanas (configurável), com atalho para **encerrar a matrícula** (sugere a data da última presença).
 - **Reposição fixa no quadro de aulas:** cada dia da semana é *sem aula*, *regular* ou *reposição*. O dia de reposição aparece sozinho no lançamento. Reposição em outro dia continua pelo botão **Reposição avulsa**.
-- **Logotipo:** o login mostra o logotipo da TghServices (a academia ainda não é conhecida); depois do login aparece o **logotipo da academia**, também nos relatórios impressos. Sem logotipo, mostra o nome.
+- **Logotipo:** depois do login aparece o **logotipo da academia**, também nos relatórios impressos. Sem logotipo, mostra o nome.
+- **TghServices só como copyright discreto** (pedido do responsável do projeto em 13/11/2026): o login não destaca mais a marca; o título é "Controle de presença". "© ano TghServices" aparece pequeno, em cinza, no fim da tela de entrar, do menu (lateral e do celular) e do Início do celular.
 - **Ícone do app instalado = ícone da academia:** o convite para instalar só aparece **depois do login**, quando o app já sabe a academia e informa ao celular o nome curto e o ícone dela. No iPhone, uma tela explica o passo a passo. Endereço único para todos (`controlepresenca.tghservices.com.br`).
 - **Telas por permissão:** Usuários só para `professor`; Academias só para `superadmin`.
 

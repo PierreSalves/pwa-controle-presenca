@@ -337,7 +337,7 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 
 ### Logotipo e ícone do app por academia
 - Endereço único para todos; a academia é conhecida **depois do login**.
-- O login mostra o logotipo da TghServices. Após o login, app e relatórios mostram o logotipo da academia.
+- O login mostra o nome do app ("Controle de presença"); a TghServices aparece só como copyright discreto no fim das telas. Após o login, app e relatórios mostram o logotipo da academia.
 - O convite para instalar o PWA só aparece **após o login**. O manifesto (`/api/manifesto`, pedido com credenciais) é montado pelo Worker com o `nome_curto` e os ícones da academia do usuário; o `apple-touch-icon` é trocado pelo app após o login. Sem logotipo, usa o ícone da TghServices.
 - **Como o manifesto sabe a academia:** o navegador busca o manifesto sem o token de acesso, só com cookies, e o cookie da sessão vale só em `/api/autenticacao`. Por isso o login e a renovação gravam o cookie `cp_manifesto` (`HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/manifesto`) com o id da academia assinado por HMAC (`api/src/seguranca/cookie_manifesto.ts`, chave derivada do `JWT_SEGREDO` com contexto próprio). Ele não dá acesso a nada além do nome e do ícone; sair, sessão encerrada ou superadmin apagam o cookie. Sem cookie válido, ou com a academia desativada, vem o manifesto padrão.
 - `GET /api/manifesto`: `name`, `short_name` (o `nome_curto` ou, sem ele, as primeiras palavras inteiras do nome que cabem em 12 letras) e os ícones `/api/manifesto/icone/192|512?v=<versão>` (`purpose: any maskable`, porque os ícones gerados já têm a margem do ícone redondo). `GET /api/manifesto/icone/:tamanho` serve o ícone pelo mesmo cookie.

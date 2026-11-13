@@ -448,6 +448,9 @@ void main() {
     await abrirApp(tester);
     expect(find.text('Controle de presença'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
+    // A TghServices só como copyright discreto no fim, nunca em destaque.
+    expect(find.text('© 2026 TghServices'), findsOneWidget);
+    expect(find.text('TghServices'), findsNothing);
     await fecharApp(tester);
   });
 

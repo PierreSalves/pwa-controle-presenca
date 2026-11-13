@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senha do professor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+<body>
+<style>
+/* Acréscimos desta proposta (o resto vem da v2) */
+.nota{max-width:1180px;margin:0 auto;padding:0 24px 12px}
+.nota ul{margin:6px 0 0;padding-left:20px;color:var(--nevoa)}
+.prof{display:flex;flex-direction:column;gap:8px;padding:12px 2px;border-bottom:1px solid var(--linha)}
+.prof:last-child{border-bottom:0}
+.prof .nm{font-weight:600}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.resumo{display:flex;gap:8px;flex-wrap:wrap}
+.resumo span{box-shadow:var(--sombra)}
+.resumo .pl{background:var(--cartao);border-radius:999px;padding:5px 12px;font-size:13px}
+.vela{position:relative;flex:1;display:flex;flex-direction:column}
+.vela::before{content:"";position:absolute;inset:0;background:rgba(35,38,43,.45)}
+.folhaBaixo{position:absolute;left:0;right:0;bottom:0;background:var(--papel);border-radius:24px 24px 0 0;padding:10px 16px 18px;display:flex;flex-direction:column;gap:12px}
+.alca{width:40px;height:4px;border-radius:2px;background:var(--linha);margin:0 auto 4px}
+.olho{display:flex;justify-content:space-between;align-items:center}
+.lado .marca{font-weight:600;padding:6px 14px 14px}
+.selec{background:var(--tatame-claro)}
+.aviso{background:var(--aviso-claro);color:var(--aviso);border-radius:12px;padding:10px 12px;font-size:13px}
+code{font-size:13px;background:var(--tatame-claro);color:var(--tatame);border-radius:6px;padding:1px 6px}
+</style>
+
+<div class="intro">
+  <h1>Redefinir a senha do professor · aprovado em 13/11/2026</h1>
+  <p>Acréscimo à <b>tela 13 (Administrador do sistema)</b>, no visual da v2. Hoje, quando um professor esquece a senha, só outro professor da mesma academia pode redefini-la, e o <b>professor autônomo</b> fica sem saída. Com isto, o superadmin redefine a senha pelo painel e passa a nova senha para o professor.</p>
+  <p>A API já existe e está testada: <code>POST /api/admin/academias/:id/professores/:usuarioId/senha</code>. Só aceita professor ativo daquela academia e tira o professor de todos os aparelhos.</p>
+</div>
+
+<div class="nota"><div class="cartao">
+  <div class="h">O que muda</div>
+  <ul>
+    <li><b>13a · Academia aberta:</b> tocar numa academia da lista abre os dados dela e os professores (nome, e-mail e último acesso). Cada professor tem o botão <b>Redefinir senha</b>.</li>
+    <li><b>13b · Nova senha:</b> um painel sobe de baixo com o campo da senha (8 caracteres ou mais, com botão para mostrar ou esconder) e o botão <b>Gerar senha</b>, que preenche uma senha fácil de ditar (ex.: <code>tatame-7429</code>). Um aviso explica que o professor sai de todos os aparelhos.</li>
+    <li><b>13c · Pronto:</b> a confirmação mostra a nova senha uma única vez, com o botão <b>Copiar</b>, para mandar pelo WhatsApp. O sistema guarda só o hash.</li>
+    <li><b>D7a–D7c · Desktop:</b> academias à esquerda e a academia aberta à direita (D7a); a nova senha (D7b) e a confirmação com Copiar (D7c) abrem num diálogo central.</li>
+    <li><b>Acessibilidade:</b> botões com 48 px de toque; o painel prende o foco e fecha com Esc ou Cancelar; a mensagem de pronto é anunciada ao leitor de tela.</li>
+    <li><b>Fora desta proposta (decidir depois):</b> obrigar o professor a trocar a senha no primeiro login; recuperação de senha por e-mail.</li>
+  </ul>
+</div></div>
+
+<div class="g">
+  <div>
+    <p class="rot">13a · Academia aberta</p>
+    <div class="cel">
+      <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Junião</span><span style="width:48px"></span></div>
+      <div class="corpo">
+        <div class="resumo"><span class="ok"><i class="ti ti-check"></i>ativa</span><span class="pl">42 alunos</span><span class="pl">3 turmas</span></div>
+        <div class="cartao">
+          <div class="h" style="margin-bottom:2px">Professores</div>
+          <div class="prof">
+            <div><div class="nm">Marcos Silva</div><div class="mu">marcos@juniao.com.br · último acesso 02/11/2026</div></div>
+            <div class="acoes"><span class="bs"><i class="ti ti-key"></i>Redefinir senha</span></div>
+          </div>
+          <div class="prof">
+            <div><div class="nm">Carla Souza</div><div class="mu">carla@juniao.com.br · nunca entrou</div></div>
+            <div class="acoes"><span class="bs"><i class="ti ti-key"></i>Redefinir senha</span></div>
+          </div>
+        </div>
+        <span class="bs lg"><i class="ti ti-user-plus"></i>Novo professor</span>
+        <span class="bs lg"><i class="ti ti-file-import"></i>Carga inicial de alunos</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="rot">13b · Nova senha</p>
+    <div class="cel">
+      <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Junião</span><span style="width:48px"></span></div>
+      <div class="vela">
+        <div class="folhaBaixo">
+          <div class="alca"></div>
+          <div class="h" style="font-size:17px">Redefinir a senha de Marcos Silva</div>
+          <div class="campo foco"><b>Nova senha</b><div class="olho"><span>tatame-7429</span><i class="ti ti-eye-off" aria-label="Esconder senha"></i></div></div>
+          <span class="bs lg"><i class="ti ti-wand"></i>Gerar senha</span>
+          <div class="aviso">Marcos sai de todos os aparelhos e passa a entrar com a nova senha.</div>
+          <span class="bp lg">Redefinir senha<span class="ic"><i class="ti ti-arrow-right"></i></span></span>
+          <span class="bs lg">Cancelar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="rot">13c · Pronto</p>
+    <div class="cel">
+      <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Junião</span><span style="width:48px"></span></div>
+      <div class="vela">
+        <div class="folhaBaixo">
+          <div class="alca"></div>
+          <div class="ok" style="align-self:flex-start"><i class="ti ti-check"></i>Senha redefinida</div>
+          <div>Passe a nova senha para <b>Marcos Silva</b>. Ela não aparece de novo.</div>
+          <div class="cartao" style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:20px;font-weight:600;letter-spacing:.5px">tatame-7429</span>
+            <span class="bs"><i class="ti ti-copy"></i>Copiar</span>
+          </div>
+          <div class="mu">E-mail para entrar: marcos@juniao.com.br</div>
+          <span class="bp lg">Concluir<span class="ic"><i class="ti ti-check"></i></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="g" style="flex-direction:column">
+  <div style="width:100%">
+    <p class="rot">D7a · Desktop: academia aberta</p>
+    <div class="dk" style="position:relative" data-base></div>
+  </div>
+
+  <div style="width:100%">
+    <p class="rot">D7b · Desktop: nova senha</p>
+    <div class="dk" style="position:relative" data-base>
+      <div class="veu" role="dialog" aria-modal="true" aria-label="Redefinir a senha de Marcos Silva">
+        <div class="cartao dialogo">
+          <div class="h" style="font-size:17px">Redefinir a senha de Marcos Silva</div>
+          <div class="campo foco"><b>Nova senha</b><div class="olho"><span>tatame-7429</span><i class="ti ti-eye-off" aria-label="Esconder senha"></i></div></div>
+          <div class="aviso">Marcos sai de todos os aparelhos e passa a entrar com a nova senha.</div>
+          <div class="botoes">
+            <span class="bs"><i class="ti ti-wand"></i>Gerar senha</span>
+            <span class="bs">Cancelar</span>
+            <span class="bp sm">Redefinir senha<span class="ic"><i class="ti ti-arrow-right"></i></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="width:100%">
+    <p class="rot">D7c · Desktop: pronto</p>
+    <div class="dk" style="position:relative" data-base>
+      <div class="veu" role="dialog" aria-modal="true" aria-label="Senha redefinida">
+        <div class="cartao dialogo">
+          <div class="ok" style="align-self:flex-start"><i class="ti ti-check"></i>Senha redefinida</div>
+          <div>Passe a nova senha para <b>Marcos Silva</b>. Ela não aparece de novo.</div>
+          <div class="cartao" style="display:flex;justify-content:space-between;align-items:center;box-shadow:inset 0 0 0 1.5px var(--linha)">
+            <span style="font-size:20px;font-weight:600;letter-spacing:.5px">tatame-7429</span>
+            <span class="bs"><i class="ti ti-copy"></i>Copiar</span>
+          </div>
+          <div class="mu">E-mail para entrar: marcos@juniao.com.br</div>
+          <div class="botoes"><span class="bp sm">Concluir<span class="ic"><i class="ti ti-check"></i></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.veu{position:absolute;inset:0;background:rgba(35,38,43,.45);display:flex;align-items:center;justify-content:center}
+.dialogo{width:440px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.botoes{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+</style>
+<template id="dk-base">
+      <div class="lado">
+        <div class="marca">TghServices</div>
+        <div class="nav at"><i class="ti ti-building"></i>Academias</div>
+        <div style="flex:1"></div>
+        <div class="nav"><i class="ti ti-logout"></i>Sair</div>
+      </div>
+      <div class="princ">
+        <div class="cab"><span class="tit">Academias</span><span class="bp sm">Nova academia<span class="ic"><i class="ti ti-plus"></i></span></span></div>
+        <div class="dois">
+          <div class="cartao">
+            <div class="lin selec" style="border-radius:10px;padding-left:10px"><span class="h">Equipe Junião</span><span class="mu">42 alunos</span></div>
+            <div class="lin"><span>Academia Teste</span><span class="mu">8 alunos</span></div>
+            <div class="lin"><span>Outra Academia</span><span class="mu">inativa</span></div>
+          </div>
+          <div class="cartao">
+            <div class="h" style="font-size:17px">Equipe Junião</div>
+            <div class="mu" style="margin-bottom:8px">ativa · 42 alunos · 3 turmas</div>
+            <table>
+              <tr><th>Professor</th><th>Último acesso</th><th></th></tr>
+              <tr><td>Marcos Silva<div class="mu">marcos@juniao.com.br</div></td><td>02/11/2026</td><td><span class="bs"><i class="ti ti-key"></i>Redefinir senha</span></td></tr>
+              <tr><td>Carla Souza<div class="mu">carla@juniao.com.br</div></td><td>nunca</td><td><span class="bs"><i class="ti ti-key"></i>Redefinir senha</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+</template>
+<script>
+// Mesma tela de fundo nos três quadros do desktop.
+const base = document.getElementById('dk-base');
+document.querySelectorAll('[data-base]').forEach((dk) => dk.prepend(base.content.cloneNode(true)));
+</script>
+</body>
+</html>

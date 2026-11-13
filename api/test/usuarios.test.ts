@@ -309,6 +309,83 @@ describe('administrador do sistema', () => {
     expect(await resposta.json()).toMatchObject({ academia: { ativo: 0, alunos: 2 } });
   });
 
+  it('redefine a senha do professor e encerra as sessões dele', async () => {
+    const admin = await entrarComo(null, 'superadmin');
+    const email = novoEmail();
+    const { academia } = await (
+      await chamar(admin.token, 'POST', '/api/admin/academias', {
+        nome: 'Academia',
+        professor: { nome: 'Prof. Autônomo', email, senha: SENHA_PADRAO },
+      })
+    ).json<{ academia: { id: string } }>();
+    const base = `/api/admin/academias/${academia.id}`;
+    const { professores } = await (
+      await chamar(admin.token, 'GET', `${base}/professores`)
+    ).json<{ professores: { id: string }[] }>();
+    const caminho = `${base}/professores/${professores[0]?.id ?? ''}/senha`;
+    const sessao = await entrar(email, SENHA_PADRAO);
+
+    expect((await chamar(admin.token, 'POST', caminho, { senha: 'curta' })).status).toBe(400);
+    expect((await chamar(admin.token, 'POST', caminho, { senha: 'nova-senha-123' })).status).toBe(204);
+
+    expect((await chamar(sessao.tokenAcesso, 'GET', '/api/eu')).status).toBe(401);
+    expect((await entrar(email, SENHA_PADRAO)).resposta.status).toBe(401);
+    const login = await entrar(email, 'nova-senha-123');
+    expect(login.resposta.status).toBe(200);
+    // O professor não usa a rota do admin.
+    expect((await chamar(login.tokenAcesso, 'POST', caminho, { senha: 'outra-senha-1' })).status).toBe(403);
+  });
+
+  it('não redefine a senha de assistente, de professor de outra academia nem de professor desativado', async () => {
+    const admin = await entrarComo(null, 'superadmin');
+    const criarAcademia = async (email: string) => {
+      const { academia } = await (
+        await chamar(admin.token, 'POST', '/api/admin/academias', {
+          nome: 'Academia',
+          professor: { nome: 'Prof.', email, senha: SENHA_PADRAO },
+        })
+      ).json<{ academia: { id: string } }>();
+      const { professores } = await (
+        await chamar(admin.token, 'GET', `/api/admin/academias/${academia.id}/professores`)
+      ).json<{ professores: { id: string }[] }>();
+      return { academiaId: academia.id, professorId: professores[0]?.id ?? '' };
+    };
+    const emailA = novoEmail();
+    const emailB = novoEmail();
+    const a = await criarAcademia(emailA);
+    const b = await criarAcademia(emailB);
+    const sessaoB = await entrar(emailB, SENHA_PADRAO);
+
+    const professorA = await entrar(emailA, SENHA_PADRAO);
+    const { usuario: assistenteA } = await (
+      await chamar(professorA.tokenAcesso, 'POST', '/api/usuarios', {
+        nome: 'Assistente',
+        email: novoEmail(),
+        tipo: 'assistente',
+        senha: SENHA_PADRAO,
+      })
+    ).json<{ usuario: { id: string } }>();
+    const { professor: desativadoA } = await (
+      await chamar(admin.token, 'POST', `/api/admin/academias/${a.academiaId}/professores`, {
+        nome: 'Desativado',
+        email: novoEmail(),
+        senha: SENHA_PADRAO,
+      })
+    ).json<{ professor: { id: string } }>();
+    await chamar(admin.token, 'DELETE', `/api/admin/academias/${a.academiaId}/professores/${desativadoA.id}`);
+
+    const redefinir = (usuarioId: string) =>
+      chamar(admin.token, 'POST', `/api/admin/academias/${a.academiaId}/professores/${usuarioId}/senha`, {
+        senha: 'nova-senha-123',
+      });
+    expect((await redefinir(b.professorId)).status).toBe(404);
+    expect((await redefinir(assistenteA.id)).status).toBe(404);
+    expect((await redefinir(desativadoA.id)).status).toBe(404);
+    // O professor da outra academia segue com a mesma senha e a mesma sessão.
+    expect((await entrar(emailB, SENHA_PADRAO)).resposta.status).toBe(200);
+    expect((await chamar(sessaoB.tokenAcesso, 'GET', '/api/eu')).status).toBe(200);
+  });
+
   it('valida os dados e responde 404 para academia inexistente', async () => {
     const admin = await entrarComo(null, 'superadmin');
     expect(

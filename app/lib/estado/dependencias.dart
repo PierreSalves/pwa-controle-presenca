@@ -6,12 +6,14 @@ import '../dados/cliente_api.dart';
 import '../dados/consulta_inicio.dart';
 import '../dados/consulta_lancamento.dart';
 import '../dados/consulta_relatorios.dart';
+import '../dados/repositorio_academia.dart';
 import '../dados/repositorio_admin.dart';
 import '../dados/repositorio_alunos.dart';
 import '../dados/repositorio_turmas.dart';
 import '../dados/repositorio_usuarios.dart';
 import '../dados/repositorio_presenca.dart';
 import '../dados/servico_sincronizacao.dart';
+import '../plataforma/imagens.dart';
 import '../plataforma/impressao.dart' as impressao;
 import 'coordenador_sincronizacao.dart';
 import 'sessao_app.dart';
@@ -22,7 +24,9 @@ class Dependencias {
     required this.cliente,
     DateTime Function()? relogio,
     bool Function(String html)? abrirImpressao,
+    ServicoImagens? imagens,
   }) : relogio = relogio ?? DateTime.now,
+       imagens = imagens ?? criarServicoImagens(),
        abrirImpressao = abrirImpressao ?? impressao.abrirImpressao {
     sessao = SessaoApp(banco, cliente);
     repositorio = RepositorioPresenca(banco, relogio: this.relogio);
@@ -33,6 +37,7 @@ class Dependencias {
     turmas = RepositorioTurmas(cliente);
     usuarios = RepositorioUsuarios(cliente);
     admin = RepositorioAdmin(cliente);
+    academia = RepositorioAcademia(cliente);
     coordenador = CoordenadorSincronizacao(
       ServicoSincronizacao(banco, cliente),
       aoEncerrarSessao: sessao.encerrarLocalmente,
@@ -54,6 +59,10 @@ class Dependencias {
   late final RepositorioTurmas turmas;
   late final RepositorioUsuarios usuarios;
   late final RepositorioAdmin admin;
+  late final RepositorioAcademia academia;
+
+  /// Seletor de arquivos e geração dos ícones (canvas do navegador).
+  final ServicoImagens imagens;
   late final CoordenadorSincronizacao coordenador;
 }
 

@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:controle_presenca/dados/banco_local.dart';
 import 'package:controle_presenca/dados/cliente_api.dart';
 import 'package:controle_presenca/estado/dependencias.dart';
 import 'package:controle_presenca/main.dart';
+import 'package:controle_presenca/plataforma/imagens.dart';
 import 'package:controle_presenca/telas/componentes.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
@@ -20,6 +22,26 @@ http.Response _json(Object corpo, [int status = 200]) => http.Response(
   status,
   headers: {'content-type': 'application/json; charset=utf-8'},
 );
+
+/// PNG de 1×1 px de verdade (o Image.memory consegue abrir).
+final pngDeTeste = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+);
+
+/// Serviço de imagens falso: "escolhe" o PNG de teste e devolve ele mesmo como ícone.
+class _ImagensFalsas implements ServicoImagens {
+  final List<int> iconesGerados = [];
+
+  @override
+  Future<ImagemEscolhida?> escolherImagem() async =>
+      ImagemEscolhida(bytes: pngDeTeste, nome: 'logo.png');
+
+  @override
+  Future<Uint8List> gerarIcone(Uint8List imagem, int tamanho) async {
+    iconesGerados.add(tamanho);
+    return pngDeTeste;
+  }
+}
 
 /// API falsa: login da Carla, pull com a turma de apoio.dart e push aceitando tudo.
 class _ApiFalsa {
@@ -43,6 +65,15 @@ class _ApiFalsa {
   ];
   final List<Map<String, dynamic>> academiasCriadas = [];
   final List<String> cargasIniciais = [];
+  Map<String, dynamic> academia = {
+    'nome': 'Academia Teste',
+    'nome_curto': null,
+    'cabecalho_impressao': null,
+    'tem_logotipo': 0,
+    'logotipo_versao': null,
+  };
+  Map<String, dynamic>? logotipoEnviado;
+  final List<Map<String, dynamic>> academiaSalva = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -72,11 +103,37 @@ class _ApiFalsa {
     if (caminho.endsWith('/eu')) {
       return _json({
         'usuario': {'id': 'u1'},
-        'tenant': {'id': 't1', 'nome': 'Academia Teste'},
+        'tenant': {
+          'id': 't1',
+          'nome': academia['nome'],
+          'logotipo_versao': academia['logotipo_versao'],
+        },
         'turmas': [],
       });
     }
     if (caminho.endsWith('/sair')) return http.Response('', 204);
+    if (caminho.endsWith('/eu/logotipo/512') ||
+        caminho.endsWith('/eu/logotipo/original')) {
+      return http.Response.bytes(pngDeTeste, 200);
+    }
+    if (caminho.endsWith('/api/academia') && req.method == 'GET') {
+      return _json({'academia': academia});
+    }
+    if (caminho.endsWith('/api/academia') && req.method == 'PUT') {
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      academiaSalva.add(corpo);
+      academia = {...academia, ...corpo};
+      return _json({'academia': academia});
+    }
+    if (caminho.endsWith('/academia/logotipo') && req.method == 'PUT') {
+      logotipoEnviado = jsonDecode(req.body) as Map<String, dynamic>;
+      academia = {...academia, 'tem_logotipo': 1, 'logotipo_versao': 'v1'};
+      return _json({'academia': academia});
+    }
+    if (caminho.endsWith('/academia/logotipo') && req.method == 'DELETE') {
+      academia = {...academia, 'tem_logotipo': 0, 'logotipo_versao': null};
+      return _json({'academia': academia});
+    }
     if (caminho.endsWith('/admin/academias') && req.method == 'GET') {
       return _json({'academias': academias});
     }
@@ -276,9 +333,11 @@ void main() {
   late _ApiFalsa api;
   late Dependencias dependencias;
   late List<String> impressos;
+  late _ImagensFalsas imagens;
 
   setUp(() {
     impressos = [];
+    imagens = _ImagensFalsas();
     banco = BancoLocal(
       DatabaseConnection(
         NativeDatabase.memory(),
@@ -294,6 +353,7 @@ void main() {
         cliente: MockClient(api.responder),
       ),
       relogio: () => agora,
+      imagens: imagens,
       abrirImpressao: (html) {
         impressos.add(html);
         return true;
@@ -872,6 +932,63 @@ void main() {
     await tester.tap(find.text('Equipe Nova').last);
     await esperar(tester);
     expect(find.text('Carga inicial · Equipe Nova'), findsOneWidget);
+    await fecharApp(tester);
+  });
+
+  testWidgets('professor edita os dados da academia e envia o logotipo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(420, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    api.tipoUsuario = 'professor';
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await esperar(tester);
+    await tester.tap(find.text('Dados da academia'));
+    await esperar(tester);
+    expect(find.text('Enviar logotipo'), findsOneWidget);
+
+    // Logotipo: gera os dois ícones e envia tudo junto; a sessão guarda o ícone.
+    await tester.tap(find.text('Enviar logotipo'));
+    await esperar(tester);
+    expect(imagens.iconesGerados, [192, 512]);
+    expect(api.logotipoEnviado!.keys, {'logotipo', 'icone_192', 'icone_512'});
+    expect(
+      base64Decode(api.logotipoEnviado!['logotipo'] as String),
+      pngDeTeste,
+    );
+    expect(find.text('Trocar logotipo'), findsOneWidget);
+    expect(dependencias.sessao.iconeAcademia, pngDeTeste);
+    expect(dependencias.sessao.logotipoAcademia, pngDeTeste);
+
+    // Nome curto e cabeçalho de impressão.
+    await tester.enterText(find.byType(TextFormField).at(1), 'Equipe T');
+    await tester.enterText(find.byType(TextFormField).at(2), 'Prof. Fulano');
+    await tester.tap(find.text('Salvar'));
+    await esperar(tester);
+    expect(api.academiaSalva.single, {
+      'nome': 'Academia Teste',
+      'nome_curto': 'Equipe T',
+      'cabecalho_impressao': 'Prof. Fulano',
+    });
+
+    // Remover pede confirmação.
+    await tester.tap(find.text('Remover'));
+    await esperar(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Remover'));
+    await esperar(tester);
+    expect(find.text('Enviar logotipo'), findsOneWidget);
+    expect(dependencias.sessao.iconeAcademia, isNull);
+    expect(dependencias.sessao.logotipoAcademia, isNull);
+    await fecharApp(tester);
+  });
+
+  testWidgets('assistente não vê Dados da academia no menu', (tester) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await esperar(tester);
+    expect(find.text('Dados da academia'), findsNothing);
     await fecharApp(tester);
   });
 }

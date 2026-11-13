@@ -25,6 +25,10 @@
     },
   ],
 
+  // Arquivos (R2): logotipo e ícones da academia; depois, os comprovantes da Fase 2.
+  // Em produção o bucket precisa existir antes do deploy: npx wrangler r2 bucket create controle-presenca-arquivos
+  "r2_buckets": [{ "binding": "ARQUIVOS", "bucket_name": "controle-presenca-arquivos" }],
+
   // Endereço público (custom domain criado pelo Wrangler no deploy).
   "routes": [{ "pattern": "controlepresenca.tghservices.com.br", "custom_domain": true }],
 }

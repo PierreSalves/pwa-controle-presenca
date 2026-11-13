@@ -1,5 +1,9 @@
 // Página impressa dos relatórios (P1 em docs/telas/wireframes-relatorios.html): HTML simples, sem
 // script, aberto numa aba nova para o navegador imprimir ou salvar em PDF. Mesma tabela da tela.
+import 'dart:convert';
+import 'dart:typed_data';
+
+import '../../plataforma/imagens.dart';
 import '../formatacao.dart';
 import 'montar_relatorio.dart';
 
@@ -11,6 +15,7 @@ class CabecalhoImpressao {
     required this.cabecalhoTurma,
     required this.geradoEm,
     required this.geradoPor,
+    this.logotipo,
   });
 
   final String academia;
@@ -23,6 +28,9 @@ class CabecalhoImpressao {
 
   /// "Ana (assistente)".
   final String geradoPor;
+
+  /// Logotipo original da academia (PNG ou JPG); sem ele, o cabeçalho mostra só o nome.
+  final Uint8List? logotipo;
 }
 
 String _escapar(String texto) => texto
@@ -64,6 +72,7 @@ String gerarHtmlRelatorio(RelatorioMontado r, CabecalhoImpressao c) {
 body { font-family: system-ui, "Segoe UI", Arial, sans-serif; color: #111; font-size: 12px; margin: 0; }
 .cab { display: flex; gap: 16px; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 10px; margin-bottom: 12px; }
 .cab .academia { flex: 1; }
+.cab img { max-width: 140px; max-height: 56px; width: auto; height: auto; }
 .cab h1 { font-size: 17px; margin: 0 0 2px; }
 .cab .rel { text-align: right; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -81,7 +90,14 @@ thead { display: table-header-group; }
 .nota, .rodape-pagina { color: #555; margin: 10px 0 0; }
 </style></head><body>
 ''');
-  b.write('<div class="cab"><div class="academia">');
+  b.write('<div class="cab">');
+  if (c.logotipo != null) {
+    b.write(
+      '<img src="data:${_obterTipoMime(c.logotipo!)};base64,${base64Encode(c.logotipo!)}" '
+      'alt="">',
+    );
+  }
+  b.write('<div class="academia">');
   b.write('<h1>${_escapar(c.academia)}</h1>');
   if (c.cabecalhoAcademia != null) {
     b.write('<div>${_escapar(c.cabecalhoAcademia!)}</div>');
@@ -161,3 +177,7 @@ thead { display: table-header-group; }
 String _formatarCabecalho(ColunaRelatorio coluna) =>
     '${_escapar(coluna.rotulo)}'
     '${coluna.etiqueta == null ? '' : '<span class="etq">${_escapar(coluna.etiqueta!)}</span>'}';
+
+/// PNG ou JPEG pelos primeiros bytes (o logotipo original pode ser qualquer um dos dois).
+String _obterTipoMime(Uint8List bytes) =>
+    detectarTipoImagem(bytes) == TipoImagem.jpeg ? 'image/jpeg' : 'image/png';

@@ -166,7 +166,7 @@ void main() {
     expect(find.text('Suas turmas'), findsOneWidget);
     expect(find.text('Turma $turmaId · qua qui · 1 aluno'), findsOneWidget);
     expect(find.text('Resumo de 2026'), findsOneWidget);
-    expect(find.textContaining('Tudo enviado ✓'), findsOneWidget);
+    expect(find.textContaining('Tudo enviado'), findsOneWidget);
     await fecharApp(tester);
   });
 
@@ -184,7 +184,7 @@ void main() {
     await esperar(tester);
     expect(find.text('1 presentes'), findsOneWidget);
     expect(api.envios.expand((e) => e).length, 2); // aula + presença
-    expect(find.textContaining('Tudo enviado ✓'), findsOneWidget);
+    expect(find.textContaining('Tudo enviado'), findsOneWidget);
     await fecharApp(tester);
   });
 

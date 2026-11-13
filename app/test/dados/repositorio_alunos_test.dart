@@ -244,4 +244,54 @@ void main() {
     expect(importado.importados, 1);
     expect((jsonDecode(recebidas.last.body) as Map)['confirmar'], isTrue);
   });
+
+  test(
+    'importação com turma envia turma e data e lê a matrícula do relatório',
+    () async {
+      final repositorio = criar();
+      responder = (_) => _json({
+        'relatorio': {
+          'incompletas': [],
+          'codigos_repetidos': [],
+          'codigos_existentes': [],
+          'nomes_repetidos': [],
+          'pode_importar': true,
+        },
+        'matricula': {
+          'turma_id': 't1',
+          'turma_nome': 'Adulto',
+          'data_inicio': '2026-08-01',
+        },
+        'importados': 0,
+      });
+      final conferido = await repositorio.importarAlunos(
+        [(codigo: '1', nome: 'Ana')],
+        academiaId: 'a1',
+        turmaId: 't1',
+        dataInicio: '2026-08-01',
+      );
+      expect(
+        recebidas.last.url.path,
+        '/api/admin/academias/a1/alunos/importacao',
+      );
+      expect(jsonDecode(recebidas.last.body), {
+        'alunos': [
+          {'codigo': '1', 'nome': 'Ana'},
+        ],
+        'turma_id': 't1',
+        'data_inicio': '2026-08-01',
+      });
+      expect(conferido.matricula?.turmaNome, 'Adulto');
+      expect(conferido.matricula?.dataInicio, '2026-08-01');
+
+      responder = (_) => _json({
+        'turmas': [
+          {'id': 't1', 'nome': 'Adulto'},
+        ],
+      });
+      final turmas = await repositorio.buscarTurmas(academiaId: 'a1');
+      expect(recebidas.last.url.path, '/api/admin/academias/a1/turmas');
+      expect(turmas.single.nome, 'Adulto');
+    },
+  );
 }

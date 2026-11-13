@@ -3,7 +3,7 @@
 import { Hono, type Context } from 'hono';
 import { autenticar, exigirPermissao } from '../middleware/autenticar';
 import { ehSenhaValida, gerarHashSenha } from '../seguranca/senha';
-import { importarAlunos } from '../servicos/importacao-alunos';
+import { importarAlunos, responderImportacao } from '../servicos/importacao-alunos';
 import {
   existeOutroUsuarioComEmail,
   lerDadosNovoUsuario,
@@ -206,12 +206,28 @@ rotasAdmin.post('/academias/:id/professores/:usuarioId/senha', async (c) => {
   return c.body(null, 204);
 });
 
-/** Carga inicial dos alunos da academia (mesmas regras de POST /api/alunos/importacao). */
+/** Turmas da academia, para escolher onde matricular os alunos da carga inicial. */
+rotasAdmin.get('/academias/:id/turmas', async (c) => {
+  const tenantId = await obterAcademiaDaRota(c);
+  if (!tenantId) return responderErro(c, 404, 'academia_nao_encontrada');
+  const { results } = await c.env.DB.prepare(
+    'SELECT id, nome FROM turmas WHERE tenant_id = ?1 AND excluido = 0 ORDER BY nome COLLATE NOCASE',
+  )
+    .bind(tenantId)
+    .all();
+  return c.json({ turmas: results });
+});
+
+/**
+ * Carga inicial dos alunos da academia (mesmas regras de POST /api/alunos/importacao).
+ * O administrador pode matricular em qualquer turma da academia.
+ */
 rotasAdmin.post('/academias/:id/alunos/importacao', async (c) => {
   const tenantId = await obterAcademiaDaRota(c);
   if (!tenantId) return responderErro(c, 404, 'academia_nao_encontrada');
-  const resultado = await importarAlunos(c.env.DB, tenantId, c.get('usuario').id, await lerCorpoJson(c.req));
-  if (resultado.tipo === 'dados_invalidos') return responderErro(c, 400, 'dados_invalidos');
-  if (resultado.tipo === 'relatorio') return c.json({ relatorio: resultado.relatorio, importados: 0 });
-  return c.json({ relatorio: resultado.relatorio, importados: resultado.importados }, 201);
+  const corpo = await lerCorpoJson(c.req);
+  const resultado = await importarAlunos(c.env.DB, tenantId, c.get('usuario').id, corpo, () =>
+    Promise.resolve(true),
+  );
+  return responderImportacao(c, resultado);
 });

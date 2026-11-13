@@ -20,6 +20,8 @@ String descreverErroOnline(Object erro) => switch (erro) {
   ErroApi(codigo: 'codigo_ja_existe') => 'Já existe um aluno com este código.',
   ErroApi(codigo: 'matricula_sobreposta') =>
     'O aluno já está matriculado nessa turma nesse período.',
+  ErroApi(codigo: 'turma_nao_encontrada') =>
+    'A turma escolhida não existe mais ou você não tem acesso a ela.',
   ErroApi(codigo: 'dados_invalidos') => 'Confira os dados informados.',
   ErroApi(codigo: 'sem_permissao') => 'Você não tem permissão para isso.',
   _ => 'Não foi possível concluir agora. Tente de novo.',

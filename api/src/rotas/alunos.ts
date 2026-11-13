@@ -6,7 +6,8 @@ import { Hono, type Context } from 'hono';
 import { autenticar, exigirPermissao } from '../middleware/autenticar';
 import { calcularProximoCodigo } from '../regras/alunos';
 import { ehDataValida } from '../regras/presenca';
-import { importarAlunos } from '../servicos/importacao-alunos';
+import { temAcessoATurma } from '../seguranca/acesso-turmas';
+import { importarAlunos, responderImportacao } from '../servicos/importacao-alunos';
 import type { Contexto } from '../tipos';
 import { responderErro } from '../util/erros';
 import { gerarUuidV7 } from '../util/ids';
@@ -182,14 +183,20 @@ rotasAlunos.post('/', async (c) => {
 /**
  * Importação da lista de alunos (código + nome). Sem `confirmar`, devolve só o relatório de
  * códigos repetidos/existentes e nomes repetidos; com `confirmar: true`, grava se não houver bloqueio.
+ * Com `turma_id` e `data_inicio`, matricula todos na turma (exige acesso a ela).
  */
 rotasAlunos.post('/importacao', async (c) => {
-  const tenantId = obterTenantId(c);
-  if (!tenantId) return responderErro(c, 403, 'sem_permissao');
-  const resultado = await importarAlunos(c.env.DB, tenantId, c.get('usuario').id, await lerCorpoJson(c.req));
-  if (resultado.tipo === 'dados_invalidos') return responderErro(c, 400, 'dados_invalidos');
-  if (resultado.tipo === 'relatorio') return c.json({ relatorio: resultado.relatorio, importados: 0 });
-  return c.json({ relatorio: resultado.relatorio, importados: resultado.importados }, 201);
+  const usuario = c.get('usuario');
+  if (!usuario.tenantId) return responderErro(c, 403, 'sem_permissao');
+  const db = c.env.DB;
+  const resultado = await importarAlunos(
+    db,
+    usuario.tenantId,
+    usuario.id,
+    await lerCorpoJson(c.req),
+    (turmaId) => temAcessoATurma(db, usuario, turmaId),
+  );
+  return responderImportacao(c, resultado);
 });
 
 rotasAlunos.get('/:id', async (c) => {

@@ -79,7 +79,7 @@ void imprimirRelatorio(
   }
 }
 
-/// Campo de data que abre o calendário.
+/// Campo de data que abre o calendário. Sem [aoEscolher], fica desabilitado.
 class CampoData extends StatelessWidget {
   const CampoData({
     super.key,
@@ -90,29 +90,34 @@ class CampoData extends StatelessWidget {
 
   final String rotulo;
   final String data;
-  final ValueChanged<String> aoEscolher;
+  final ValueChanged<String>? aoEscolher;
 
   @override
   Widget build(BuildContext context) {
+    final aoEscolher = this.aoEscolher;
     return Semantics(
       button: true,
+      enabled: aoEscolher != null,
       label: '$rotulo: ${formatarDataBr(data)}',
       excludeSemantics: true,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () async {
-          final escolhida = await showDatePicker(
-            context: context,
-            initialDate: DateTime.parse(data),
-            firstDate: DateTime(2020),
-            lastDate: DateTime(2100),
-            helpText: rotulo,
-          );
-          if (escolhida != null) aoEscolher(formatarData(escolhida));
-        },
+        onTap: aoEscolher == null
+            ? null
+            : () async {
+                final escolhida = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.parse(data),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2100),
+                  helpText: rotulo,
+                );
+                if (escolhida != null) aoEscolher(formatarData(escolhida));
+              },
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: rotulo,
+            enabled: aoEscolher != null,
             isDense: true,
             suffixIcon: const Icon(Symbols.calendar_month, size: 20),
           ),

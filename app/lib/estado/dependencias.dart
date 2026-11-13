@@ -7,6 +7,7 @@ import '../dados/consulta_inicio.dart';
 import '../dados/consulta_lancamento.dart';
 import '../dados/repositorio_alunos.dart';
 import '../dados/repositorio_turmas.dart';
+import '../dados/repositorio_usuarios.dart';
 import '../dados/repositorio_presenca.dart';
 import '../dados/servico_sincronizacao.dart';
 import 'coordenador_sincronizacao.dart';
@@ -24,6 +25,7 @@ class Dependencias {
     consultaInicio = ConsultaInicio(banco);
     alunos = RepositorioAlunos(cliente);
     turmas = RepositorioTurmas(cliente);
+    usuarios = RepositorioUsuarios(cliente);
     coordenador = CoordenadorSincronizacao(
       ServicoSincronizacao(banco, cliente),
       aoEncerrarSessao: sessao.encerrarLocalmente,
@@ -39,6 +41,7 @@ class Dependencias {
   late final ConsultaInicio consultaInicio;
   late final RepositorioAlunos alunos;
   late final RepositorioTurmas turmas;
+  late final RepositorioUsuarios usuarios;
   late final CoordenadorSincronizacao coordenador;
 }
 

@@ -26,6 +26,8 @@ class _ApiFalsa {
   final List<Map<String, dynamic>> alunosCriados = [];
   final List<Map<String, dynamic>> quadrosCriados = [];
   int alunosImportados = 0;
+  String tipoUsuario = 'assistente';
+  final List<Map<String, dynamic>> usuariosCriados = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -46,7 +48,7 @@ class _ApiFalsa {
           'id': 'u1',
           'nome': 'Carla',
           'email': 'carla@exemplo.com',
-          'tipo': 'assistente',
+          'tipo': tipoUsuario,
           'tenant_id': 't1',
         },
       });
@@ -63,6 +65,27 @@ class _ApiFalsa {
     if (caminho.contains('/matriculas/') && req.method == 'PUT') {
       matriculasEncerradas.add(jsonDecode(req.body) as Map<String, dynamic>);
       return _json({'matricula': {}});
+    }
+    if (caminho.endsWith('/api/usuarios') && req.method == 'GET') {
+      return _json({
+        'usuarios': [
+          {
+            'id': 'u1',
+            'nome': 'Carla',
+            'email': 'carla@exemplo.com',
+            'tipo': tipoUsuario,
+            'ativo': 1,
+            'turmas': [],
+          },
+        ],
+      });
+    }
+    if (caminho.endsWith('/api/usuarios') && req.method == 'POST') {
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      usuariosCriados.add(corpo);
+      return _json({
+        'usuario': {...corpo, 'id': 'u9', 'ativo': 1, 'turmas': []},
+      }, 201);
     }
     if (caminho.endsWith('/alunos/importacao')) {
       // Relatório simplificado: só códigos repetidos na lista.
@@ -462,6 +485,56 @@ void main() {
       find.text('Importar planilha'),
       findsOneWidget,
     ); // voltou para a lista
+    await fecharApp(tester);
+  });
+
+  testWidgets('Usuários só aparece no menu do professor', (tester) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    expect(find.text('Turmas'), findsOneWidget);
+    expect(find.text('Usuários'), findsNothing);
+    await fecharApp(tester);
+  });
+
+  testWidgets('professor cadastra assistente com turma pela lista', (
+    tester,
+  ) async {
+    api.tipoUsuario = 'professor';
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usuários'));
+    await esperar(tester);
+    expect(find.text('Carla'), findsOneWidget);
+
+    await tester.tap(find.text('Novo: nome · e-mail · tipo · turmas'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Nome'), 'Dani');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'E-mail'),
+      'dani@exemplo.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Senha inicial'),
+      'senha-da-dani',
+    );
+    await tester.tap(find.widgetWithText(FilterChip, 'Turma $turmaId'));
+    await tester.pump();
+    await tester.ensureVisible(find.text('Cadastrar'));
+    await tester.tap(find.text('Cadastrar'));
+    await esperar(tester);
+    expect(api.usuariosCriados.single, {
+      'nome': 'Dani',
+      'email': 'dani@exemplo.com',
+      'tipo': 'assistente',
+      'senha': 'senha-da-dani',
+      'turma_ids': [turmaId],
+    });
+    expect(
+      find.text('Usuário cadastrado. Passe a senha inicial para a pessoa.'),
+      findsOneWidget,
+    );
     await fecharApp(tester);
   });
 }

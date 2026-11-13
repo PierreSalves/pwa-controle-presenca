@@ -1,11 +1,12 @@
 // Tela 12 — Menu: itens conforme a permissão, na ordem do wireframe. Nesta etapa existem Início,
-// Lançar presença, Alunos, Turmas e Sair; os demais entram com as telas correspondentes.
+// Lançar presença, Alunos, Turmas, Usuários (só professor) e Sair; os demais entram com as telas correspondentes.
 import 'package:material_ui/material_ui.dart';
 
 import '../estado/dependencias.dart';
 import 'tela_alunos.dart';
 import 'tela_escolher_turma.dart';
 import 'tela_turmas.dart';
+import 'tela_usuarios.dart';
 
 class MenuApp extends StatelessWidget {
   const MenuApp({super.key});
@@ -13,8 +14,10 @@ class MenuApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // O administrador do sistema não lança presença.
-    final temAcademia =
-        EscopoDependencias.obter(context).sessao.usuario?.tenantId != null;
+    final usuario = EscopoDependencias.obter(context).sessao.usuario;
+    final temAcademia = usuario?.tenantId != null;
+    // Usuários: só o professor (tela 11).
+    final ehProfessor = usuario?.tipo == 'professor';
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -72,6 +75,19 @@ class MenuApp extends StatelessWidget {
                   );
                 },
               ),
+              if (ehProfessor)
+                _ItemMenu(
+                  icone: Icons.manage_accounts_outlined,
+                  texto: 'Usuários',
+                  aoTocar: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const TelaUsuarios(),
+                      ),
+                    );
+                  },
+                ),
             ],
             _ItemMenu(
               icone: Icons.logout,

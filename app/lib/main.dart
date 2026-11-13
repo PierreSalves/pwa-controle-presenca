@@ -18,6 +18,10 @@ void main() {
   unawaited(dependencias.sessao.iniciar());
 }
 
+const _cantos8 = RoundedRectangleBorder(
+  borderRadius: BorderRadius.all(Radius.circular(8)),
+);
+
 /// Raiz do app. As telas da Fase 1 seguem os wireframes aprovados em docs/telas/.
 class ControlePresencaApp extends StatelessWidget {
   const ControlePresencaApp({super.key, required this.dependencias});
@@ -41,6 +45,13 @@ class ControlePresencaApp extends StatelessWidget {
             dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
           ),
           useMaterial3: true,
+          // Botões com cantos de 8 px (wireframes), não em pílula.
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(shape: _cantos8),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(shape: _cantos8),
+          ),
         ),
         home: ListenableBuilder(
           listenable: dependencias.sessao,

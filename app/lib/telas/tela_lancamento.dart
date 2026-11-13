@@ -37,6 +37,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
   late String _hoje;
   late String _data;
   String? _aulaIdAvulsa;
+  bool _poucoFrequentesAbertos = false;
   Stream<DadosLancamento>? _dados;
   bool _iniciado = false;
 
@@ -253,6 +254,12 @@ class _TelaLancamentoState extends State<TelaLancamento> {
               tilePadding: const EdgeInsets.symmetric(horizontal: 4),
               title: Text('Pouco frequentes (${dados.poucoFrequentes.length})'),
               controlAffinity: ListTileControlAffinity.leading,
+              initiallyExpanded: _poucoFrequentesAbertos,
+              onExpansionChanged: (aberto) =>
+                  setState(() => _poucoFrequentesAbertos = aberto),
+              trailing: _poucoFrequentesAbertos
+                  ? const SizedBox.shrink()
+                  : Text('recolhido', style: textoApoio),
               children: [
                 for (final aluno in dados.poucoFrequentes)
                   LinhaAluno(
@@ -355,11 +362,10 @@ class _SeletorDias extends StatelessWidget {
                           ),
                         ),
                         if (dia.tipo == TipoAula.reposicao)
-                          Text(
-                            dia.aulaIdAvulsa == null ? 'repos.' : 'avulsa',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: cores.onSurfaceVariant,
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Etiqueta(
+                              dia.aulaIdAvulsa == null ? 'repos.' : 'avulsa',
                             ),
                           ),
                       ],

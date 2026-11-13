@@ -6,6 +6,36 @@ import '../estado/coordenador_sincronizacao.dart';
 import '../estado/dependencias.dart';
 import 'formatacao.dart';
 
+/// Cores dos wireframes aprovados (docs/telas/wireframes-fase1.html).
+abstract final class CoresWireframe {
+  static const okFundo = Color(0xFFEAF3DE);
+  static const okTexto = Color(0xFF3B6D11);
+  static const avisoFundo = Color(0xFFFAEEDA);
+  static const avisoTexto = Color(0xFF854F0B);
+  static const etiquetaFundo = Color(0xFFE6F1FB);
+  static const etiquetaTexto = Color(0xFF0C447C);
+  static const perigo = Color(0xFFA32D2D);
+}
+
+/// Etiqueta pequena azul ("novo", "repos.", "avulsa").
+class Etiqueta extends StatelessWidget {
+  const Etiqueta(this.texto, {super.key});
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+    decoration: BoxDecoration(
+      color: CoresWireframe.etiquetaFundo,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      texto,
+      style: const TextStyle(fontSize: 11, color: CoresWireframe.etiquetaTexto),
+    ),
+  );
+}
+
 /// Conteúdo centralizado com largura de celular (o desktop terá layout próprio, tela D2).
 class LarguraCelular extends StatelessWidget {
   const LarguraCelular({super.key, required this.child});
@@ -28,7 +58,6 @@ class StatusEnvio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dependencias = EscopoDependencias.obter(context);
-    final cores = Theme.of(context).colorScheme;
     return ListenableBuilder(
       listenable: dependencias.coordenador,
       builder: (context, _) => StreamBuilder<int>(
@@ -47,16 +76,17 @@ class StatusEnvio extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: pendentes == 0
-                    ? cores.surfaceContainerHighest
-                    : const Color(0xFFFBE7CF),
+                    ? CoresWireframe.okFundo
+                    : CoresWireframe.avisoFundo,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '$texto$complemento',
                 style: TextStyle(
+                  fontSize: 13,
                   color: pendentes == 0
-                      ? cores.onSurfaceVariant
-                      : const Color(0xFF7A4A12),
+                      ? CoresWireframe.okTexto
+                      : CoresWireframe.avisoTexto,
                 ),
               ),
             ),
@@ -102,17 +132,9 @@ class LinhaAluno extends StatelessWidget {
             if (aluno.frequencia.novo)
               WidgetSpan(
                 alignment: PlaceholderAlignment.middle,
-                child: Container(
-                  margin: const EdgeInsets.only(left: 6),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCEBFA),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text('novo', style: TextStyle(fontSize: 12)),
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 6),
+                  child: Etiqueta('novo'),
                 ),
               ),
             if (mostrarFrequencia)

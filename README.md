@@ -42,6 +42,8 @@ PWA para controlar a presença de alunos em aulas de esportes com professores pa
 - [Arquitetura](docs/arquitetura/README.md): stack, sincronização, tenants e permissões, segurança, modelo de dados e decisões pendentes
 - [Telas](docs/telas/README.md): wireframes aprovados da Fase 1 (celular e desktop)
 - [Banco de dados](docs/banco-de-dados.md): MER e dicionário de dados de cada tabela
+- [Documentação funcional](docs/funcional/README.md): mapa de telas, diagramas e detalhamento dos casos de uso, e o dicionário das entidades tela a tela
+- [Manuais de uso](docs/manuais/README.md): tutoriais para o professor, por objetivo (matricular, abrir turma, lançar presença, relatórios, frequência mínima)
 - [Regras de desenvolvimento](docs/desenvolvimento.md): nomes, padrão de funções, fluxo git, commits, testes, banco, segurança
 - [Levantamento inicial](docs/levantamento-inicial/README.md): telas de referência, regras de negócio e tabelas da primeira versão
 - [CLAUDE.md](CLAUDE.md): resumo do projeto e convenções

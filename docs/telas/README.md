@@ -8,6 +8,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 - **Senha do professor: [`wireframes-senha-professor.html`](wireframes-senha-professor.html)** (v4): o superadmin abre a academia (13a), redefine a senha de um professor (13b, 13c, D7a–D7c). Imagem: [`img/senha-professor.png`](img/senha-professor.png).
 - **Meus dados e senha: [`wireframes-meus-dados.html`](wireframes-meus-dados.html)** (v5): a tela aberta pelo item "Meus dados e senha" do menu (12a, 12b e D7). Imagem: [`img/meus-dados.png`](img/meus-dados.png).
 - **Importar e matricular: [`wireframes-importacao.html`](wireframes-importacao.html)** (v1.2): telas 8b e 8c com a turma e a data inicial das matrículas dos alunos importados (celular) e D8/D9 (desktop). Imagens: [`img/importacao.png`](img/importacao.png) e [`img/importacao-desktop.png`](img/importacao-desktop.png).
+- **Fluxo entre as telas e casos de uso:** [`../funcional/README.md`](../funcional/README.md); tutoriais para o professor em [`../manuais/`](../manuais/README.md).
 - **Aparência e componentes implementados: [`componentes.md`](componentes.md)**: cores, fonte, ícones, formas, layout e as características de cada componente visual do app.
 - Imagens: [`img/`](img/), geradas com `bash docs/telas/gerar-imagens.sh` (Git Bash; usa o Edge ou o navegador em `CHROME_EXECUTABLE`).
 - Mensalidades (Fase 2) terão wireframes próprios quando a fase começar.

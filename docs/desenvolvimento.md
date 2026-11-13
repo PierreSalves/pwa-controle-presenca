@@ -177,4 +177,5 @@ Não se aplicam ao projeto: Title Case (a interface é pt-BR, com só a primeira
 - [ ] Formatação e análise sem avisos
 - [ ] Migração nova, se mudou o banco, com MER e dicionário de dados atualizados
 - [ ] Documentação atualizada, se mudou alguma decisão ou regra
+- [ ] Tela, fluxo ou regra nova ou alterada refletida em `docs/funcional/` (mapa de telas, caso de uso, entidades) e no manual correspondente em `docs/manuais/`
 - [ ] Sem segredos, dados reais ou logs de depuração

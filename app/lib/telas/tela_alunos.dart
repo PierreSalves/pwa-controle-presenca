@@ -128,10 +128,7 @@ class _TelaAlunosState extends State<TelaAlunos> {
                 child: const Text('Tentar de novo'),
               ),
             ] else if (alunos == null)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
+              const Padding(padding: EdgeInsets.all(24), child: Carregando())
             else ...[
               Text(
                 'Ativos · ${alunos.length}',
@@ -141,11 +138,17 @@ class _TelaAlunosState extends State<TelaAlunos> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(formatarAluno(aluno.codigo, aluno.nome)),
-                  trailing: Text(
-                    aluno.turmas.join(', '),
-                    style: TextStyle(
-                      color: cores.onSurfaceVariant,
-                      fontSize: 14,
+                  // Aluno em várias turmas: a lista não empurra o nome para fora.
+                  trailing: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 140),
+                    child: Text(
+                      aluno.turmas.join(', '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: cores.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   onTap: () => _abrirAluno(id: aluno.id),

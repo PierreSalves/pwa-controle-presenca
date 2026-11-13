@@ -162,7 +162,7 @@ class _TelaLancamentoState extends State<TelaLancamento> {
             ],
           ),
           body: dados == null || _quadros == null
-              ? const Center(child: CircularProgressIndicator())
+              ? const Carregando()
               : LarguraCelular(child: _montarConteudo(context, dados)),
         );
       },

@@ -90,6 +90,29 @@ class _TelaAlunoState extends State<TelaAluno> {
     }
   }
 
+  /// Código sugerido para o aluno novo (para saber se o usuário mudou algo).
+  String _codigoSugerido = '';
+
+  /// Há algo digitado e não salvo (consultado ao voltar).
+  bool _temAlteracoes() {
+    if (_carregando || _erro != null) return false;
+    final aluno = _aluno;
+    final sensiveisMudaram = camposSensiveisAluno.any(
+      (c) => _campos[c]!.text.trim() != (aluno?.sensiveis[c] ?? '').trim(),
+    );
+    if (aluno == null) {
+      return _nome.text.trim().isNotEmpty ||
+          _codigo.text.trim() != _codigoSugerido ||
+          _nascimento != null ||
+          sensiveisMudaram;
+    }
+    return _codigo.text.trim() != aluno.codigo ||
+        _nome.text.trim() != aluno.nome ||
+        _nascimento != aluno.dataNascimento ||
+        _ativo != aluno.ativo ||
+        sensiveisMudaram;
+  }
+
   void _mostrar(AlunoCompleto aluno) {
     _aluno = aluno;
     _id = aluno.id;
@@ -109,7 +132,8 @@ class _TelaAlunoState extends State<TelaAluno> {
     });
     try {
       if (_id == null) {
-        _codigo.text = await _dependencias.alunos.buscarProximoCodigo();
+        _codigoSugerido = await _dependencias.alunos.buscarProximoCodigo();
+        _codigo.text = _codigoSugerido;
       } else {
         _mostrar(await _dependencias.alunos.buscarAluno(_id!));
       }
@@ -206,7 +230,30 @@ class _TelaAlunoState extends State<TelaAluno> {
       primeira: matricula.dataInicio,
       titulo: 'Fim da matrícula em ${matricula.turmaNome}',
     );
-    if (dataFim == null) return;
+    if (dataFim == null || !mounted) return;
+    // Encerrar não tem desfazer na tela: confirma antes.
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Encerrar matrícula'),
+        content: Text(
+          '${_nome.text.trim()} sai de ${matricula.turmaNome} em '
+          '${formatarDataBr(dataFim)}. Depois dessa data, o aluno não aparece mais no '
+          'lançamento da turma.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Encerrar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmou != true) return;
     await _executar(() async {
       await _dependencias.alunos.encerrarMatricula(matricula, dataFim);
       await _atualizar(null);
@@ -264,35 +311,38 @@ class _TelaAlunoState extends State<TelaAluno> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Aluno'),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: _carregando || _erro != null || _salvando
-                ? null
-                : _salvar,
-            child: const Text('Salvar'),
-          ),
-        ],
+    return ProtecaoAlteracoes(
+      temAlteracoes: _temAlteracoes,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Aluno'),
+          centerTitle: true,
+          actions: [
+            TextButton(
+              onPressed: _carregando || _erro != null || _salvando
+                  ? null
+                  : _salvar,
+              child: const Text('Salvar'),
+            ),
+          ],
+        ),
+        body: _carregando
+            ? const Carregando()
+            : _erro != null
+            ? Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(_erro!),
+                    TextButton(
+                      onPressed: _carregar,
+                      child: const Text('Tentar de novo'),
+                    ),
+                  ],
+                ),
+              )
+            : LarguraCelular(child: _montarFormulario(context)),
       ),
-      body: _carregando
-          ? const Center(child: CircularProgressIndicator())
-          : _erro != null
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_erro!),
-                  TextButton(
-                    onPressed: _carregar,
-                    child: const Text('Tentar de novo'),
-                  ),
-                ],
-              ),
-            )
-          : LarguraCelular(child: _montarFormulario(context)),
     );
   }
 
@@ -302,6 +352,9 @@ class _TelaAlunoState extends State<TelaAluno> {
         child: TextField(
           controller: _campos[chave],
           keyboardType: teclado,
+          // Telefone, e-mail e documentos: sem corretor nem sugestões.
+          autocorrect: teclado == null,
+          enableSuggestions: teclado == null,
           decoration: InputDecoration(
             labelText: rotulo,
             border: const OutlineInputBorder(),
@@ -328,6 +381,8 @@ class _TelaAlunoState extends State<TelaAluno> {
                 width: 100,
                 child: TextFormField(
                   controller: _codigo,
+                  autocorrect: false,
+                  enableSuggestions: false,
                   decoration: const InputDecoration(
                     labelText: 'Cód.',
                     border: OutlineInputBorder(),
@@ -387,7 +442,7 @@ class _TelaAlunoState extends State<TelaAluno> {
               _campo('telefone', 'Telefone', teclado: TextInputType.phone),
               _campo('email', 'E-mail', teclado: TextInputType.emailAddress),
               _campo('cpf', 'CPF', teclado: TextInputType.number),
-              _campo('rg', 'RG'),
+              _campo('rg', 'RG', teclado: TextInputType.text),
               _campo('endereco', 'Endereço'),
               _campo('observacoes', 'Observações'),
               SwitchListTile(

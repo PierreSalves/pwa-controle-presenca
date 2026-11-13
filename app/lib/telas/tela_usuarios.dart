@@ -109,10 +109,7 @@ class _TelaUsuariosState extends State<TelaUsuarios> {
                 child: const Text('Tentar de novo'),
               ),
             ] else if (usuarios == null)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
-              )
+              const Padding(padding: EdgeInsets.all(24), child: Carregando())
             else ...[
               for (final u in usuarios) ...[
                 ListTile(
@@ -309,6 +306,8 @@ class _FormularioUsuarioState extends State<_FormularioUsuario> {
             TextFormField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              enableSuggestions: false,
               decoration: const InputDecoration(
                 labelText: 'E-mail',
                 border: OutlineInputBorder(),

@@ -1,15 +1,21 @@
 import 'dart:async';
 
+import 'package:flutter/semantics.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'dados/abrir_banco.dart';
 import 'dados/cliente_api.dart';
 import 'estado/dependencias.dart';
 import 'estado/sessao_app.dart';
+import 'telas/componentes.dart';
 import 'telas/tela_entrar.dart';
 import 'telas/tela_inicial.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  // No navegador o Flutter só monta a árvore de acessibilidade quando o leitor de tela acha o
+  // botão escondido "Enable accessibility". Ligada desde o início, o app já abre acessível.
+  SemanticsBinding.instance.ensureSemantics();
   final dependencias = Dependencias(
     banco: abrirBancoLocal(),
     cliente: ClienteApi(),
@@ -56,9 +62,7 @@ class ControlePresencaApp extends StatelessWidget {
         home: ListenableBuilder(
           listenable: dependencias.sessao,
           builder: (context, _) => switch (dependencias.sessao.situacao) {
-            SituacaoSessao.carregando => const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            ),
+            SituacaoSessao.carregando => const Scaffold(body: Carregando()),
             SituacaoSessao.deslogado => const TelaEntrar(),
             SituacaoSessao.falhaNoBanco => const Scaffold(
               body: Center(

@@ -228,8 +228,10 @@ void main() {
   late BancoLocal banco;
   late _ApiFalsa api;
   late Dependencias dependencias;
+  late List<String> impressos;
 
   setUp(() {
+    impressos = [];
     banco = BancoLocal(
       DatabaseConnection(
         NativeDatabase.memory(),
@@ -245,6 +247,10 @@ void main() {
         cliente: MockClient(api.responder),
       ),
       relogio: () => agora,
+      abrirImpressao: (html) {
+        impressos.add(html);
+        return true;
+      },
     );
   });
 
@@ -648,7 +654,10 @@ void main() {
     await esperar(tester);
     // Na lista e no cadastro: a faixa azul com 2 graus.
     expect(find.text('Azul · 2º grau'), findsOneWidget);
-    expect(find.bySemanticsLabel(RegExp('Faixa Azul, 2 grau')), findsNWidgets(2));
+    expect(
+      find.bySemanticsLabel(RegExp('Faixa Azul, 2 grau')),
+      findsNWidgets(2),
+    );
     await fecharApp(tester);
     semantica.dispose();
   });
@@ -697,6 +706,74 @@ void main() {
     await esperar(tester);
     expect(find.text('Turma $turmaId · 01/11 a 07/11/2026'), findsOneWidget);
     expect(find.text('qua 04/11'), findsOneWidget);
+    await fecharApp(tester);
+    semantica.dispose();
+  });
+
+  /// Ana presente na aula de hoje (quinta, regular), gravada direto no aparelho.
+  Future<void> marcarAnaHoje(WidgetTester tester) async {
+    await tester.runAsync(
+      () => dependencias.repositorio.definirPresenca(
+        turmaId: turmaId,
+        data: hoje,
+        alunoId: alunoId,
+        presente: true,
+      ),
+    );
+  }
+
+  testWidgets('relatório mensal no celular e impressão', (tester) async {
+    await entrar(tester);
+    await marcarAnaHoje(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await esperar(tester);
+    await tester.tap(find.text('Relatórios'));
+    await esperar(tester);
+    expect(find.text('Este mês'), findsOneWidget);
+    expect(find.text('01/11/2026'), findsOneWidget);
+    expect(find.text('30/11/2026'), findsOneWidget);
+
+    await tester.tap(find.text('Presença mensal'));
+    await esperar(tester);
+    expect(find.text('Mensal · Turma $turmaId'), findsOneWidget);
+    expect(find.text('(10A) Ana'), findsOneWidget);
+    expect(find.text('100%'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Imprimir / PDF'));
+    await tester.pump();
+    expect(impressos, hasLength(1));
+    expect(impressos.single, contains('Presença mensal'));
+    expect(impressos.single, contains('Academia Teste'));
+    expect(impressos.single, contains('size: A4 portrait'));
+    await fecharApp(tester);
+  });
+
+  testWidgets('relatórios no desktop: troca de tipo e impressão', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final semantica = tester.ensureSemantics();
+    await entrar(tester);
+    await marcarAnaHoje(tester);
+    await tester.tap(find.text('Relatórios'));
+    await esperar(tester);
+    // D5: semanal do mês; só a aula de hoje foi lançada (coluna com a data) e a Ana veio.
+    expect(find.text('Imprimir / PDF'), findsOneWidget);
+    expect(find.text('qui 12/11'), findsOneWidget);
+    expect(find.bySemanticsLabel('veio'), findsOneWidget);
+
+    await tester.tap(find.text('Anual'));
+    await esperar(tester);
+    expect(find.text('JAN'), findsOneWidget);
+    expect(find.text('DEZ'), findsOneWidget);
+
+    await tester.tap(find.text('Imprimir / PDF'));
+    await tester.pump();
+    expect(impressos.single, contains('Presença anual'));
+    expect(impressos.single, contains('size: A4 landscape'));
     await fecharApp(tester);
     semantica.dispose();
   });

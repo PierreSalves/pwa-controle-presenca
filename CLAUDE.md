@@ -55,7 +55,8 @@ Detalhes em `docs/arquitetura/README.md`.
 - **API:** Cloudflare Worker em TypeScript (sugestão: Hono). **Banco:** D1. **Comprovantes:** R2.
 - **Modo híbrido:**
   - **presença: online primeiro, offline de reserva.** A marcação é feita ao vivo na aula e a internet da academia não é garantida. Cada marcação grava no SQLite local + `outbox` e é enviada na hora; com a tela de lançamento aberta, o app busca as marcações dos outros a cada 10–15 s; sem sinal, a outbox guarda e envia quando voltar. A tela mostra sempre o status ("Tudo enviado ✓" / "N aguardando envio").
-  - **online:** mensalidades, cadastros, edições, regras, relatórios, usuários, acessos e tenants (o servidor valida na hora, ex.: código de aluno único).
+  - **online:** mensalidades, cadastros, edições, regras, usuários, acessos e tenants (o servidor valida na hora, ex.: código de aluno único).
+  - **relatórios de presença:** calculados no aparelho a partir das presenças já sincronizadas (abrem também sem internet).
   - As permissões não atrapalham o offline: o aparelho só recebe as turmas permitidas e a API reconfere cada lançamento.
 - Sincronização por push/pull com cursor `server_version`.
 - IDs UUID v7 gerados no cliente.

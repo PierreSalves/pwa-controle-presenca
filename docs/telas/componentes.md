@@ -65,7 +65,7 @@ Material Symbols (`material_symbols_icons`), traço fino (`weight: 300`, tamanho
 | Voltar | Círculo azul-claro | Igual; as telas principais (Alunos, Turmas, Usuários, Lançar presença) não mostram voltar, porque o menu faz esse papel |
 | Largura do conteúdo | Até 560 px, centralizado (`LarguraCelular`) | Até 880 px, à esquerda; Início até 1100 px |
 
-- Cada item do menu é uma **rota com endereço** (`/`, `/lancar`, `/alunos`, `/turmas`, `/usuarios`): recarregar mantém a tela e o voltar do navegador funciona.
+- Cada item do menu é uma **rota com endereço** (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`): recarregar mantém a tela e o voltar do navegador funciona.
 - O menu lateral fica fora do navegador interno (`EstruturaComMenu`); o navegador é um contêiner próprio de acessibilidade, senão a barreira das rotas esconderia o menu do leitor de tela.
 
 ### 1.6 Movimento
@@ -185,6 +185,30 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Estados:** linha escolhida com fundo `tatameClaro` e nome em w600; altura mínima de 48 px.
 - **Acessibilidade:** linha como botão com estado "selecionado"; a faixa mantém o rótulo "Faixa X, N grau".
 - **Uso:** trocar de aluno, abrir "Novo aluno" ou "Importar planilha" com algo não salvo pergunta "Descartar alterações?" (`confirmarDescarte`). Depois de salvar, o aluno fica escolhido e a lista se atualiza. No celular, a lista e o cadastro continuam em telas separadas.
+
+### 2.22 Escolha em pílulas (`EscolhaEmPilulas` em `relatorios/partes_relatorio.dart`)
+- **Aparência:** `ChoiceChip` em pílula, fundo `cartao` com contorno `linha` de 1,5 px; a escolhida em `tatame` com texto branco, sem o visto; ícone opcional em `tatame` (branco quando escolhida).
+- **Acessibilidade:** área de toque de 48 px (`MaterialTapTargetSize.padded`); estado selecionado do próprio chip.
+- **Usada em:** atalhos de período (Esta semana, Este mês, Semestre, Ano) e tipos de relatório no desktop.
+
+### 2.23 Campo de data (`CampoData`)
+- **Aparência:** campo do tema com rótulo flutuante ("De", "Até"), a data em dd/mm/aaaa com números fixos e o ícone de calendário à direita; abre o `showDatePicker`.
+- **Acessibilidade:** lido como botão "De: 01/11/2026".
+- **Regra:** De depois do Até faz o outro campo acompanhar (o período nunca fica invertido); mudar a data à mão desmarca o atalho.
+
+### 2.24 Tabela de relatório (`TabelaRelatorio` em `relatorios/tabela_relatorio.dart`)
+- **Aparência:**
+  - resumo opcional em `Cartao`s (rótulo em `nevoa` 13, valor em 20 w600, em `ponta` quando abaixo do mínimo);
+  - `Cartao` com a coluna do aluno fixa (140 px no celular, 260 px no desktop, nome cortado com reticências) e as demais rolando para o lado; linhas de 44 px separadas por `linha`;
+  - cabeçalho em `nevoa` 13; rótulos das colunas em w600 com a `Etiqueta` "repos." quando a aula é reposição; grupos de semanas numa linha acima;
+  - marca de presença: visto `Symbols.check` em `tatame` (veio), ponto em `nevoa` (faltou), vazio (fora da matrícula); frequência abaixo do mínimo em `ponta` w600; mês futuro com "–";
+  - linha de rodapé ("Presentes", "Aulas") com o rótulo em `nevoa`; legenda das marcas e nota da fórmula abaixo do cartão.
+- **Acessibilidade:** o visto e o ponto são lidos como "veio" e "faltou"; números de largura fixa.
+- **Uso:** mesma montagem (`RelatorioMontado`, em `montar_relatorio.dart`) para a tela e para a página impressa (`gerarHtmlRelatorio`); no mensal, tocar no aluno abre o relatório por aluno.
+
+### 2.25 Página impressa (`gerarHtmlRelatorio` em `relatorios/html_relatorio.dart`)
+- **Aparência:** A4 (paisagem na semanal e na anual, retrato nas demais), fonte do sistema, cabeçalho com a academia, o cabeçalho de impressão da academia, a turma e o da turma, e à direita o relatório e o período; tabela com bordas finas `#c9ccc8`, cabeçalho repetido em cada página, rodapé "Gerado em … por …".
+- **Uso:** aberta numa aba nova pelo botão Imprimir / PDF; o navegador imprime ou salva em PDF. Sem logotipo enquanto a tela 14 não existir (mostra o nome da academia).
 
 ## 3. Ainda não implementado (previsto na v2)
 

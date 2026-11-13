@@ -11,6 +11,7 @@ import 'menu_app.dart';
 import 'tela_entrar.dart';
 import 'tela_escolher_turma.dart';
 import 'tela_inicial.dart';
+import 'tela_relatorios.dart';
 import 'tela_alunos.dart';
 import 'tela_turmas.dart';
 import 'tela_usuarios.dart';
@@ -19,6 +20,7 @@ import 'tema.dart';
 abstract final class Rotas {
   static const inicio = '/';
   static const lancar = '/lancar';
+  static const relatorios = '/relatorios';
   static const alunos = '/alunos';
   static const turmas = '/turmas';
   static const usuarios = '/usuarios';
@@ -31,13 +33,14 @@ class ItemMenu {
   final IconData icone;
 }
 
-/// Itens do menu conforme a permissão (ordem do wireframe 12). Relatórios entra com a tela 7.
+/// Itens do menu conforme a permissão (ordem do wireframe 12).
 List<ItemMenu> obterItensMenu(SessaoApp sessao) {
   final usuario = sessao.usuario;
   if (usuario?.tenantId == null) return const [];
   return [
     const ItemMenu(Rotas.inicio, 'Início', Symbols.home),
     const ItemMenu(Rotas.lancar, 'Lançar presença', Symbols.check_box),
+    const ItemMenu(Rotas.relatorios, 'Relatórios', Symbols.bar_chart),
     const ItemMenu(Rotas.alunos, 'Alunos', Symbols.group),
     const ItemMenu(Rotas.turmas, 'Turmas', Symbols.school),
     if (usuario?.tipo == 'professor')
@@ -59,6 +62,7 @@ class PortaoSessao extends StatelessWidget {
     final permitidas = {for (final i in obterItensMenu(sessao)) i.rota};
     return switch (permitidas.contains(rota) ? rota : Rotas.inicio) {
       Rotas.lancar => const TelaLancarPresenca(),
+      Rotas.relatorios => const TelaRelatorios(),
       Rotas.alunos => const TelaAlunos(),
       Rotas.turmas => const TelaTurmas(),
       Rotas.usuarios => const TelaUsuarios(),

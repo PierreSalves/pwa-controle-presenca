@@ -18,6 +18,7 @@ class SessaoApp extends ChangeNotifier {
 
   static const _chaveUsuario = 'usuario';
   static const _chaveAcademia = 'academia';
+  static const _chaveCabecalho = 'academia_cabecalho';
 
   SituacaoSessao _situacao = SituacaoSessao.carregando;
   SituacaoSessao get situacao => _situacao;
@@ -29,17 +30,31 @@ class SessaoApp extends ChangeNotifier {
   String? _nomeAcademia;
   String? get nomeAcademia => _nomeAcademia;
 
+  /// Cabeçalho de impressão da academia (ex.: nome do professor), nos relatórios impressos.
+  String? _cabecalhoAcademia;
+  String? get cabecalhoAcademia => _cabecalhoAcademia;
+
   Future<void> _gravarEstado(String chave, String valor) => _banco
       .into(_banco.estadoSync)
       .insertOnConflictUpdate(
         EstadoSyncCompanion.insert(chave: chave, valor: valor),
       );
 
+  Future<String?> _obterEstado(String chave) async => (await (_banco.select(
+    _banco.estadoSync,
+  )..where((e) => e.chave.equals(chave))).getSingleOrNull())?.valor;
+
   /// Busca o nome da academia na API e guarda no aparelho; sem internet, mantém o guardado.
   Future<void> _atualizarAcademia() async {
     try {
       final eu = await _cliente.buscarEu();
-      final nome = (eu['tenant'] as Map?)?['nome'];
+      final tenant = eu['tenant'] as Map?;
+      final nome = tenant?['nome'];
+      final cabecalho = tenant?['cabecalho_impressao'] as String?;
+      if (cabecalho != _cabecalhoAcademia) {
+        _cabecalhoAcademia = cabecalho;
+        await _gravarEstado(_chaveCabecalho, cabecalho ?? '');
+      }
       if (nome is String && nome != _nomeAcademia) {
         _nomeAcademia = nome;
         await _gravarEstado(_chaveAcademia, nome);
@@ -75,9 +90,11 @@ class SessaoApp extends ChangeNotifier {
       _definir(SituacaoSessao.deslogado, null);
       return;
     }
-    _nomeAcademia = (await (_banco.select(
-      _banco.estadoSync,
-    )..where((e) => e.chave.equals(_chaveAcademia))).getSingleOrNull())?.valor;
+    _nomeAcademia = await _obterEstado(_chaveAcademia);
+    final cabecalho = await _obterEstado(_chaveCabecalho);
+    _cabecalhoAcademia = cabecalho == null || cabecalho.isEmpty
+        ? null
+        : cabecalho;
     _definir(
       SituacaoSessao.logado,
       UsuarioLogado.lerJson(jsonDecode(gravado.valor) as Map<String, dynamic>),
@@ -99,6 +116,7 @@ class SessaoApp extends ChangeNotifier {
     final usuario = await _cliente.entrar(email.trim(), senha);
     await _banco.apagarTudo();
     _nomeAcademia = null;
+    _cabecalhoAcademia = null;
     await _gravarEstado(_chaveUsuario, jsonEncode(usuario.converterEmJson()));
     if (usuario.tenantId != null) {
       try {
@@ -123,6 +141,7 @@ class SessaoApp extends ChangeNotifier {
   Future<void> encerrarLocalmente() async {
     await _banco.apagarTudo();
     _nomeAcademia = null;
+    _cabecalhoAcademia = null;
     _definir(SituacaoSessao.deslogado, null);
   }
 }

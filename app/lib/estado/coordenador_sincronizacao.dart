@@ -26,6 +26,10 @@ class CoordenadorSincronizacao extends ChangeNotifier {
   int _recusados = 0;
   int get recusados => _recusados;
 
+  /// Fim da última rodada completa (push e pull), em UTC.
+  DateTime? _ultimaSincronizacao;
+  DateTime? get ultimaSincronizacao => _ultimaSincronizacao;
+
   Future<void>? _rodadaAtual;
   bool _repetirRodada = false;
   Timer? _timer;
@@ -54,6 +58,7 @@ class CoordenadorSincronizacao extends ChangeNotifier {
       final envio = await _servico.enviarPendentes();
       await _servico.buscarAlteracoes();
       _recusados = envio.recusados;
+      _ultimaSincronizacao = DateTime.now().toUtc();
       _definirConexao(ConexaoSync.online);
     } on SemConexao {
       _definirConexao(ConexaoSync.offline);

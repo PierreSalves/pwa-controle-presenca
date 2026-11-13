@@ -22,6 +22,7 @@ http.Response _json(Object corpo, [int status = 200]) => http.Response(
 /// API falsa: login da Carla, pull com a turma de apoio.dart e push aceitando tudo.
 class _ApiFalsa {
   final List<List<dynamic>> envios = [];
+  final List<Map<String, dynamic>> matriculasEncerradas = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -48,7 +49,18 @@ class _ApiFalsa {
       });
     }
     if (caminho.endsWith('/renovar')) return _json(token);
+    if (caminho.endsWith('/eu')) {
+      return _json({
+        'usuario': {'id': 'u1'},
+        'tenant': {'id': 't1', 'nome': 'Academia Teste'},
+        'turmas': [],
+      });
+    }
     if (caminho.endsWith('/sair')) return http.Response('', 204);
+    if (caminho.contains('/matriculas/') && req.method == 'PUT') {
+      matriculasEncerradas.add(jsonDecode(req.body) as Map<String, dynamic>);
+      return _json({'matricula': {}});
+    }
     if (caminho.endsWith('/sync/pull')) return _json(montarPull());
     if (caminho.endsWith('/sync/push')) {
       final ops = (jsonDecode(req.body) as Map)['operacoes'] as List;
@@ -91,10 +103,39 @@ void main() {
     await banco.close();
   });
 
+  /// Deixa o banco e a API falsa responderem (fora do relógio falso) e redesenha.
+  Future<void> esperar(WidgetTester tester) async {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+  }
+
   Future<void> abrirApp(WidgetTester tester) async {
     await tester.pumpWidget(ControlePresencaApp(dependencias: dependencias));
     await tester.runAsync(dependencias.sessao.iniciar);
     await tester.pumpAndSettle();
+  }
+
+  Future<void> entrar(
+    WidgetTester tester, {
+    String senha = 'segredo123',
+  }) async {
+    await abrirApp(tester);
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'carla@exemplo.com',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), senha);
+    await tester.tap(find.text('Entrar'));
+    await esperar(tester);
+  }
+
+  /// Do Início, abre o lançamento de hoje (uma turma só: a escolha é pulada).
+  Future<void> abrirLancamentoDeHoje(WidgetTester tester) async {
+    await entrar(tester);
+    await tester.tap(find.text('Lançar presença de hoje'));
+    await esperar(tester);
   }
 
   Future<void> fecharApp(WidgetTester tester) async {
@@ -111,37 +152,28 @@ void main() {
   });
 
   testWidgets('senha errada mostra o aviso', (tester) async {
-    await abrirApp(tester);
-    await tester.enterText(
-      find.byType(TextFormField).at(0),
-      'carla@exemplo.com',
-    );
-    await tester.enterText(find.byType(TextFormField).at(1), 'errada');
-    await tester.tap(find.text('Entrar'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await tester.pumpAndSettle();
+    await entrar(tester, senha: 'errada');
     expect(find.text('E-mail ou senha incorretos.'), findsOneWidget);
     await fecharApp(tester);
   });
 
-  testWidgets('entra, abre o lançamento da única turma e marca a aluna', (
+  testWidgets('depois do login abre o Início com o nome da academia', (
     tester,
   ) async {
-    await abrirApp(tester);
-    await tester.enterText(
-      find.byType(TextFormField).at(0),
-      'carla@exemplo.com',
-    );
-    await tester.enterText(find.byType(TextFormField).at(1), 'segredo123');
-    await tester.tap(find.text('Entrar'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
+    await entrar(tester);
+    expect(find.text('Academia Teste'), findsOneWidget);
+    expect(find.text('Lançar presença de hoje'), findsOneWidget);
+    expect(find.text('Suas turmas'), findsOneWidget);
+    expect(find.text('Turma $turmaId · qua qui · 1 aluno'), findsOneWidget);
+    expect(find.text('Resumo de 2026'), findsOneWidget);
+    expect(find.textContaining('Tudo enviado ✓'), findsOneWidget);
+    await fecharApp(tester);
+  });
 
-    // Uma turma só: a escolha de turma é pulada.
+  testWidgets('lança a presença de hoje da única turma e marca a aluna', (
+    tester,
+  ) async {
+    await abrirLancamentoDeHoje(tester);
     expect(find.text('Turma $turmaId'), findsOneWidget);
     expect(find.text('qui'), findsOneWidget);
     expect(find.textContaining('(10A) Ana'), findsOneWidget);
@@ -149,35 +181,18 @@ void main() {
     expect(find.text('0 presentes'), findsOneWidget);
 
     await tester.tap(find.byType(Checkbox));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
+    await esperar(tester);
     expect(find.text('1 presentes'), findsOneWidget);
     expect(api.envios.expand((e) => e).length, 2); // aula + presença
-    expect(find.text('Tudo enviado ✓'), findsOneWidget);
+    expect(find.textContaining('Tudo enviado ✓'), findsOneWidget);
     await fecharApp(tester);
   });
 
   testWidgets('sem internet a marcação fica aguardando envio', (tester) async {
-    await abrirApp(tester);
-    await tester.enterText(
-      find.byType(TextFormField).at(0),
-      'carla@exemplo.com',
-    );
-    await tester.enterText(find.byType(TextFormField).at(1), 'segredo123');
-    await tester.tap(find.text('Entrar'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
-
+    await abrirLancamentoDeHoje(tester);
     api.online = false;
     await tester.tap(find.byType(Checkbox));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
+    await esperar(tester);
     expect(find.text('1 presentes'), findsOneWidget);
     expect(find.textContaining('2 aguardando envio'), findsOneWidget);
     expect(find.textContaining('sem internet'), findsOneWidget);
@@ -185,18 +200,7 @@ void main() {
   });
 
   testWidgets('cria reposição avulsa e marca a aluna nela', (tester) async {
-    await abrirApp(tester);
-    await tester.enterText(
-      find.byType(TextFormField).at(0),
-      'carla@exemplo.com',
-    );
-    await tester.enterText(find.byType(TextFormField).at(1), 'segredo123');
-    await tester.tap(find.text('Entrar'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
-
+    await abrirLancamentoDeHoje(tester);
     final botao = find.text('Reposição avulsa (outro dia)');
     await tester.ensureVisible(botao);
     await tester.tap(botao);
@@ -205,24 +209,48 @@ void main() {
     expect(find.text('12/11/2026 (quinta)'), findsOneWidget);
 
     await tester.tap(find.text('Criar e marcar presenças'));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
+    await esperar(tester);
     expect(find.text('avulsa'), findsOneWidget);
     expect(find.textContaining('reposição avulsa de 12/11'), findsOneWidget);
     expect(find.text('0 presentes'), findsOneWidget);
 
     await tester.tap(find.byType(Checkbox));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await tester.pumpAndSettle();
+    await esperar(tester);
     expect(find.text('1 presentes'), findsOneWidget);
     final enviados = api.envios.expand((e) => e).toList();
     final aula = enviados.firstWhere((op) => op['tabela'] == 'aulas');
     expect((aula['registro'] as Map)['tipo'], 'reposicao');
     expect(enviados.where((op) => op['tabela'] == 'presencas'), hasLength(1));
+    await fecharApp(tester);
+  });
+
+  testWidgets('encerra a matrícula de aluno sumido sugerindo a data', (
+    tester,
+  ) async {
+    await entrar(tester);
+    // A Ana está matriculada desde 01/10 e nunca veio: sumida há mais de 4 semanas.
+    expect(find.text('1 aluno sem vir há mais de 4 semanas'), findsOneWidget);
+    expect(find.text('(10A) Ana · nunca veio'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Encerrar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Encerrar matrícula'), findsOneWidget);
+    expect(
+      find.text('01/10/2026'),
+      findsOneWidget,
+    ); // nunca veio: início da matrícula
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Encerrar'));
+    await esperar(tester);
+    expect(api.matriculasEncerradas.single, {
+      'data_inicio': '2026-10-01',
+      'data_fim': '2026-10-01',
+      'situacao': 'encerrado',
+    });
+    expect(
+      find.text('Matrícula de Ana encerrada em 01/10/2026.'),
+      findsOneWidget,
+    );
     await fecharApp(tester);
   });
 }

@@ -1,14 +1,18 @@
-// Tela 12 — Menu: itens conforme a permissão, na ordem do wireframe. Nesta etapa só existem
+// Tela 12 — Menu: itens conforme a permissão, na ordem do wireframe. Nesta etapa existem Início,
 // Lançar presença e Sair; os demais entram com as telas correspondentes.
 import 'package:material_ui/material_ui.dart';
 
 import '../estado/dependencias.dart';
+import 'tela_escolher_turma.dart';
 
 class MenuApp extends StatelessWidget {
   const MenuApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // O administrador do sistema não lança presença.
+    final temAcademia =
+        EscopoDependencias.obter(context).sessao.usuario?.tenantId != null;
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -31,11 +35,22 @@ class MenuApp extends StatelessWidget {
               ],
             ),
             const Divider(height: 1),
-            _ItemMenu(
-              icone: Icons.check_box_outlined,
-              texto: 'Lançar presença',
-              aoTocar: () => Navigator.of(context).pop(),
-            ),
+            if (temAcademia) ...[
+              _ItemMenu(
+                icone: Icons.home_outlined,
+                texto: 'Início',
+                aoTocar: () =>
+                    Navigator.of(context).popUntil((rota) => rota.isFirst),
+              ),
+              _ItemMenu(
+                icone: Icons.check_box_outlined,
+                texto: 'Lançar presença',
+                aoTocar: () {
+                  Navigator.of(context).pop();
+                  abrirLancamento(context);
+                },
+              ),
+            ],
             _ItemMenu(
               icone: Icons.logout,
               texto: 'Sair',

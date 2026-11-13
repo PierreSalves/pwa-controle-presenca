@@ -259,13 +259,17 @@ class RepositorioAlunos {
 
   /// Sem [confirmar], só confere e devolve o relatório. Com [confirmar], grava se não houver
   /// erro e devolve quantos alunos foram importados (0 se o relatório impediu).
+  /// Com [academiaId], é a carga inicial feita pelo administrador do sistema (tela 13).
   Future<({RelatorioImportacao relatorio, int importados})> importarAlunos(
     List<({String codigo, String nome})> linhas, {
     bool confirmar = false,
+    String? academiaId,
   }) async {
     final resposta = await _cliente.enviar(
       'POST',
-      'alunos/importacao',
+      academiaId == null
+          ? 'alunos/importacao'
+          : 'admin/academias/$academiaId/alunos/importacao',
       corpo: {
         'alunos': [
           for (final l in linhas) {'codigo': l.codigo, 'nome': l.nome},

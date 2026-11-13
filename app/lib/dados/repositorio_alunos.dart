@@ -169,6 +169,53 @@ class DadosAluno {
   };
 }
 
+/// Relatório da importação (API: `calcularRelatorioImportacao`). As linhas são as da lista enviada
+/// (a partir de 1).
+class RelatorioImportacao {
+  const RelatorioImportacao({
+    required this.incompletas,
+    required this.codigosRepetidos,
+    required this.codigosExistentes,
+    required this.nomesRepetidos,
+    required this.podeImportar,
+  });
+
+  factory RelatorioImportacao.lerJson(Map<String, dynamic> json) {
+    List<int> linhas(Object? v) => (v as List).cast<int>();
+    return RelatorioImportacao(
+      incompletas: linhas(json['incompletas']),
+      codigosRepetidos: [
+        for (final c
+            in (json['codigos_repetidos'] as List).cast<Map<String, dynamic>>())
+          (codigo: c['codigo'] as String, linhas: linhas(c['linhas'])),
+      ],
+      codigosExistentes: [
+        for (final c
+            in (json['codigos_existentes'] as List)
+                .cast<Map<String, dynamic>>())
+          (
+            codigo: c['codigo'] as String,
+            linha: c['linha'] as int,
+            nomeCadastrado: c['nome_cadastrado'] as String,
+          ),
+      ],
+      nomesRepetidos: [
+        for (final n
+            in (json['nomes_repetidos'] as List).cast<Map<String, dynamic>>())
+          (nome: n['nome'] as String, linhas: linhas(n['linhas'])),
+      ],
+      podeImportar: json['pode_importar'] as bool,
+    );
+  }
+
+  final List<int> incompletas;
+  final List<({String codigo, List<int> linhas})> codigosRepetidos;
+  final List<({String codigo, int linha, String nomeCadastrado})>
+  codigosExistentes;
+  final List<({String nome, List<int> linhas})> nomesRepetidos;
+  final bool podeImportar;
+}
+
 class TurmaParaMatricula {
   const TurmaParaMatricula({required this.id, required this.nome});
   final String id;
@@ -197,6 +244,30 @@ class RepositorioAlunos {
       for (final a in (resposta['alunos'] as List).cast<Map<String, dynamic>>())
         ResumoAluno.lerJson(a),
     ];
+  }
+
+  /// Sem [confirmar], só confere e devolve o relatório. Com [confirmar], grava se não houver
+  /// erro e devolve quantos alunos foram importados (0 se o relatório impediu).
+  Future<({RelatorioImportacao relatorio, int importados})> importarAlunos(
+    List<({String codigo, String nome})> linhas, {
+    bool confirmar = false,
+  }) async {
+    final resposta = await _cliente.enviar(
+      'POST',
+      'alunos/importacao',
+      corpo: {
+        'alunos': [
+          for (final l in linhas) {'codigo': l.codigo, 'nome': l.nome},
+        ],
+        if (confirmar) 'confirmar': true,
+      },
+    );
+    return (
+      relatorio: RelatorioImportacao.lerJson(
+        resposta['relatorio'] as Map<String, dynamic>,
+      ),
+      importados: (resposta['importados'] as int?) ?? 0,
+    );
   }
 
   Future<String> buscarProximoCodigo() async =>

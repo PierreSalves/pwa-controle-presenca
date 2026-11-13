@@ -1,5 +1,5 @@
 // Tela 8 — Alunos: lista, busca por nome ou código e cadastro. Online (dados vêm da API).
-// A importação da planilha entra num PR próprio.
+// O botão Importar planilha abre as telas 8b e 8c.
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -10,6 +10,7 @@ import '../estado/dependencias.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
 import 'tela_aluno.dart';
+import 'tela_importar_alunos.dart';
 
 /// Mensagem para erros das telas online.
 String descreverErroOnline(Object erro) => switch (erro) {
@@ -83,6 +84,13 @@ class _TelaAlunosState extends State<TelaAlunos> {
     if (mounted) unawaited(_carregar());
   }
 
+  Future<void> _importar() async {
+    final importou = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const TelaImportarAlunos()));
+    if (importou == true && mounted) unawaited(_carregar());
+  }
+
   @override
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
@@ -149,6 +157,14 @@ class _TelaAlunosState extends State<TelaAlunos> {
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Text('Nenhum aluno encontrado.'),
                 ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: _importar,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+                child: const Text('Importar planilha'),
+              ),
             ],
           ],
         ),

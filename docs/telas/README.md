@@ -11,6 +11,7 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 | Versão | Data | Status | Observações |
 |---|---|---|---|
 | 1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 1 a 14 (celular), 2b e 4b, e D1 a D4 (desktop). Inclui logotipo e ícone da academia, reposição fixa no quadro e lista do lançamento por frequência |
+| 1.1 | 12/11/2026 | **Aprovado** pelo responsável do projeto | Telas 8b e 8c: importar alunos colando a lista copiada da planilha (sem escolher arquivo), com relatório de códigos repetidos ou já cadastrados antes de gravar |
 
 ## Decisões de interface aprovadas
 
@@ -89,6 +90,19 @@ Wireframes das telas da Fase 1. São a referência para implementar o app: **nen
 
 - **Objetivo:** listar, buscar, cadastrar e importar alunos.
 - **Regras:** busca por nome ou código; importação da planilha mostra códigos duplicados antes de gravar. **Online.**
+
+### 8b. Importar alunos · colar a lista
+![Importar alunos: colar](img/celular-8b.png)
+
+- **Objetivo:** trazer a lista de alunos da planilha (código + nome) sem digitar um por um.
+- **Abre a partir de:** botão "Importar planilha" da tela 8.
+- **Regras:** o usuário copia as colunas código e nome da planilha e cola; uma linha por aluno; código e nome separados por tab, ponto e vírgula ou espaço; "(10A)" vira "10A". Não precisa escolher arquivo. **Online.**
+
+### 8c. Importar alunos · relatório
+![Importar alunos: relatório](img/celular-8c.png)
+
+- **Objetivo:** mostrar os problemas antes de gravar qualquer coisa.
+- **Regras:** linha sem código ou sem nome, código repetido na lista e código já cadastrado na academia **impedem** a importação; nome repetido é só aviso (irmãos e homônimos existem). Nada é gravado enquanto houver erro; o botão "Importar N alunos" só fica disponível sem erros.
 
 ### 9. Aluno
 ![Aluno](img/celular-9.png)

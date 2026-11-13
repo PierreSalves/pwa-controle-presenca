@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:controle_presenca/dados/banco_local.dart';
 import 'package:controle_presenca/dados/cliente_api.dart';
@@ -11,6 +10,7 @@ import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:controle_presenca/telas/componentes.dart';
 import 'package:drift/drift.dart' show DatabaseConnection;
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -109,11 +109,54 @@ class _ApiFalsa {
   Map<String, dynamic>? logotipoEnviado;
   final List<Map<String, dynamic>> academiaSalva = [];
   final List<Map<String, dynamic>> senhasTrocadas = [];
+  final List<Map<String, dynamic>> senhasRedefinidas = [];
+  final List<Map<String, dynamic>> professoresCriados = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
     if (!online) throw http.ClientException('offline');
     final caminho = req.url.path;
+    if (caminho.contains('/admin/academias/') &&
+        caminho.endsWith('/senha') &&
+        req.method == 'POST') {
+      senhasRedefinidas.add({
+        'caminho': caminho,
+        ...jsonDecode(req.body) as Map<String, dynamic>,
+      });
+      return http.Response('', 204);
+    }
+    if (caminho.contains('/admin/academias/') &&
+        caminho.endsWith('/professores')) {
+      if (req.method == 'POST') {
+        professoresCriados.add(jsonDecode(req.body) as Map<String, dynamic>);
+        return _json({'professor': {}}, 201);
+      }
+      return _json({
+        'professores': [
+          {
+            'id': '0190f5a0-0000-7000-8000-0000000000p1',
+            'nome': 'Marcos Silva',
+            'email': 'marcos@juniao.com.br',
+            'ativo': 1,
+            'ultimo_login_em': '2026-11-02T13:00:00.000Z',
+          },
+          {
+            'id': '0190f5a0-0000-7000-8000-0000000000p2',
+            'nome': 'Carla Souza',
+            'email': 'carla@juniao.com.br',
+            'ativo': 1,
+            'ultimo_login_em': null,
+          },
+          {
+            'id': '0190f5a0-0000-7000-8000-0000000000p3',
+            'nome': 'Rui Antigo',
+            'email': 'rui@juniao.com.br',
+            'ativo': 0,
+            'ultimo_login_em': null,
+          },
+        ],
+      });
+    }
     final token = {
       'token_acesso': 'T',
       'expira_em': agora.add(const Duration(minutes: 15)).toIso8601String(),
@@ -457,6 +500,9 @@ void main() {
     await abrirApp(tester);
     expect(find.text('Controle de presença'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
+    // A TghServices só como copyright discreto no fim, nunca em destaque.
+    expect(find.text('© 2026 TghServices'), findsOneWidget);
+    expect(find.text('TghServices'), findsNothing);
     await fecharApp(tester);
   });
 
@@ -1097,6 +1143,7 @@ void main() {
   });
 
   testWidgets('meus dados: consulta e troca de senha com erros no campo', (
+  testWidgets('superadmin abre a academia e redefine a senha do professor', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(420, 1400);
@@ -1154,6 +1201,94 @@ void main() {
 
   testWidgets('Meus dados e senha está no menu do superadmin', (tester) async {
     tester.view.physicalSize = const Size(1280, 800);
+    api.tipoUsuario = 'superadmin';
+    await entrar(tester);
+
+    // 13a: tocar na academia abre os professores dela.
+    await tester.tap(find.text('Academia Teste'));
+    await esperar(tester);
+    expect(
+      find.text('marcos@juniao.com.br · último acesso 02/11/2026'),
+      findsOneWidget,
+    );
+    expect(find.text('carla@juniao.com.br · nunca entrou'), findsOneWidget);
+    expect(find.text('rui@juniao.com.br · desativado'), findsOneWidget);
+    // Professor desativado não tem o botão.
+    expect(find.text('Redefinir senha'), findsNWidgets(2));
+
+    // 13b: painel de baixo; senha curta não vai para a API.
+    await tester.tap(find.text('Redefinir senha').first);
+    await esperar(tester);
+    expect(find.text('Redefinir a senha de Marcos Silva'), findsOneWidget);
+    expect(
+      find.text(
+        'Marcos sai de todos os aparelhos e passa a entrar com a nova senha.',
+      ),
+      findsOneWidget,
+    );
+    await tester.enterText(find.byType(TextField).last, 'curta');
+    await tester.tap(find.widgetWithText(BotaoPrincipal, 'Redefinir senha'));
+    await esperar(tester);
+    expect(
+      find.text('A senha precisa ter pelo menos 8 caracteres.'),
+      findsOneWidget,
+    );
+    expect(api.senhasRedefinidas, isEmpty);
+
+    // Gerar senha preenche e mostra uma senha fácil de ditar.
+    await tester.tap(find.text('Gerar senha'));
+    await tester.pump();
+    final gerada = tester
+        .widget<TextField>(find.byType(TextField).last)
+        .controller!
+        .text;
+    expect(gerada, matches(RegExp(r'^[a-z]+-\d{4}$')));
+    await tester.tap(find.widgetWithText(BotaoPrincipal, 'Redefinir senha'));
+    await esperar(tester);
+    expect(api.senhasRedefinidas.single, {
+      'caminho':
+          '/api/admin/academias/0190f5a0-0000-7000-8000-0000000000c1/'
+          'professores/0190f5a0-0000-7000-8000-0000000000p1/senha',
+      'senha': gerada,
+    });
+
+    // 13c: a senha aparece uma vez, com Copiar.
+    expect(find.text('Senha redefinida'), findsOneWidget);
+    expect(find.text(gerada), findsOneWidget);
+    expect(
+      find.text('E-mail para entrar: marcos@juniao.com.br'),
+      findsOneWidget,
+    );
+    String? copiado;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (chamada) async {
+        if (chamada.method == 'Clipboard.setData') {
+          copiado = (chamada.arguments as Map)['text'] as String;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await tester.tap(find.text('Copiar'));
+    await esperar(tester);
+    expect(copiado, gerada);
+    expect(find.text('Copiada'), findsOneWidget);
+    await tester.tap(find.text('Concluir'));
+    await esperar(tester);
+    expect(find.text('Senha redefinida'), findsNothing);
+    await fecharApp(tester);
+  });
+
+  testWidgets('no desktop a academia abre ao lado e a senha num diálogo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     api.tipoUsuario = 'superadmin';
@@ -1162,6 +1297,46 @@ void main() {
     await esperar(tester);
     expect(find.text('administrador do sistema'), findsOneWidget);
     expect(find.text('Academia'), findsNothing);
+
+    expect(
+      find.text('Escolha uma academia para ver os professores.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Academia Teste'));
+    await esperar(tester);
+    // D7a: a lista continua visível e a academia abre ao lado.
+    expect(find.text('Academia Teste'), findsNWidgets(2));
+    expect(find.text('Marcos Silva'), findsOneWidget);
+
+    await tester.tap(find.text('Redefinir senha').first);
+    await esperar(tester);
+    // D7b: diálogo central, com Gerar senha ao lado de Cancelar.
+    expect(find.byType(Dialog), findsOneWidget);
+    await tester.enterText(find.byType(TextField).last, 'nova-senha-1');
+    await tester.tap(find.widgetWithText(BotaoPrincipal, 'Redefinir senha'));
+    await esperar(tester);
+    expect(api.senhasRedefinidas.single['senha'], 'nova-senha-1');
+    expect(find.text('nova-senha-1'), findsOneWidget);
+
+    // Novo professor na academia aberta.
+    await tester.tap(find.text('Concluir'));
+    await esperar(tester);
+    await tester.tap(find.text('Novo professor'));
+    await esperar(tester);
+    final campos = find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextFormField),
+    );
+    await tester.enterText(campos.at(0), 'Ana Nova');
+    await tester.enterText(campos.at(1), 'Ana@Juniao.com.br');
+    await tester.enterText(campos.at(2), 'senhainicial');
+    await tester.tap(find.text('Cadastrar'));
+    await esperar(tester);
+    expect(api.professoresCriados.single, {
+      'nome': 'Ana Nova',
+      'email': 'ana@juniao.com.br',
+      'senha': 'senhainicial',
+    });
     await fecharApp(tester);
   });
 }

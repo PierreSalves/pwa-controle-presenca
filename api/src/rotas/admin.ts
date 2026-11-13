@@ -2,6 +2,7 @@
 // Cadastra academias, os primeiros professores de cada uma e faz a carga inicial dos alunos.
 import { Hono, type Context } from 'hono';
 import { autenticar, exigirPermissao } from '../middleware/autenticar';
+import { ehSenhaValida, gerarHashSenha } from '../seguranca/senha';
 import { importarAlunos } from '../servicos/importacao-alunos';
 import {
   existeOutroUsuarioComEmail,
@@ -171,6 +172,37 @@ rotasAdmin.delete('/academias/:id/professores/:usuarioId', async (c) => {
     prepararRevogacaoSessoes(db, usuarioId, agora),
   ]);
   if (!resultado || resultado.meta.changes === 0) return responderErro(c, 404, 'usuario_nao_encontrado');
+  return c.body(null, 204);
+});
+
+/**
+ * Define a senha de um professor ativo da academia (esqueceu a senha) e encerra as sessões dele.
+ * Atende o professor autônomo, que não tem outro professor para redefinir a senha dele.
+ */
+rotasAdmin.post('/academias/:id/professores/:usuarioId/senha', async (c) => {
+  const tenantId = await obterAcademiaDaRota(c);
+  const usuarioId = c.req.param('usuarioId');
+  if (!tenantId || !ehUuid(usuarioId)) return responderErro(c, 404, 'usuario_nao_encontrado');
+  const db = c.env.DB;
+  const professor = await db
+    .prepare(
+      `SELECT id FROM usuarios
+        WHERE id = ?1 AND tenant_id = ?2 AND tipo = 'professor' AND ativo = 1 AND excluido = 0`,
+    )
+    .bind(usuarioId, tenantId)
+    .first();
+  if (!professor) return responderErro(c, 404, 'usuario_nao_encontrado');
+  const corpo = await lerCorpoJson(c.req);
+  if (!ehSenhaValida(corpo?.senha)) return responderErro(c, 400, 'dados_invalidos');
+  const agora = obterAgoraIso();
+  await db.batch([
+    db
+      .prepare(
+        'UPDATE usuarios SET senha_hash = ?1, updated_at = ?2, updated_by = ?3 WHERE id = ?4 AND tenant_id = ?5',
+      )
+      .bind(await gerarHashSenha(corpo.senha), agora, c.get('usuario').id, usuarioId, tenantId),
+    prepararRevogacaoSessoes(db, usuarioId, agora),
+  ]);
   return c.body(null, 204);
 });
 

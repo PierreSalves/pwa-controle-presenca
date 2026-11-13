@@ -34,6 +34,36 @@ class Academia {
   final int turmas;
 }
 
+class ProfessorDaAcademia {
+  const ProfessorDaAcademia({
+    required this.id,
+    required this.nome,
+    required this.email,
+    required this.ativo,
+    required this.ultimoLoginEm,
+  });
+
+  factory ProfessorDaAcademia.lerJson(Map<String, dynamic> json) =>
+      ProfessorDaAcademia(
+        id: json['id'] as String,
+        nome: json['nome'] as String,
+        email: json['email'] as String,
+        ativo: json['ativo'] == 1 || json['ativo'] == true,
+        ultimoLoginEm: switch (json['ultimo_login_em']) {
+          final String instante => DateTime.parse(instante),
+          _ => null,
+        },
+      );
+
+  final String id;
+  final String nome;
+  final String email;
+  final bool ativo;
+
+  /// Nulo quando o professor nunca entrou.
+  final DateTime? ultimoLoginEm;
+}
+
 class RepositorioAdmin {
   RepositorioAdmin(this._cliente);
   final ClienteApi _cliente;
@@ -72,4 +102,45 @@ class RepositorioAdmin {
     );
     return Academia.lerJson(resposta['academia'] as Map<String, dynamic>);
   }
+
+  /// Professores da academia, inclusive os desativados (a API ordena pelo nome).
+  Future<List<ProfessorDaAcademia>> buscarProfessores(String academiaId) async {
+    final resposta = await _cliente.enviar(
+      'GET',
+      'admin/academias/$academiaId/professores',
+    );
+    return [
+      for (final p
+          in (resposta['professores'] as List).cast<Map<String, dynamic>>())
+        ProfessorDaAcademia.lerJson(p),
+    ];
+  }
+
+  /// Cria mais um professor na academia. E-mail já usado: `email_ja_existe`.
+  Future<void> criarProfessor({
+    required String academiaId,
+    required String nome,
+    required String email,
+    required String senha,
+  }) => _cliente.enviar(
+    'POST',
+    'admin/academias/$academiaId/professores',
+    corpo: {
+      'nome': nome.trim(),
+      'email': email.trim().toLowerCase(),
+      'senha': senha,
+    },
+  );
+
+  /// Define a senha de um professor ativo da academia (esqueceu a senha); a API encerra as sessões
+  /// dele. Professor desativado ou que não é da academia: `usuario_nao_encontrado`.
+  Future<void> redefinirSenhaProfessor({
+    required String academiaId,
+    required String professorId,
+    required String senha,
+  }) => _cliente.enviar(
+    'POST',
+    'admin/academias/$academiaId/professores/$professorId/senha',
+    corpo: {'senha': senha},
+  );
 }

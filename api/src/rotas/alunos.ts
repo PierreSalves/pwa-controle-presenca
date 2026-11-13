@@ -106,7 +106,10 @@ async function obterAlunoCompleto(db: D1Database, tenantId: string, alunoId: str
   return { aluno, matriculas: matriculas?.results ?? [], graduacoes: graduacoes?.results ?? [] };
 }
 
-/** Lista para a tela de alunos. `busca` filtra por nome ou código; `inativos=1` inclui os inativos. */
+/**
+ * Lista para a tela de alunos. `busca` filtra por nome ou código; `inativos=1` inclui os inativos.
+ * `graduacao` é a faixa atual (a graduação mais recente) ou null.
+ */
 rotasAlunos.get('/', async (c) => {
   const tenantId = obterTenantId(c);
   if (!tenantId) return responderErro(c, 403, 'sem_permissao');
@@ -116,7 +119,10 @@ rotasAlunos.get('/', async (c) => {
   const { results } = await c.env.DB.prepare(
     `SELECT a.id, a.codigo, a.nome, a.ativo,
             (SELECT json_group_array(t.nome) FROM matriculas m JOIN turmas t ON t.id = m.turma_id
-              WHERE m.aluno_id = a.id AND m.excluido = 0 AND t.excluido = 0 AND m.data_fim IS NULL) AS turmas
+              WHERE m.aluno_id = a.id AND m.excluido = 0 AND t.excluido = 0 AND m.data_fim IS NULL) AS turmas,
+            (SELECT json_object('faixa', g.faixa, 'grau', g.grau) FROM graduacoes g
+              WHERE g.aluno_id = a.id AND g.excluido = 0
+              ORDER BY g.data_graduacao DESC, g.created_at DESC LIMIT 1) AS graduacao
        FROM alunos a
       WHERE a.tenant_id = ?1 AND a.excluido = 0 AND (?2 = 1 OR a.ativo = 1)
         AND (?3 = '' OR a.nome LIKE ?4 ESCAPE '\\' OR a.codigo LIKE ?4 ESCAPE '\\')
@@ -124,9 +130,13 @@ rotasAlunos.get('/', async (c) => {
       LIMIT 1000`,
   )
     .bind(tenantId, comInativos, busca, padrao)
-    .all<{ turmas: string }>();
+    .all<{ turmas: string; graduacao: string | null }>();
   return c.json({
-    alunos: results.map((a) => ({ ...a, turmas: JSON.parse(a.turmas) as string[] })),
+    alunos: results.map((a) => ({
+      ...a,
+      turmas: JSON.parse(a.turmas) as string[],
+      graduacao: a.graduacao === null ? null : (JSON.parse(a.graduacao) as { faixa: string; grau: number }),
+    })),
   });
 });
 

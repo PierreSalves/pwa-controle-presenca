@@ -401,24 +401,9 @@ class Carregando extends StatelessWidget {
 }
 
 /// Ao voltar com alterações não salvas, pergunta antes de descartar (formulários online).
-class ProtecaoAlteracoes extends StatelessWidget {
-  const ProtecaoAlteracoes({
-    super.key,
-    required this.temAlteracoes,
-    required this.child,
-  });
-
-  /// Consultada na hora de voltar (os campos mudam sem redesenhar a tela).
-  final bool Function() temAlteracoes;
-  final Widget child;
-
-  Future<void> _confirmarSaida(BuildContext context) async {
-    final navegador = Navigator.of(context);
-    if (!temAlteracoes()) {
-      navegador.pop();
-      return;
-    }
-    final descartar = await showDialog<bool>(
+/// Pergunta se descarta o que foi mudado e não salvo; true para descartar.
+Future<bool> confirmarDescarte(BuildContext context) async =>
+    await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Descartar alterações?'),
@@ -435,8 +420,23 @@ class ProtecaoAlteracoes extends StatelessWidget {
           ),
         ],
       ),
-    );
-    if (descartar == true) navegador.pop();
+    ) ==
+    true;
+
+class ProtecaoAlteracoes extends StatelessWidget {
+  const ProtecaoAlteracoes({
+    super.key,
+    required this.temAlteracoes,
+    required this.child,
+  });
+
+  /// Consultada na hora de voltar (os campos mudam sem redesenhar a tela).
+  final bool Function() temAlteracoes;
+  final Widget child;
+
+  Future<void> _confirmarSaida(BuildContext context) async {
+    final navegador = Navigator.of(context);
+    if (!temAlteracoes() || await confirmarDescarte(context)) navegador.pop();
   }
 
   @override

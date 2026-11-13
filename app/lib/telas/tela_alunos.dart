@@ -93,8 +93,51 @@ class _TelaAlunosState extends State<TelaAlunos> {
     if (importou == true && mounted) unawaited(_carregar());
   }
 
+  // --- Desktop (D3): lista e cadastro lado a lado ---
+
+  /// Aluno aberto ao lado da lista; null com [_novo] falso mostra o convite.
+  String? _selecionado;
+  bool _novo = false;
+
+  /// Muda a cada troca para recriar o cadastro do zero.
+  int _versaoDetalhe = 0;
+  bool Function()? _detalheTemAlteracoes;
+
+  Future<void> _escolher({String? id}) async {
+    // Já aberto: o mesmo aluno, ou o cadastro de aluno novo.
+    if (id == null ? _novo : (!_novo && id == _selecionado)) return;
+    if (_detalheTemAlteracoes?.call() == true &&
+        !await confirmarDescarte(context)) {
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _selecionado = id;
+      _novo = id == null;
+      _versaoDetalhe++;
+    });
+  }
+
+  /// Depois de salvar ao lado: o aluno (inclusive o recém-cadastrado) fica selecionado.
+  void _aoSalvarDetalhe(String id) {
+    setState(() {
+      _selecionado = id;
+      _novo = false;
+    });
+    unawaited(_carregar());
+  }
+
+  Future<void> _importarNoDesktop() async {
+    if (_detalheTemAlteracoes?.call() == true &&
+        !await confirmarDescarte(context)) {
+      return;
+    }
+    await _importar();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (ehDesktop(context)) return _montarDesktop(context);
     final cores = Theme.of(context).colorScheme;
     final alunos = _alunos;
     return Scaffold(
@@ -174,6 +217,186 @@ class _TelaAlunosState extends State<TelaAlunos> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _montarDesktop(BuildContext context) {
+    final cores = Theme.of(context).colorScheme;
+    final alunos = _alunos;
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Alunos',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                OutlinedButton(
+                  onPressed: _importarNoDesktop,
+                  child: const Text('Importar planilha'),
+                ),
+                const SizedBox(width: 10),
+                BotaoPrincipal(
+                  rotulo: 'Novo aluno',
+                  icone: Symbols.add,
+                  aoTocar: () => _escolher(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 380,
+                    child: Cartao(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          TextField(
+                            autocorrect: false,
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Symbols.search),
+                              hintText: 'Nome ou código…',
+                              isDense: true,
+                            ),
+                            onChanged: _definirBusca,
+                          ),
+                          const SizedBox(height: 8),
+                          if (_erro != null) ...[
+                            Text(_erro!, style: TextStyle(color: cores.error)),
+                            OutlinedButton(
+                              onPressed: _carregar,
+                              child: const Text('Tentar de novo'),
+                            ),
+                          ] else if (alunos == null)
+                            const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Carregando(),
+                            )
+                          else ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: Text(
+                                'Ativos · ${alunos.length}',
+                                style: TextStyle(
+                                  color: cores.onSurfaceVariant,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                            if (alunos.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Text('Nenhum aluno encontrado.'),
+                              ),
+                            Expanded(
+                              child: ListView.builder(
+                                itemCount: alunos.length,
+                                itemBuilder: (context, i) => _LinhaAlunoDesktop(
+                                  aluno: alunos[i],
+                                  selecionado:
+                                      !_novo && alunos[i].id == _selecionado,
+                                  aoTocar: () => _escolher(id: alunos[i].id),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Cartao(
+                      padding: EdgeInsets.zero,
+                      child: _selecionado == null && !_novo
+                          ? Center(
+                              child: Text(
+                                'Escolha um aluno na lista ou cadastre um novo.',
+                                style: TextStyle(color: cores.onSurfaceVariant),
+                              ),
+                            )
+                          : TelaAluno(
+                              key: ValueKey(_versaoDetalhe),
+                              alunoId: _novo ? null : _selecionado,
+                              embutido: true,
+                              aoSalvar: _aoSalvarDetalhe,
+                              aoRegistrarAlteracoes: (consulta) =>
+                                  _detalheTemAlteracoes = consulta,
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Linha da lista de alunos no desktop: nome e faixa atual; a escolhida em azul-claro.
+class _LinhaAlunoDesktop extends StatelessWidget {
+  const _LinhaAlunoDesktop({
+    required this.aluno,
+    required this.selecionado,
+    required this.aoTocar,
+  });
+
+  final ResumoAluno aluno;
+  final bool selecionado;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final faixa = aluno.faixa;
+    return Semantics(
+      selected: selecionado,
+      button: true,
+      child: Material(
+        color: selecionado ? CoresV2.tatameClaro : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: aoTocar,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      formatarAluno(aluno.codigo, aluno.nome),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: selecionado ? FontWeight.w600 : null,
+                      ),
+                    ),
+                  ),
+                  if (faixa != null) ...[
+                    const SizedBox(width: 8),
+                    FaixaDoAluno(faixa: faixa, grau: aluno.grau, largura: 70),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

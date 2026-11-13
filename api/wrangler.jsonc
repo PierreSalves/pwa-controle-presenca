@@ -14,13 +14,13 @@
     "run_worker_first": ["/api/*"],
   },
 
-  // Banco D1. O database_id é preenchido quando o banco remoto for criado
-  // (para desenvolvimento local e testes, qualquer valor serve).
+  // Banco D1 de produção (criado em 13/11/2026). O desenvolvimento local e os testes
+  // usam a cópia local do Wrangler, sem tocar neste banco.
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "controle-presenca",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "75643dfd-1814-45ee-b9df-41991b43393d",
       "migrations_dir": "../db/migrations",
     },
   ],

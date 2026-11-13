@@ -46,7 +46,7 @@ void main() {
     'só matriculados entram; aluno novo aparece entre os frequentes',
     () async {
       await carregar(montarPull());
-      final dados = await consulta.obterLancamento(turmaId, hoje);
+      final dados = await consulta.obterLancamento(turmaId, hoje, hoje: hoje);
       expect(dados.tipo, TipoAula.regular);
       expect([for (final a in dados.lista) a.nome], ['Ana']);
       expect(dados.lista.single.frequencia.novo, isTrue);
@@ -57,7 +57,11 @@ void main() {
 
   test('dia sem aula no quadro não tem tipo', () async {
     await carregar(montarPull());
-    final dados = await consulta.obterLancamento(turmaId, '2026-11-10');
+    final dados = await consulta.obterLancamento(
+      turmaId,
+      '2026-11-10',
+      hoje: hoje,
+    );
     expect(dados.tipo, isNull);
   });
 
@@ -87,7 +91,7 @@ void main() {
           },
       ];
       await carregar(montarPull(aulas: aulas));
-      var dados = await consulta.obterLancamento(turmaId, hoje);
+      var dados = await consulta.obterLancamento(turmaId, hoje, hoje: hoje);
       expect(dados.lista, isEmpty);
       expect(dados.poucoFrequentes.single.frequencia.percentual, 0);
 
@@ -97,7 +101,7 @@ void main() {
         alunoId: alunoId,
         presente: true,
       );
-      dados = await consulta.obterLancamento(turmaId, hoje);
+      dados = await consulta.obterLancamento(turmaId, hoje, hoje: hoje);
       expect(dados.lista.single.presente, isTrue);
       expect(dados.poucoFrequentes, isEmpty);
       expect(dados.presentes, 1);
@@ -106,7 +110,7 @@ void main() {
 
   test('a consulta observada atualiza após a marcação', () async {
     await carregar(montarPull());
-    final emissoes = consulta.observarLancamento(turmaId, hoje);
+    final emissoes = consulta.observarLancamento(turmaId, hoje, hoje: hoje);
     final esperadas = expectLater(
       emissoes.map((d) => d.presentes),
       emitsThrough(1),
@@ -120,4 +124,65 @@ void main() {
     );
     await esperadas;
   });
+
+  test('reposição avulsa aparece na semana e recebe presenças', () async {
+    await carregar(montarPull());
+    final terca = '2026-11-10'; // sem aula no quadro
+    final aulaId = await repositorio.criarReposicaoAvulsa(turmaId, terca);
+
+    var dados = await consulta.obterLancamento(
+      turmaId,
+      terca,
+      hoje: hoje,
+      aulaIdAvulsa: aulaId,
+    );
+    expect(dados.tipo, TipoAula.reposicao);
+    expect(dados.aulaIdAvulsa, aulaId);
+    expect(
+      [for (final d in dados.diasDaSemana) (d.data, d.aulaIdAvulsa)],
+      [
+        (terca, aulaId),
+        ('2026-11-11', null),
+        ('2026-11-12', null),
+        ('2026-11-14', null),
+      ],
+    );
+
+    await repositorio.definirPresenca(
+      turmaId: turmaId,
+      data: terca,
+      alunoId: alunoId,
+      presente: true,
+      aulaIdAvulsa: aulaId,
+    );
+    dados = await consulta.obterLancamento(
+      turmaId,
+      terca,
+      hoje: hoje,
+      aulaIdAvulsa: aulaId,
+    );
+    expect(dados.presentes, 1);
+
+    // A aula regular do dia seguinte não enxerga a presença da avulsa.
+    final quarta = await consulta.obterLancamento(
+      turmaId,
+      '2026-11-11',
+      hoje: hoje,
+    );
+    expect(quarta.presentes, 0);
+    expect(quarta.lista.single.frequencia.ultimaPresenca, terca);
+  });
+
+  test(
+    'reposição avulsa no mesmo dia de aula regular fica depois dela',
+    () async {
+      await carregar(montarPull());
+      final aulaId = await repositorio.criarReposicaoAvulsa(turmaId, hoje);
+      final dados = await consulta.obterLancamento(turmaId, hoje, hoje: hoje);
+      final doDia = dados.diasDaSemana.where((d) => d.data == hoje).toList();
+      expect([for (final d in doDia) d.aulaIdAvulsa], [null, aulaId]);
+      expect(dados.aulaIdAvulsa, isNull);
+      expect(dados.tipo, TipoAula.regular);
+    },
+  );
 }

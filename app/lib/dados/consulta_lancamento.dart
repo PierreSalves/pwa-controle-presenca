@@ -14,10 +14,14 @@ class DiaDeAula {
     required this.data,
     required this.tipo,
     required this.futuro,
+    this.aulaIdAvulsa,
   });
   final String data;
   final TipoAula tipo;
   final bool futuro;
+
+  /// Preenchido na reposição avulsa (aula criada fora do quadro).
+  final String? aulaIdAvulsa;
 }
 
 class AlunoNoLancamento {
@@ -46,13 +50,21 @@ class DadosLancamento {
     required this.tipo,
     required this.lista,
     required this.poucoFrequentes,
+    required this.diasDaSemana,
+    this.aulaIdAvulsa,
   });
 
   final String turmaNome;
   final String data;
 
-  /// Tipo da aula do dia pelo quadro; null quando o quadro não tem aula nesse dia.
+  /// Tipo da aula: pelo quadro ou reposição avulsa; null quando não há aula nesse dia.
   final TipoAula? tipo;
+
+  /// Reposição avulsa aberta no lançamento (null para a aula do quadro).
+  final String? aulaIdAvulsa;
+
+  /// Dias de aula da semana da data: os do quadro e as reposições avulsas, por data.
+  final List<DiaDeAula> diasDaSemana;
 
   /// Frequentes e marcados, por frequência (maior primeiro) e nome.
   final List<AlunoNoLancamento> lista;
@@ -106,9 +118,13 @@ class ConsultaLancamento {
   /// Recalcula sempre que o banco local muda (marcação ou dados novos do sync).
   Stream<DadosLancamento> observarLancamento(
     String turmaId,
-    String data,
-  ) async* {
-    yield await obterLancamento(turmaId, data);
+    String data, {
+    required String hoje,
+    String? aulaIdAvulsa,
+  }) async* {
+    Future<DadosLancamento> obter() =>
+        obterLancamento(turmaId, data, hoje: hoje, aulaIdAvulsa: aulaIdAvulsa);
+    yield await obter();
     await for (final _ in _banco.tableUpdates(
       TableUpdateQuery.onAllTables([
         _banco.turmas,
@@ -119,11 +135,71 @@ class ConsultaLancamento {
         _banco.presencas,
       ]),
     )) {
-      yield await obterLancamento(turmaId, data);
+      yield await obter();
     }
   }
 
-  Future<DadosLancamento> obterLancamento(String turmaId, String data) async {
+  /// Reposições avulsas da turma entre as datas (inclusive): aulas de reposição sem o id do quadro.
+  Future<List<DiaDeAula>> _obterReposicoesAvulsas(
+    String turmaId,
+    String inicio,
+    String fim,
+    String hoje,
+  ) async {
+    final aulas =
+        await (_banco.select(_banco.aulas)..where(
+              (a) =>
+                  a.turmaId.equals(turmaId) &
+                  a.excluido.equals(0) &
+                  a.tipo.equals(TipoAula.reposicao.valor) &
+                  a.dataAula.isBetweenValues(inicio, fim),
+            ))
+            .get();
+    return [
+      for (final a in aulas)
+        if (a.id !=
+            gerarIdAulaDoQuadro(turmaId, a.dataAula, TipoAula.reposicao))
+          DiaDeAula(
+            data: a.dataAula,
+            tipo: TipoAula.reposicao,
+            futuro: ehDataFutura(a.dataAula, hoje),
+            aulaIdAvulsa: a.id,
+          ),
+    ];
+  }
+
+  Future<List<DiaDeAula>> _obterDiasDaSemana(
+    String turmaId,
+    String data,
+    List<QuadroAulas> quadros,
+    String hoje,
+  ) async {
+    final doQuadro = calcularDiasDeAulaDaSemana(data, quadros, hoje);
+    final domingo = somarDiasNaData(
+      data,
+      -diasDaSemana.indexOf(obterDiaDaSemana(data)),
+    );
+    final avulsas = await _obterReposicoesAvulsas(
+      turmaId,
+      domingo,
+      somarDiasNaData(domingo, 6),
+      hoje,
+    );
+    return [...doQuadro, ...avulsas]..sort((a, b) {
+      final porData = a.data.compareTo(b.data);
+      if (porData != 0) return porData;
+      // No mesmo dia, a aula do quadro vem antes da avulsa.
+      return (a.aulaIdAvulsa == null ? 0 : 1) -
+          (b.aulaIdAvulsa == null ? 0 : 1);
+    });
+  }
+
+  Future<DadosLancamento> obterLancamento(
+    String turmaId,
+    String data, {
+    required String hoje,
+    String? aulaIdAvulsa,
+  }) async {
     final turma = await (_banco.select(
       _banco.turmas,
     )..where((t) => t.id.equals(turmaId))).getSingle();
@@ -131,15 +207,18 @@ class ConsultaLancamento {
     final parametros = ParametrosListaLancamento.lerJson(
       regras is Map ? regras['lista_lancamento'] : null,
     );
-    final tipoDoDia = calcularTipoDoDia(data, await obterQuadros(turmaId));
-    final tipo = switch (tipoDoDia) {
-      TipoDia.regular => TipoAula.regular,
-      TipoDia.reposicao => TipoAula.reposicao,
-      TipoDia.semAula => null,
-    };
-    final aulaDoDia = tipo == null
-        ? null
-        : gerarIdAulaDoQuadro(turmaId, data, tipo);
+    final quadros = await obterQuadros(turmaId);
+    final tipoDoDia = calcularTipoDoDia(data, quadros);
+    final tipo = aulaIdAvulsa != null
+        ? TipoAula.reposicao
+        : switch (tipoDoDia) {
+            TipoDia.regular => TipoAula.regular,
+            TipoDia.reposicao => TipoAula.reposicao,
+            TipoDia.semAula => null,
+          };
+    final aulaDoDia =
+        aulaIdAvulsa ??
+        (tipo == null ? null : gerarIdAulaDoQuadro(turmaId, data, tipo));
 
     final inicioHistorico = somarDiasNaData(data, -_diasDeHistorico);
     final aulas =
@@ -212,6 +291,8 @@ class ConsultaLancamento {
       turmaNome: turma.nome,
       data: data,
       tipo: tipo,
+      aulaIdAvulsa: aulaIdAvulsa,
+      diasDaSemana: await _obterDiasDaSemana(turmaId, data, quadros, hoje),
       lista: todos.where((a) => a.estaNaLista).toList()
         ..sort((a, b) {
           final porFrequencia = b.frequencia.percentual.compareTo(

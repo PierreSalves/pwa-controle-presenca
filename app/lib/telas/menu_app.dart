@@ -1,48 +1,77 @@
-// Tela 12 — Menu (parte desta etapa): usuário logado, lançamento e sair. Os demais itens entram
-// com as telas correspondentes.
+// Tela 12 — Menu: itens conforme a permissão, na ordem do wireframe. Nesta etapa só existem
+// Lançar presença e Sair; os demais entram com as telas correspondentes.
 import 'package:material_ui/material_ui.dart';
 
 import '../estado/dependencias.dart';
-
-const _nomesTipo = {
-  'superadmin': 'Administrador do sistema',
-  'professor': 'Professor',
-  'assistente': 'Assistente',
-};
 
 class MenuApp extends StatelessWidget {
   const MenuApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final usuario = EscopoDependencias.obter(context).sessao.usuario;
     return Drawer(
       child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: [
-            ListTile(
-              title: Text(usuario?.nome ?? ''),
-              subtitle: Text(_nomesTipo[usuario?.tipo] ?? ''),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Menu',
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Fechar',
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.check_box_outlined),
-              title: const Text('Lançar presença'),
-              onTap: () => Navigator.of(context).pop(),
+            const Divider(height: 1),
+            _ItemMenu(
+              icone: Icons.check_box_outlined,
+              texto: 'Lançar presença',
+              aoTocar: () => Navigator.of(context).pop(),
             ),
-            const Spacer(),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Sair'),
-              onTap: () => confirmarSaida(context),
+            _ItemMenu(
+              icone: Icons.logout,
+              texto: 'Sair',
+              aoTocar: () => confirmarSaida(context),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _ItemMenu extends StatelessWidget {
+  const _ItemMenu({
+    required this.icone,
+    required this.texto,
+    required this.aoTocar,
+  });
+
+  final IconData icone;
+  final String texto;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(icone, size: 20),
+        minLeadingWidth: 20,
+        title: Text(texto),
+        onTap: aoTocar,
+      ),
+      const Divider(height: 1),
+    ],
+  );
 }
 
 /// Sair apaga os dados do aparelho: tenta enviar antes e avisa se ainda houver pendências.

@@ -183,4 +183,46 @@ void main() {
     expect(find.textContaining('sem internet'), findsOneWidget);
     await fecharApp(tester);
   });
+
+  testWidgets('cria reposição avulsa e marca a aluna nela', (tester) async {
+    await abrirApp(tester);
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'carla@exemplo.com',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'segredo123');
+    await tester.tap(find.text('Entrar'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+
+    final botao = find.text('Reposição avulsa (outro dia)');
+    await tester.ensureVisible(botao);
+    await tester.tap(botao);
+    await tester.pumpAndSettle();
+    expect(find.text('Turma $turmaId'), findsOneWidget);
+    expect(find.text('12/11/2026 (quinta)'), findsOneWidget);
+
+    await tester.tap(find.text('Criar e marcar presenças'));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('avulsa'), findsOneWidget);
+    expect(find.textContaining('reposição avulsa de 12/11'), findsOneWidget);
+    expect(find.text('0 presentes'), findsOneWidget);
+
+    await tester.tap(find.byType(Checkbox));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('1 presentes'), findsOneWidget);
+    final enviados = api.envios.expand((e) => e).toList();
+    final aula = enviados.firstWhere((op) => op['tabela'] == 'aulas');
+    expect((aula['registro'] as Map)['tipo'], 'reposicao');
+    expect(enviados.where((op) => op['tabela'] == 'presencas'), hasLength(1));
+    await fecharApp(tester);
+  });
 }

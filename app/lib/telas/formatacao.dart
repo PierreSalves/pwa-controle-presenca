@@ -30,6 +30,13 @@ String formatarHora(DateTime instante) {
       '${local.minute.toString().padLeft(2, '0')}';
 }
 
+/// Data em São Paulo (UTC−3) de um instante: '13/11/2026'.
+String formatarDataDoInstante(DateTime instante) {
+  final local = instante.toUtc().subtract(const Duration(hours: 3));
+  return '${local.day.toString().padLeft(2, '0')}/'
+      '${local.month.toString().padLeft(2, '0')}/${local.year}';
+}
+
 /// '(10A) Ana Souza'.
 String formatarAluno(String codigo, String nome) => '($codigo) $nome';
 

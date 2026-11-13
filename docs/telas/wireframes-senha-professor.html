@@ -120,7 +120,7 @@ code{font-size:13px;background:var(--tatame-claro);color:var(--tatame);border-ra
 </style>
 
 <div class="intro">
-  <h1>Redefinir a senha do professor · proposta</h1>
+  <h1>Redefinir a senha do professor · aprovado em 13/11/2026</h1>
   <p>Acréscimo à <b>tela 13 (Administrador do sistema)</b>, no visual da v2. Hoje, quando um professor esquece a senha, só outro professor da mesma academia pode redefini-la, e o <b>professor autônomo</b> fica sem saída. Com isto, o superadmin redefine a senha pelo painel e passa a nova senha para o professor.</p>
   <p>A API já existe e está testada: <code>POST /api/admin/academias/:id/professores/:usuarioId/senha</code>. Só aceita professor ativo daquela academia e tira o professor de todos os aparelhos.</p>
 </div>

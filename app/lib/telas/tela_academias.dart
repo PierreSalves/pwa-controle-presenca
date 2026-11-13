@@ -1,5 +1,6 @@
 // Tela 13 — Administrador do sistema (só o superadmin): academias, o cadastro "Nova: nome ·
-// primeiro professor" na própria lista e a carga inicial de alunos (telas 8b e 8c). Online.
+// primeiro professor" na própria lista e a carga inicial de alunos (telas 8b e 8c). Tocar numa
+// academia abre a tela dela (13a); no desktop ela abre ao lado da lista (D7a). Online.
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -10,6 +11,7 @@ import '../dados/repositorio_admin.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
 import 'menu_app.dart';
+import 'tela_academia.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 import 'tela_importar_alunos.dart';
 import 'tema.dart';
@@ -36,6 +38,9 @@ class _TelaAcademiasState extends State<TelaAcademias> {
   String? _erro;
   bool _formularioAberto = false;
   bool _iniciado = false;
+
+  /// Academia aberta ao lado da lista (só no desktop).
+  String? _selecionadaId;
 
   @override
   void didChangeDependencies() {
@@ -70,6 +75,21 @@ class _TelaAcademiasState extends State<TelaAcademias> {
       ),
     );
     unawaited(_carregar());
+  }
+
+  Future<void> _abrirAcademia(Academia academia) async {
+    if (ehDesktop(context)) {
+      setState(() => _selecionadaId = academia.id);
+      return;
+    }
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => TelaAcademia(
+          academia: academia,
+          aoAlterar: () => unawaited(_carregar()),
+        ),
+      ),
+    );
   }
 
   /// Carga inicial: escolhe a academia (se houver mais de uma) e abre a importação para ela.
@@ -108,124 +128,177 @@ class _TelaAcademiasState extends State<TelaAcademias> {
 
   @override
   Widget build(BuildContext context) {
-    final academias = _academias;
-    final apoio = const TextStyle(color: CoresV2.nevoa, fontSize: 13);
-    final desktop = ehDesktop(context);
+    if (ehDesktop(context)) return _montarDesktop();
     return Scaffold(
-      appBar: desktop
-          ? null
-          : AppBar(
-              title: const Text('Academias'),
-              centerTitle: true,
-              actions: [
-                IconButton(
-                  tooltip: 'Nova academia',
-                  icon: const Icon(Symbols.add),
-                  onPressed: () => setState(() => _formularioAberto = true),
-                ),
-              ],
-            ),
+      appBar: AppBar(
+        title: const Text('Academias'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            tooltip: 'Nova academia',
+            icon: const Icon(Symbols.add),
+            onPressed: () => setState(() => _formularioAberto = true),
+          ),
+        ],
+      ),
       drawer: obterMenuDoCelular(context),
       body: LarguraCelular(
         child: ListView(
-          padding: desktop
-              ? const EdgeInsets.fromLTRB(28, 24, 28, 28)
-              : const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
+          children: _montarLista(),
+        ),
+      ),
+    );
+  }
+
+  /// D7a: academias à esquerda e a academia escolhida à direita.
+  Widget _montarDesktop() {
+    final selecionada = _academias
+        ?.where((a) => a.id == _selecionadaId)
+        .firstOrNull;
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (desktop) ...[
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Academias',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Academias',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                   ),
-                  BotaoPrincipal(
-                    rotulo: 'Nova academia',
-                    icone: Symbols.add,
-                    aoTocar: () => setState(() => _formularioAberto = true),
+                ),
+                BotaoPrincipal(
+                  rotulo: 'Nova academia',
+                  icone: Symbols.add,
+                  aoTocar: () => setState(() => _formularioAberto = true),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: 400,
+                    child: ListView(children: _montarLista()),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Cartao(
+                      padding: EdgeInsets.zero,
+                      child: selecionada == null
+                          ? const Center(
+                              child: Text(
+                                'Escolha uma academia para ver os professores.',
+                                style: TextStyle(color: CoresV2.nevoa),
+                              ),
+                            )
+                          : TelaAcademia(
+                              key: ValueKey(selecionada.id),
+                              academia: selecionada,
+                              embutido: true,
+                              aoAlterar: () => unawaited(_carregar()),
+                            ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-            ],
-            if (_erro != null) ...[
-              Text(_erro!, style: const TextStyle(color: CoresV2.ponta)),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: _carregar,
-                child: const Text('Tentar de novo'),
-              ),
-            ] else if (academias == null)
-              const Padding(padding: EdgeInsets.all(24), child: Carregando())
-            else ...[
-              if (academias.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text('Nenhuma academia cadastrada ainda.'),
-                )
-              else
-                Cartao(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < academias.length; i++)
-                        _LinhaAcademia(
-                          academia: academias[i],
-                          ultima: i == academias.length - 1,
-                        ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 12),
-              if (_formularioAberto)
-                _FormularioAcademia(
-                  aoCriar: _aoCriar,
-                  aoCancelar: () => setState(() => _formularioAberto = false),
-                )
-              else
-                Cartao(
-                  aoTocar: () => setState(() => _formularioAberto = true),
-                  child: Row(
-                    children: [
-                      const Icon(Symbols.add, color: CoresV2.tatame),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Nova: nome · primeiro professor',
-                          style: apoio.copyWith(fontSize: 15),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: academias.isEmpty ? null : _abrirCargaInicial,
-                icon: const Icon(Symbols.upload),
-                label: const Text('Carga inicial (planilha de alunos)'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text('Só o administrador do sistema vê esta área.', style: apoio),
-            ],
+            ),
           ],
         ),
       ),
     );
   }
+
+  /// Lista, cadastro e carga inicial (no desktop, a coluna da esquerda).
+  List<Widget> _montarLista() {
+    final academias = _academias;
+    const apoio = TextStyle(color: CoresV2.nevoa, fontSize: 13);
+    if (_erro != null) {
+      return [
+        Text(_erro!, style: const TextStyle(color: CoresV2.ponta)),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: _carregar,
+          child: const Text('Tentar de novo'),
+        ),
+      ];
+    }
+    if (academias == null) {
+      return const [Padding(padding: EdgeInsets.all(24), child: Carregando())];
+    }
+    return [
+      if (academias.isEmpty)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text('Nenhuma academia cadastrada ainda.'),
+        )
+      else
+        Cartao(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            children: [
+              for (var i = 0; i < academias.length; i++)
+                _LinhaAcademia(
+                  academia: academias[i],
+                  ultima: i == academias.length - 1,
+                  selecionada: academias[i].id == _selecionadaId,
+                  aoTocar: () => _abrirAcademia(academias[i]),
+                ),
+            ],
+          ),
+        ),
+      const SizedBox(height: 12),
+      if (_formularioAberto)
+        _FormularioAcademia(
+          aoCriar: _aoCriar,
+          aoCancelar: () => setState(() => _formularioAberto = false),
+        )
+      else
+        Cartao(
+          aoTocar: () => setState(() => _formularioAberto = true),
+          child: Row(
+            children: [
+              const Icon(Symbols.add, color: CoresV2.tatame),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Nova: nome · primeiro professor',
+                  style: apoio.copyWith(fontSize: 15),
+                ),
+              ),
+            ],
+          ),
+        ),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: academias.isEmpty ? null : _abrirCargaInicial,
+        icon: const Icon(Symbols.upload),
+        label: const Text('Carga inicial (planilha de alunos)'),
+        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+      ),
+      const SizedBox(height: 8),
+      const Text('Só o administrador do sistema vê esta área.', style: apoio),
+    ];
+  }
 }
 
 class _LinhaAcademia extends StatelessWidget {
-  const _LinhaAcademia({required this.academia, required this.ultima});
+  const _LinhaAcademia({
+    required this.academia,
+    required this.ultima,
+    required this.selecionada,
+    required this.aoTocar,
+  });
+
   final Academia academia;
   final bool ultima;
+  final bool selecionada;
+  final VoidCallback aoTocar;
 
   String _descreverQuantidades() => [
     '${academia.alunos} ${academia.alunos == 1 ? 'aluno' : 'alunos'}',
@@ -235,35 +308,47 @@ class _LinhaAcademia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 56),
-      decoration: BoxDecoration(
-        border: ultima
-            ? null
-            : const Border(bottom: BorderSide(color: CoresV2.linha)),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(academia.nome, overflow: TextOverflow.ellipsis),
-                Text(
-                  _descreverQuantidades(),
-                  style: const TextStyle(
-                    color: CoresV2.nevoa,
-                    fontSize: 13,
-                    fontFeatures: numerosFixos,
-                  ),
-                ),
-              ],
-            ),
+    return Semantics(
+      button: true,
+      selected: selecionada,
+      child: InkWell(
+        onTap: aoTocar,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 56),
+          decoration: BoxDecoration(
+            color: selecionada ? CoresV2.tatameClaro : null,
+            borderRadius: selecionada ? BorderRadius.circular(10) : null,
+            border: ultima || selecionada
+                ? null
+                : const Border(bottom: BorderSide(color: CoresV2.linha)),
           ),
-          const SizedBox(width: 10),
-          Etiqueta(academia.ativa ? 'ativa' : 'inativa'),
-        ],
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(academia.nome, overflow: TextOverflow.ellipsis),
+                    Text(
+                      _descreverQuantidades(),
+                      style: const TextStyle(
+                        color: CoresV2.nevoa,
+                        fontSize: 13,
+                        fontFeatures: numerosFixos,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Etiqueta(academia.ativa ? 'ativa' : 'inativa'),
+              const SizedBox(width: 4),
+              const Icon(Symbols.chevron_right, color: CoresV2.nevoa),
+            ],
+          ),
+        ),
       ),
     );
   }

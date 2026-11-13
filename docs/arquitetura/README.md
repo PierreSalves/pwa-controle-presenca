@@ -227,7 +227,7 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 
 **Dados da academia** (`api/src/rotas/academia.ts`, tela 14). Só professor (`editar_tenant`): `GET /api/academia` e `PUT /api/academia` (`nome`, `nome_curto` até 15 caracteres, `cabecalho_impressao`). O envio do logotipo e a geração dos ícones no R2 ficam numa etapa própria.
 
-**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`).
+**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`). No app (`app/lib/telas/tela_academias.dart`), o superadmin cai direto em Academias depois do login (único item do menu); a carga inicial reaproveita as telas 8b e 8c apontando para `/api/admin/academias/:id/alunos/importacao`.
 
 | Rota | O que faz |
 |---|---|

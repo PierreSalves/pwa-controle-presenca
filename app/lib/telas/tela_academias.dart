@@ -360,7 +360,7 @@ class _FormularioAcademiaState extends State<_FormularioAcademia> {
               controller: _professor,
               textCapitalization: TextCapitalization.words,
               decoration: const InputDecoration(
-                labelText: 'Nome',
+                labelText: 'Nome do professor',
                 isDense: true,
               ),
               validator: (v) => _exigir(v, 'Informe o nome do professor'),
@@ -400,17 +400,27 @@ class _FormularioAcademiaState extends State<_FormularioAcademia> {
             ),
             if (_erro != null) ...[
               const SizedBox(height: 8),
-              Text(_erro!, style: const TextStyle(color: CoresV2.ponta)),
+              // Região ao vivo: o leitor de tela anuncia o erro que voltou do servidor.
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  _erro!,
+                  style: const TextStyle(color: CoresV2.ponta),
+                ),
+              ),
             ],
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            // Celular estreito: o botão principal desce para a linha de baixo.
+            Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 TextButton(
                   onPressed: _salvando ? null : widget.aoCancelar,
                   child: const Text('Cancelar'),
                 ),
-                const SizedBox(width: 8),
                 BotaoPrincipal(
                   rotulo: 'Criar academia',
                   icone: Symbols.check,

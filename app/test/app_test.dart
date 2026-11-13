@@ -30,6 +30,19 @@ class _ApiFalsa {
   int alunosImportados = 0;
   String tipoUsuario = 'assistente';
   final List<Map<String, dynamic>> usuariosCriados = [];
+  final List<Map<String, dynamic>> academias = [
+    {
+      'id': '0190f5a0-0000-7000-8000-0000000000c1',
+      'nome': 'Academia Teste',
+      'nome_curto': null,
+      'ativo': 1,
+      'usuarios': 3,
+      'alunos': 1,
+      'turmas': 1,
+    },
+  ];
+  final List<Map<String, dynamic>> academiasCriadas = [];
+  final List<String> cargasIniciais = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -51,7 +64,7 @@ class _ApiFalsa {
           'nome': 'Carla',
           'email': 'carla@exemplo.com',
           'tipo': tipoUsuario,
-          'tenant_id': 't1',
+          'tenant_id': tipoUsuario == 'superadmin' ? null : 't1',
         },
       });
     }
@@ -64,6 +77,40 @@ class _ApiFalsa {
       });
     }
     if (caminho.endsWith('/sair')) return http.Response('', 204);
+    if (caminho.endsWith('/admin/academias') && req.method == 'GET') {
+      return _json({'academias': academias});
+    }
+    if (caminho.endsWith('/admin/academias') && req.method == 'POST') {
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      academiasCriadas.add(corpo);
+      final nova = {
+        'id': '0190f5a0-0000-7000-8000-0000000000c2',
+        'nome': corpo['nome'],
+        'nome_curto': corpo['nome_curto'],
+        'ativo': 1,
+        'usuarios': 1,
+        'alunos': 0,
+        'turmas': 0,
+      };
+      academias.add(nova);
+      return _json({'academia': nova}, 201);
+    }
+    if (caminho.contains('/admin/academias/') &&
+        caminho.endsWith('/alunos/importacao')) {
+      cargasIniciais.add(caminho);
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      final quantos = (corpo['alunos'] as List).length;
+      return _json({
+        'relatorio': {
+          'incompletas': [],
+          'codigos_repetidos': [],
+          'codigos_existentes': [],
+          'nomes_repetidos': [],
+          'pode_importar': true,
+        },
+        'importados': corpo['confirmar'] == true ? quantos : 0,
+      }, corpo['confirmar'] == true ? 201 : 200);
+    }
     if (caminho.contains('/matriculas/') && req.method == 'PUT') {
       matriculasEncerradas.add(jsonDecode(req.body) as Map<String, dynamic>);
       return _json({'matricula': {}});
@@ -776,5 +823,55 @@ void main() {
     expect(impressos.single, contains('size: A4 landscape'));
     await fecharApp(tester);
     semantica.dispose();
+  });
+
+  testWidgets('superadmin cadastra academia e faz a carga inicial', (
+    tester,
+  ) async {
+    // Celular alto: a lista, o formulário e a carga inicial cabem sem rolar.
+    tester.view.physicalSize = const Size(420, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    api.tipoUsuario = 'superadmin';
+    await entrar(tester);
+    // Tela 13: academias no lugar do Início.
+    expect(find.text('Academias'), findsOneWidget);
+    expect(find.text('Academia Teste'), findsOneWidget);
+    expect(find.text('1 aluno · 1 turma · 3 usuários'), findsOneWidget);
+    expect(find.text('ativa'), findsOneWidget);
+
+    await tester.tap(find.text('Nova: nome · primeiro professor'));
+    await esperar(tester);
+    final campos = find.byType(TextFormField);
+    await tester.enterText(campos.at(0), 'Equipe Nova');
+    await tester.enterText(campos.at(2), 'Joana Lima');
+    await tester.enterText(campos.at(3), 'Joana@Equipe.com');
+    await tester.enterText(campos.at(4), 'curta');
+    await tester.tap(find.text('Criar academia'));
+    await esperar(tester);
+    expect(find.text('Pelo menos 8 caracteres'), findsOneWidget);
+    expect(api.academiasCriadas, isEmpty);
+
+    await tester.enterText(campos.at(4), 'senhainicial');
+    await tester.tap(find.text('Criar academia'));
+    await esperar(tester);
+    expect(api.academiasCriadas.single, {
+      'nome': 'Equipe Nova',
+      'professor': {
+        'nome': 'Joana Lima',
+        'email': 'joana@equipe.com',
+        'senha': 'senhainicial',
+      },
+    });
+    expect(find.text('Equipe Nova'), findsOneWidget);
+
+    // Carga inicial: com duas academias, pergunta qual.
+    await tester.ensureVisible(find.text('Carga inicial (planilha de alunos)'));
+    await tester.tap(find.text('Carga inicial (planilha de alunos)'));
+    await esperar(tester);
+    await tester.tap(find.text('Equipe Nova').last);
+    await esperar(tester);
+    expect(find.text('Carga inicial · Equipe Nova'), findsOneWidget);
+    await fecharApp(tester);
   });
 }

@@ -51,7 +51,8 @@ class LarguraCelular extends StatelessWidget {
   );
 }
 
-/// "Tudo enviado ✓" ou "N aguardando envio" (arquitetura: o status aparece sempre).
+/// "✓ Tudo enviado · 14:32" ou "N aguardando envio" (arquitetura: o status aparece sempre).
+/// O ✓ é um ícone: o caractere não existe na Roboto e faria o Flutter baixar outra fonte.
 class StatusEnvio extends StatelessWidget {
   const StatusEnvio({super.key});
 
@@ -70,8 +71,11 @@ class StatusEnvio extends StatelessWidget {
           final texto = pendentes > 0
               ? '$pendentes aguardando envio'
               : ultima == null
-              ? 'Tudo enviado ✓'
-              : 'Tudo enviado ✓ · ${formatarHora(ultima)}';
+              ? 'Tudo enviado'
+              : 'Tudo enviado · ${formatarHora(ultima)}';
+          final cor = pendentes == 0
+              ? CoresWireframe.okTexto
+              : CoresWireframe.avisoTexto;
           final complemento = offline ? ' · sem internet' : '';
           return Semantics(
             liveRegion: true,
@@ -83,14 +87,18 @@ class StatusEnvio extends StatelessWidget {
                     : CoresWireframe.avisoFundo,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                '$texto$complemento',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: pendentes == 0
-                      ? CoresWireframe.okTexto
-                      : CoresWireframe.avisoTexto,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (pendentes == 0) ...[
+                    Icon(Icons.check, size: 14, color: cor),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
+                    '$texto$complemento',
+                    style: TextStyle(fontSize: 13, color: cor),
+                  ),
+                ],
               ),
             ),
           );

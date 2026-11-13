@@ -1,0 +1,23 @@
+# Cabeçalhos dos arquivos do app (Workers Static Assets). As rotas /api/* têm os próprios
+# cabeçalhos no Worker (api/src/index.ts). Veja docs/arquitetura/README.md, "Segurança".
+#
+# CSP sem terceiros: tudo vem do próprio domínio.
+# - 'wasm-unsafe-eval': o CanvasKit (motor de desenho do Flutter) e o SQLite rodam em WebAssembly;
+# - style-src 'unsafe-inline': o Flutter cria estilos na página ao iniciar;
+# - worker-src blob:: o Flutter pode criar workers a partir de blob.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Sempre conferir a versão publicada destes (o service worker e a inicialização decidem o resto).
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/flutter_bootstrap.js
+  Cache-Control: no-cache

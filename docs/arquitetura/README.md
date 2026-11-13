@@ -26,7 +26,7 @@ Diagramas: [1. Hospedagem](1-hospedagem-cloudflare.jpg) · [2. Segurança](2-seg
 |---|---|---|
 | App | **Flutter Web** como PWA | preferência do projeto; o mesmo código pode virar app Android/iOS depois |
 | Banco local | **drift** (SQLite via WebAssembly) | é SQLite, igual ao D1: o mesmo esquema e o mesmo SQL nos dois lados. Escolher **drift** em vez de Hive (o diagrama 3 cita os dois) |
-| Cache do app offline | **service worker próprio** (ex.: Workbox) | o Flutter não gera mais um service worker offline-first (a partir da 3.41 ele só limpa o antigo) |
+| Cache do app offline | **service worker próprio** (`app/web/sw.js`, sem Workbox) | o Flutter não gera mais um service worker offline-first (a partir da 3.41 ele só limpa o antigo). Detalhes em "Abrir sem internet e CSP" |
 | API | **Cloudflare Worker** em TypeScript (sugestão: Hono) | leve, mesmo provedor do banco |
 | Banco central | **D1** | |
 | Arquivos | **R2** | comprovantes de mensalidade |
@@ -261,6 +261,16 @@ Se a API rejeitar um item, ele fica marcado com erro na outbox e o usuário vê 
 | Banco local adulterado | toda gravação é revalidada na API (permissão, tenant, regras); o app nunca envia `tenant_id` confiável |
 | XSS | CSP restrita, sem scripts de terceiros |
 | LGPD (muitos alunos são menores) | CPF, RG, endereço, telefones e dados dos responsáveis **nunca** vão para o aparelho; só consulta online |
+
+### Abrir sem internet e CSP (implementado em `app/web/`)
+- **Nada de terceiros:** por padrão o Flutter web baixa o CanvasKit (motor de desenho) de `www.gstatic.com` e a fonte Roboto de `fonts.gstatic.com`. O app usa a cópia do CanvasKit que vem no build (`canvasKitBaseUrl: 'canvaskit/'` em `web/flutter_bootstrap.js`) e a Roboto embutida em `app/fonts/` (cópia do SDK do Flutter, Apache 2.0). Evitar caracteres que a Roboto não tem (ex.: ✓): o Flutter baixaria uma fonte de reserva do Google. Usar ícone.
+- **Service worker (`web/sw.js`):**
+  - só cuida dos arquivos do app; `/api/` nunca passa pelo cache, porque os dados offline ficam no drift;
+  - rede primeiro: sem resposta em 4 s, usa a cópia guardada; navegação (abrir o app ou recarregar) devolve o `index.html`;
+  - na primeira visita o service worker ainda não controla a página, então `flutter_bootstrap.js` manda a lista do que a página carregou (`performance.getEntriesByType('resource')`) e ele guarda esses arquivos. Assim fica só a variante do CanvasKit que aquele navegador usa;
+  - o `flutter_service_worker.js` que o build ainda gera não é registrado.
+- **Cabeçalhos dos arquivos** (`web/_headers`, lido pelo Workers Static Assets): CSP `default-src 'self'` com `'wasm-unsafe-eval'` (CanvasKit e SQLite em WebAssembly), `style-src 'unsafe-inline'` (estilos que o Flutter cria) e `worker-src blob:`, mais `frame-ancestors 'none'`, `nosniff`, `no-referrer` e `Cache-Control: no-cache` para `index.html`, `sw.js` e `flutter_bootstrap.js`. As rotas `/api/*` têm os cabeçalhos do Worker (`secureHeaders`).
+- Verificado no Edge: nenhuma requisição para fora do domínio, nenhum bloqueio da CSP e o app recarregando offline com os dados do aparelho.
 
 ## Relatórios e regras configuráveis
 

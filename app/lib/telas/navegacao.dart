@@ -13,6 +13,7 @@ import 'menu_app.dart';
 import 'tela_entrar.dart';
 import 'tela_escolher_turma.dart';
 import 'tela_inicial.dart';
+import 'tela_meus_dados.dart';
 import 'tela_relatorios.dart';
 import 'tela_alunos.dart';
 import 'tela_dados_academia.dart';
@@ -28,6 +29,7 @@ abstract final class Rotas {
   static const turmas = '/turmas';
   static const usuarios = '/usuarios';
   static const academia = '/academia';
+  static const meusDados = '/meus-dados';
 }
 
 class ItemMenu {
@@ -41,7 +43,10 @@ class ItemMenu {
 List<ItemMenu> obterItensMenu(SessaoApp sessao) {
   final usuario = sessao.usuario;
   if (usuario?.tipo == 'superadmin') {
-    return const [ItemMenu(Rotas.inicio, 'Academias', Symbols.apartment)];
+    return const [
+      ItemMenu(Rotas.inicio, 'Academias', Symbols.apartment),
+      ItemMenu(Rotas.meusDados, 'Meus dados e senha', Symbols.lock),
+    ];
   }
   if (usuario?.tenantId == null) return const [];
   return [
@@ -54,6 +59,7 @@ List<ItemMenu> obterItensMenu(SessaoApp sessao) {
       const ItemMenu(Rotas.usuarios, 'Usuários', Symbols.manage_accounts),
     if (usuario?.tipo == 'professor')
       const ItemMenu(Rotas.academia, 'Dados da academia', Symbols.storefront),
+    const ItemMenu(Rotas.meusDados, 'Meus dados e senha', Symbols.lock),
   ];
 }
 
@@ -76,6 +82,7 @@ class PortaoSessao extends StatelessWidget {
       Rotas.turmas => const TelaTurmas(),
       Rotas.usuarios => const TelaUsuarios(),
       Rotas.academia => const TelaDadosAcademia(),
+      Rotas.meusDados => const TelaMeusDados(),
       _ => const TelaInicial(),
     };
   }
@@ -323,7 +330,10 @@ class _ItemLateral extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 child: Row(
                   children: [
                     Icon(
@@ -332,10 +342,11 @@ class _ItemLateral extends StatelessWidget {
                       color: ativo ? Colors.white : CoresV2.nevoa,
                     ),
                     const SizedBox(width: 10),
+                    // Até duas linhas (como "Meus dados e senha" no wireframe D7) antes de cortar.
                     Expanded(
                       child: Text(
                         item.texto,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: cor,

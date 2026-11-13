@@ -9,6 +9,7 @@ import '../dados/consulta_relatorios.dart';
 import '../dados/repositorio_academia.dart';
 import '../dados/repositorio_admin.dart';
 import '../dados/repositorio_alunos.dart';
+import '../dados/repositorio_conta.dart';
 import '../dados/repositorio_turmas.dart';
 import '../dados/repositorio_usuarios.dart';
 import '../dados/repositorio_presenca.dart';
@@ -41,6 +42,7 @@ class Dependencias {
     usuarios = RepositorioUsuarios(cliente);
     admin = RepositorioAdmin(cliente);
     academia = RepositorioAcademia(cliente);
+    conta = RepositorioConta(cliente);
     coordenador = CoordenadorSincronizacao(
       ServicoSincronizacao(banco, cliente),
       aoEncerrarSessao: sessao.encerrarLocalmente,
@@ -63,6 +65,7 @@ class Dependencias {
   late final RepositorioUsuarios usuarios;
   late final RepositorioAdmin admin;
   late final RepositorioAcademia academia;
+  late final RepositorioConta conta;
 
   /// Seletor de arquivos e geração dos ícones (canvas do navegador).
   final ServicoImagens imagens;

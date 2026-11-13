@@ -65,7 +65,7 @@ Material Symbols (`material_symbols_icons`), traço fino (`weight: 300`, tamanho
 | Voltar | Círculo azul-claro | Igual; as telas principais (Alunos, Turmas, Usuários, Lançar presença) não mostram voltar, porque o menu faz esse papel |
 | Largura do conteúdo | Até 560 px, centralizado (`LarguraCelular`) | Até 880 px, à esquerda; Início até 1100 px |
 
-- Cada item do menu é uma **rota com endereço** (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`): recarregar mantém a tela e o voltar do navegador funciona.
+- Cada item do menu é uma **rota com endereço** (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`, `/academia`, `/meus-dados`): recarregar mantém a tela e o voltar do navegador funciona.
 - O menu lateral fica fora do navegador interno (`EstruturaComMenu`); o navegador é um contêiner próprio de acessibilidade, senão a barreira das rotas esconderia o menu do leitor de tela.
 
 ### 1.6 Movimento
@@ -148,7 +148,7 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 
 ### 2.15 Menu lateral (`_MenuLateral` em `navegacao.dart`)
 - **Aparência:** coluna de 232 px em `menuLateral`; no topo o nome da academia (enquanto não houver logotipo) numa caixa contornada; itens em pílula com ícone `nevoa` e texto; o item da tela atual em `tatame` com ícone e texto brancos; "Sair" no rodapé.
-- **Estados:** hover `#E1E6E1`; itens com 48 px de altura; nome longo cortado com reticências.
+- **Estados:** hover `#E1E6E1`; itens com pelo menos 48 px de altura; nome longo em até duas linhas (ex.: "Meus dados e senha") e só então cortado com reticências.
 - **Acessibilidade:** cada item é botão com estado "selecionado".
 - **Itens:** Início, Lançar presença, Alunos, Turmas e Usuários (só professor), conforme `obterItensMenu`.
 
@@ -240,6 +240,15 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 ### 2.29 Instalar no iPhone (`TelaInstalarIphone`), tela 2b
 - **Aparência:** barra "Instalar no iPhone" com o fechar (X, dica "Fechar") em círculo azul-claro; `Cartao` com os três passos, cada um com o ícone em quadrado `tatameClaro` (compartilhar, adicionar, confirmar), o título numerado em w600 e uma explicação em `nevoa` 13; nota final sobre o iPhone não ter botão de instalar.
 
+### 2.30 Meus dados e senha (`TelaMeusDados` em `tela_meus_dados.dart`), tela 12
+- **Aparência:**
+  - celular: barra "Meus dados" com voltar; desktop: título "Meus dados e senha" e os dois cartões lado a lado (D7);
+  - `Cartao` de consulta com linhas: rótulo em `nevoa` 13 à esquerda e o valor à direita: Nome, E-mail, Tipo ("administrador do sistema" para o superadmin) e Academia (não aparece para o superadmin); embaixo, quem muda nome e e-mail ("fale com o professor" para a assistente, "use a tela de Usuários" para o professor);
+  - `Cartao` "Trocar senha" com Senha atual, Nova senha e Confirmar nova senha (os dois primeiros com o botão de mostrar a senha), a nota sobre os 8 caracteres e os outros aparelhos, e "Trocar senha" (`BotaoPrincipal`, largo no celular, à direita no desktop, "Trocando…" durante o envio).
+- **Estados:** erros no próprio campo ("Informe a senha atual.", "A nova senha precisa ter pelo menos 8 caracteres.", "As senhas não conferem." e, do servidor, "Senha atual incorreta."); depois do sucesso, os campos limpos e a etiqueta verde "Senha trocada." (região ao vivo); sem internet, aviso e os campos mantidos.
+- **Acessibilidade:** campos com rótulo e preenchimento automático de senha atual e nova senha; botão de mostrar com dica ("Mostrar a senha" / "Esconder a senha").
+- **Uso:** item "Meus dados e senha" no menu de todos os usuários, inclusive o superadmin.
+
 ## 3. Ainda não implementado (previsto na v2)
 
-- Meus dados e troca de senha (tela 12) ainda sem tela no app.
+- Nada pendente dos wireframes aprovados.

@@ -137,6 +137,12 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - `coordenador_sincronizacao.dart`: uma rodada por vez (push e depois pull); um pedido durante uma rodada agenda outra logo depois. Roda após cada marcação e a cada 12 s com a tela de lançamento aberta. Indica online/offline para o status "Tudo enviado ✓ / N aguardando envio · sem internet".
 - Sair: tenta enviar a outbox antes; se ainda houver pendências, avisa que serão perdidas.
 
+### Telas online no app (cadastros)
+- `app/lib/dados/repositorio_alunos.dart` fala direto com a API (`ClienteApi.enviar`), sem banco local: os dados sensíveis do aluno ficam **só na memória da tela**. Depois de salvar, matricular ou encerrar, o app roda uma sincronização para o lançamento ver o nome e as matrículas novas.
+- Sem internet, a tela mostra "Sem internet. O cadastro precisa de conexão." e um botão para tentar de novo.
+- O PUT do aluno grava todos os campos: os campos sem tela (ex.: `sexo`) voltam como vieram, para não serem apagados.
+- Textos só com caracteres da fonte embutida: `test/telas/caracteres_test.dart` falha se aparecer um símbolo fora dela (seta, ✓, emoji).
+
 ### Contrato da API de sync (implementado em `api/src/rotas/sync.ts`)
 Exige login e a permissão `lancar_presenca` (professor e assistente).
 

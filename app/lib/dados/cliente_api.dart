@@ -190,6 +190,22 @@ class ClienteApi implements ClienteSync {
     return jsonDecode(resposta.body) as Map<String, dynamic>;
   }
 
+  /// Chamada autenticada genérica para as telas online (cadastros). Resposta sem corpo vira `{}`.
+  Future<Map<String, dynamic>> enviar(
+    String metodo,
+    String caminho, {
+    Object? corpo,
+  }) async {
+    final resposta = await _enviarAutenticado((cabecalhos) async {
+      final requisicao = http.Request(metodo, _montarUrl(caminho))
+        ..headers.addAll(cabecalhos);
+      if (corpo != null) requisicao.body = jsonEncode(corpo);
+      return http.Response.fromStream(await _http.send(requisicao));
+    });
+    if (resposta.body.isEmpty) return {};
+    return jsonDecode(resposta.body) as Map<String, dynamic>;
+  }
+
   /// Encerra a matrícula na data informada (online; o pull seguinte traz a alteração).
   Future<void> encerrarMatricula({
     required String matriculaId,

@@ -23,6 +23,7 @@ http.Response _json(Object corpo, [int status = 200]) => http.Response(
 class _ApiFalsa {
   final List<List<dynamic>> envios = [];
   final List<Map<String, dynamic>> matriculasEncerradas = [];
+  final List<Map<String, dynamic>> alunosCriados = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -60,6 +61,31 @@ class _ApiFalsa {
     if (caminho.contains('/matriculas/') && req.method == 'PUT') {
       matriculasEncerradas.add(jsonDecode(req.body) as Map<String, dynamic>);
       return _json({'matricula': {}});
+    }
+    if (caminho.endsWith('/alunos/proximo-codigo')) {
+      return _json({'codigo': '12'});
+    }
+    if (caminho.endsWith('/alunos') && req.method == 'GET') {
+      return _json({
+        'alunos': [
+          {
+            'id': alunoId,
+            'codigo': '10A',
+            'nome': 'Ana',
+            'ativo': 1,
+            'turmas': ['Turma A'],
+          },
+        ],
+      });
+    }
+    if (caminho.endsWith('/alunos') && req.method == 'POST') {
+      final corpo = jsonDecode(req.body) as Map<String, dynamic>;
+      alunosCriados.add(corpo);
+      return _json({
+        'aluno': {...corpo, 'id': '0190f5a0-0000-7000-8000-0000000000b9'},
+        'matriculas': [],
+        'graduacoes': [],
+      }, 201);
     }
     if (caminho.endsWith('/sync/pull')) return _json(montarPull());
     if (caminho.endsWith('/sync/push')) {
@@ -251,6 +277,36 @@ void main() {
       find.text('Matrícula de Ana encerrada em 01/10/2026.'),
       findsOneWidget,
     );
+    await fecharApp(tester);
+  });
+
+  testWidgets('cadastra aluno pelo menu com o código sugerido', (tester) async {
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alunos'));
+    await esperar(tester);
+    expect(find.text('Ativos · 1'), findsOneWidget);
+    expect(find.text('(10A) Ana'), findsOneWidget);
+    expect(find.text('Turma A'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Novo aluno'));
+    await esperar(tester);
+    expect(find.text('12'), findsOneWidget); // código sugerido
+    expect(
+      find.text('Salve o aluno para matricular e registrar graduações.'),
+      findsOneWidget,
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nome completo'),
+      'Bruno Lima',
+    );
+    await tester.tap(find.text('Salvar'));
+    await esperar(tester);
+    expect(api.alunosCriados.single['codigo'], '12');
+    expect(api.alunosCriados.single['nome'], 'Bruno Lima');
+    expect(find.text('Aluno cadastrado.'), findsOneWidget);
+    expect(find.text('Matricular'), findsOneWidget);
     await fecharApp(tester);
   });
 }

@@ -222,6 +222,7 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
   - "Carga inicial (planilha de alunos)" (secundário, largura toda): com mais de uma academia, pergunta qual num diálogo e abre a importação (8b/8c) com o título "Carga inicial · academia".
 - **Acessibilidade:** erro vindo do servidor anunciado ao leitor de tela (região ao vivo); validação junto de cada campo.
 - **Uso:** online; nada vai para o banco do aparelho do superadmin.
+- **Academia aberta (`TelaAcademia` em `tela_academia.dart`, 13a / D7a):** pílulas de resumo e `Cartao` "Usuários" com uma linha por professor ou assistente ativo (`_LinhaUsuario`: nome, e-mail e último acesso em `nevoa` 13, etiqueta do tipo — professor em `tatameClaro`, assistente em cinza — e a seta). Tocar abre o painel do usuário (`_PainelUsuario`, de baixo no celular e diálogo central no desktop): `SegmentedButton` Professor/Assistente, "Salvar acesso" (`BotaoPrincipal`), "Redefinir senha" (só professor), "Remover da academia" (`estiloDestrutivo`, com confirmação) e "Cancelar". Único professor: escolha e remoção desabilitadas, com aviso em `avisoClaro`.
 
 ### 2.27 Dados da academia (`TelaDadosAcademia` em `tela_dados_academia.dart`), só o professor
 - **Aparência:**

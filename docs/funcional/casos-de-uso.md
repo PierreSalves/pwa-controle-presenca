@@ -492,7 +492,29 @@ Convenções:
 - **Objetivo:** o professor esqueceu a senha.
 - **Ator:** administrador do sistema. Online.
 
-**Fluxo principal:** Academias → toca na academia → no professor, "Redefinir senha" → digita ou gera a **Nova senha** → "Concluir". As sessões do professor são encerradas; passe a senha nova para ele, que deve trocá-la depois (UC19).
+**Fluxo principal:** Academias → toca na academia → toca no professor → "Redefinir senha" → digita ou gera a **Nova senha** → "Concluir". As sessões do professor são encerradas; passe a senha nova para ele, que deve trocá-la depois (UC19).
+
+**Entidades:** Usuário, Sessão.
+
+---
+
+## UC26 — Mudar o acesso ou remover um usuário da academia
+
+- **Objetivo:** corrigir o tipo de acesso de alguém (professor ou assistente) ou tirar da academia quem saiu.
+- **Ator:** administrador do sistema. Online.
+
+**Fluxo principal**
+1. Academias → toca na academia → em **Usuários**, toca na pessoa.
+2. Mudar o acesso: escolhe **Professor** ou **Assistente** → "Salvar acesso". A pessoa sai dos aparelhos e entra de novo com o acesso novo.
+3. Remover: "Remover da academia" → confirma em **Remover**. A pessoa é desativada e sai de todos os aparelhos.
+
+**Variações e erros**
+- Único professor ativo da academia → não vira assistente nem pode ser removido; o painel explica e pede para criar outro professor antes.
+- "Cancelar" na confirmação → nada muda.
+
+**Regras**
+- Remover não apaga nada: presenças e cadastros lançados pela pessoa continuam nos relatórios e na auditoria. O e-mail continua reservado; para voltar, o professor reativa em Usuários.
+- Assistente vê só as turmas a que tem acesso (as que já tinha continuam).
 
 **Entidades:** Usuário, Sessão.
 

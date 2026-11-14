@@ -193,7 +193,7 @@ class _TelaAcademiasState extends State<TelaAcademias> {
                       child: selecionada == null
                           ? const Center(
                               child: Text(
-                                'Escolha uma academia para ver os professores.',
+                                'Escolha uma academia para ver os usuários.',
                                 style: TextStyle(color: CoresV2.nevoa),
                               ),
                             )

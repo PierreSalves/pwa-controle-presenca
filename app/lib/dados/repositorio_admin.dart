@@ -34,21 +34,22 @@ class Academia {
   final int turmas;
 }
 
-class ProfessorDaAcademia {
-  const ProfessorDaAcademia({
+/// Usuário ativo da academia (professor ou assistente), visto pelo superadmin.
+class UsuarioDaAcademia {
+  const UsuarioDaAcademia({
     required this.id,
     required this.nome,
     required this.email,
-    required this.ativo,
+    required this.tipo,
     required this.ultimoLoginEm,
   });
 
-  factory ProfessorDaAcademia.lerJson(Map<String, dynamic> json) =>
-      ProfessorDaAcademia(
+  factory UsuarioDaAcademia.lerJson(Map<String, dynamic> json) =>
+      UsuarioDaAcademia(
         id: json['id'] as String,
         nome: json['nome'] as String,
         email: json['email'] as String,
-        ativo: json['ativo'] == 1 || json['ativo'] == true,
+        tipo: json['tipo'] as String,
         ultimoLoginEm: switch (json['ultimo_login_em']) {
           final String instante => DateTime.parse(instante),
           _ => null,
@@ -58,10 +59,12 @@ class ProfessorDaAcademia {
   final String id;
   final String nome;
   final String email;
-  final bool ativo;
 
-  /// Nulo quando o professor nunca entrou.
+  /// 'professor' ou 'assistente'.
+  final String tipo;
   final DateTime? ultimoLoginEm;
+
+  bool get ehProfessor => tipo == 'professor';
 }
 
 class RepositorioAdmin {
@@ -103,18 +106,39 @@ class RepositorioAdmin {
     return Academia.lerJson(resposta['academia'] as Map<String, dynamic>);
   }
 
-  /// Professores da academia, inclusive os desativados (a API ordena pelo nome).
-  Future<List<ProfessorDaAcademia>> buscarProfessores(String academiaId) async {
+  /// Professores e assistentes ativos da academia (a API ordena pelo nome).
+  Future<List<UsuarioDaAcademia>> buscarUsuarios(String academiaId) async {
     final resposta = await _cliente.enviar(
       'GET',
-      'admin/academias/$academiaId/professores',
+      'admin/academias/$academiaId/usuarios',
     );
     return [
-      for (final p
-          in (resposta['professores'] as List).cast<Map<String, dynamic>>())
-        ProfessorDaAcademia.lerJson(p),
+      for (final u
+          in (resposta['usuarios'] as List).cast<Map<String, dynamic>>())
+        UsuarioDaAcademia.lerJson(u),
     ];
   }
+
+  /// Muda o acesso ('professor' ou 'assistente'); a pessoa sai dos aparelhos. O único professor
+  /// não vira assistente: `ultimo_professor`.
+  Future<void> definirTipoUsuario({
+    required String academiaId,
+    required String usuarioId,
+    required String tipo,
+  }) => _cliente.enviar(
+    'PUT',
+    'admin/academias/$academiaId/usuarios/$usuarioId/tipo',
+    corpo: {'tipo': tipo},
+  );
+
+  /// Remove da academia (desativa e tira dos aparelhos). O único professor: `ultimo_professor`.
+  Future<void> removerUsuario({
+    required String academiaId,
+    required String usuarioId,
+  }) => _cliente.enviar(
+    'DELETE',
+    'admin/academias/$academiaId/usuarios/$usuarioId',
+  );
 
   /// Cria mais um professor na academia. E-mail já usado: `email_ja_existe`.
   Future<void> criarProfessor({

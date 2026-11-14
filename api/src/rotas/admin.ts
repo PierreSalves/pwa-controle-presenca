@@ -7,6 +7,7 @@ import { importarAlunos, responderImportacao } from '../servicos/importacao-alun
 import {
   existeOutroUsuarioComEmail,
   lerDadosNovoUsuario,
+  lerTipoUsuarioDoTenant,
   prepararInsercaoUsuario,
   prepararRevogacaoSessoes,
 } from '../servicos/usuarios';
@@ -172,6 +173,95 @@ rotasAdmin.delete('/academias/:id/professores/:usuarioId', async (c) => {
     prepararRevogacaoSessoes(db, usuarioId, agora),
   ]);
   if (!resultado || resultado.meta.changes === 0) return responderErro(c, 404, 'usuario_nao_encontrado');
+  return c.body(null, 204);
+});
+
+/** Usuários ativos da academia (professores e assistentes): o superadmin muda o acesso ou remove. */
+rotasAdmin.get('/academias/:id/usuarios', async (c) => {
+  const tenantId = await obterAcademiaDaRota(c);
+  if (!tenantId) return responderErro(c, 404, 'academia_nao_encontrada');
+  const { results } = await c.env.DB.prepare(
+    `SELECT id, nome, email, tipo, ultimo_login_em FROM usuarios
+      WHERE tenant_id = ?1 AND ativo = 1 AND excluido = 0 ORDER BY nome COLLATE NOCASE`,
+  )
+    .bind(tenantId)
+    .all();
+  return c.json({ usuarios: results });
+});
+
+/** Tipo do usuário ativo da academia; null se ele não é dela (ou está desativado). */
+async function obterTipoUsuarioAtivo(db: D1Database, tenantId: string, usuarioId: string) {
+  const usuario = await db
+    .prepare('SELECT tipo FROM usuarios WHERE id = ?1 AND tenant_id = ?2 AND ativo = 1 AND excluido = 0')
+    .bind(usuarioId, tenantId)
+    .first<{ tipo: string }>();
+  return usuario?.tipo ?? null;
+}
+
+/** A academia tem outro professor ativo além deste usuário (ela nunca fica sem professor). */
+async function temOutroProfessor(db: D1Database, tenantId: string, usuarioId: string) {
+  const outro = await db
+    .prepare(
+      `SELECT 1 FROM usuarios
+        WHERE tenant_id = ?1 AND id <> ?2 AND tipo = 'professor' AND ativo = 1 AND excluido = 0 LIMIT 1`,
+    )
+    .bind(tenantId, usuarioId)
+    .first();
+  return outro !== null;
+}
+
+/**
+ * Muda o acesso do usuário na academia (professor ou assistente). A pessoa sai dos aparelhos e
+ * entra de novo com os menus e as turmas do acesso novo. O único professor não vira assistente.
+ */
+rotasAdmin.put('/academias/:id/usuarios/:usuarioId/tipo', async (c) => {
+  const tenantId = await obterAcademiaDaRota(c);
+  const usuarioId = c.req.param('usuarioId');
+  if (!tenantId || !ehUuid(usuarioId)) return responderErro(c, 404, 'usuario_nao_encontrado');
+  const db = c.env.DB;
+  const tipoAtual = await obterTipoUsuarioAtivo(db, tenantId, usuarioId);
+  if (!tipoAtual) return responderErro(c, 404, 'usuario_nao_encontrado');
+  const tipo = lerTipoUsuarioDoTenant((await lerCorpoJson(c.req))?.tipo);
+  if (!tipo) return responderErro(c, 400, 'dados_invalidos');
+  if (tipo === tipoAtual) return c.body(null, 204);
+  if (tipoAtual === 'professor' && !(await temOutroProfessor(db, tenantId, usuarioId))) {
+    return responderErro(c, 409, 'ultimo_professor');
+  }
+  const agora = obterAgoraIso();
+  await db.batch([
+    db
+      .prepare(
+        'UPDATE usuarios SET tipo = ?1, updated_at = ?2, updated_by = ?3 WHERE id = ?4 AND tenant_id = ?5',
+      )
+      .bind(tipo, agora, c.get('usuario').id, usuarioId, tenantId),
+    prepararRevogacaoSessoes(db, usuarioId, agora),
+  ]);
+  return c.body(null, 204);
+});
+
+/**
+ * Remove o usuário da academia: desativa (nada é apagado) e o tira de todos os aparelhos.
+ * O único professor não pode ser removido.
+ */
+rotasAdmin.delete('/academias/:id/usuarios/:usuarioId', async (c) => {
+  const tenantId = await obterAcademiaDaRota(c);
+  const usuarioId = c.req.param('usuarioId');
+  if (!tenantId || !ehUuid(usuarioId)) return responderErro(c, 404, 'usuario_nao_encontrado');
+  const db = c.env.DB;
+  const tipoAtual = await obterTipoUsuarioAtivo(db, tenantId, usuarioId);
+  if (!tipoAtual) return responderErro(c, 404, 'usuario_nao_encontrado');
+  if (tipoAtual === 'professor' && !(await temOutroProfessor(db, tenantId, usuarioId))) {
+    return responderErro(c, 409, 'ultimo_professor');
+  }
+  const agora = obterAgoraIso();
+  await db.batch([
+    db
+      .prepare(
+        'UPDATE usuarios SET ativo = 0, updated_at = ?1, updated_by = ?2 WHERE id = ?3 AND tenant_id = ?4',
+      )
+      .bind(agora, c.get('usuario').id, usuarioId, tenantId),
+    prepararRevogacaoSessoes(db, usuarioId, agora),
+  ]);
   return c.body(null, 204);
 });
 

@@ -21,8 +21,20 @@
 
 ## O professor esqueceu a senha
 1. Em **Academias**, toque na academia.
-2. No professor, toque em **Redefinir senha**, digite (ou gere) a **Nova senha** e toque em **Concluir**.
+2. Em **Usuários**, toque no professor e depois em **Redefinir senha**. Digite (ou gere) a **Nova senha** e toque em **Concluir**.
 3. Passe a senha nova para ele. Os aparelhos em que ele estava logado saem da conta.
+
+## Quero mudar o acesso de alguém (professor ou assistente)
+1. Em **Academias**, toque na academia. Em **Usuários**, toque na pessoa.
+2. Em **Acesso na academia**, escolha **Professor** ou **Assistente** e toque em **Salvar acesso**.
+3. A pessoa sai dos aparelhos e entra de novo, já com o acesso novo.
+
+## Quero tirar alguém da academia
+1. Em **Academias**, toque na academia. Em **Usuários**, toque na pessoa.
+2. Toque em **Remover da academia** e confirme em **Remover**.
+3. A pessoa sai de todos os aparelhos e não entra mais. O que ela lançou continua nos relatórios. Para ela voltar, o professor da academia reativa em **Usuários**.
+
+> O único professor da academia não pode virar assistente nem ser removido: cadastre outro professor antes (**Novo professor**).
 
 ## Quero deixar a lista de alunos pronta para o professor (carga inicial)
 1. Em **Academias**, toque em **Carga inicial (planilha de alunos)** e escolha a academia.

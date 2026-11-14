@@ -16,6 +16,7 @@
    - **sem aula** (claro): não tem aula nesse dia;
    - **regular** (em negrito): aula normal; conta na frequência;
    - **reposição** (em negrito, com "repos."): dia fixo de reposição; quem vem ganha presença extra, e quem falta não leva falta.
+   - **Vale desde:** o campo azul embaixo de "Quadro de aulas" diz desde quando valem esses dias (padrão: hoje). As aulas começaram antes e você quer lançar as presenças antigas? Toque nele e escolha a data (ex.: 02/06/2026). Lembre-se de matricular os alunos com início nessa mesma data.
 6. **Lista do lançamento** e **Avisar sumidos**: pode deixar o padrão (frequentes: ao menos 30% das últimas 8 aulas; sumidos após 4 semanas). Veja o [manual 11](11-frequencia-minima-e-limite-de-faltas.md) para entender.
 7. **Quem acessa** (só professor): toque em **Dar acesso** e escolha as assistentes que vão lançar a presença desta turma.
 8. Toque em **Salvar**. Aparece "Turma criada.".
@@ -29,4 +30,6 @@ A turma aparece em **Turmas** com os dias de aula, por exemplo "Adulto · ter qu
 ## Dúvidas comuns
 - **Quero mudar os dias depois.** Pode, sem perder o histórico: [manual 04](04-mudar-dias-de-aula.md).
 - **Uma aula extra num dia que não é do quadro.** Não precisa mudar o quadro: use a reposição avulsa ([manual 09](09-aula-de-reposicao.md)).
+- **Criei a turma com a data de hoje, mas as aulas começaram em junho.** Abra a turma, toque em **Vale desde** e escolha a data de junho. Enquanto você não mudou os dias da turma, a data pode voltar para qualquer dia passado.
+- **Quero apagar a turma.** Veja o [manual 15](15-excluir-turma.md).
 - **A assistente criou a turma.** Ela já acessa a turma; para outras pessoas acessarem, o professor dá o acesso.

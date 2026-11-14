@@ -1,6 +1,7 @@
 // Tela 10 — Turma: nome, frequência mínima, cabeçalho de impressão, quadro de aulas (cada dia:
-// sem aula, regular ou reposição) com vigência, lista do lançamento, prazo de sumidos e quem
-// acessa (só o professor altera). Online.
+// sem aula, regular ou reposição) com vigência ("Vale desde"), lista do lançamento, prazo de
+// sumidos, quem acessa e excluir a turma (só o professor). Online.
+// Wireframes: docs/telas/wireframes-turma.html (v8).
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -13,6 +14,7 @@ import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
+import 'tema.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 
 const _abreviados = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
@@ -49,7 +51,11 @@ class _TelaTurmaState extends State<TelaTurma> {
   String? _id;
   TurmaCompleta? _turma;
   Map<String, int> _dias = {for (final d in diasDoQuadro) d: 0};
-  late String _inicioNovoQuadro;
+  late String _inicioQuadro;
+
+  /// O usuário escolheu a data no calendário (senão ela acompanha a mudança dos dias).
+  bool _inicioEscolhido = false;
+  bool _excluindo = false;
   List<UsuarioDaTurma> _acessos = [];
   bool _carregando = true;
   bool _salvando = false;
@@ -63,7 +69,7 @@ class _TelaTurmaState extends State<TelaTurma> {
     _iniciado = true;
     _dependencias = EscopoDependencias.obter(context);
     _hoje = obterHojeEmSaoPaulo(_dependencias.relogio());
-    _inicioNovoQuadro = _hoje;
+    _inicioQuadro = _hoje;
     _ehProfessor = _dependencias.sessao.usuario?.tipo == 'professor';
     _id = widget.turmaId;
     unawaited(_carregar());
@@ -93,7 +99,8 @@ class _TelaTurmaState extends State<TelaTurma> {
     _dias = Map.of(
       turma.quadroAtual?.dias ?? {for (final d in diasDoQuadro) d: 0},
     );
-    _inicioNovoQuadro = _hoje;
+    _inicioQuadro = turma.quadroAtual?.vigenciaInicio ?? _hoje;
+    _inicioEscolhido = false;
     _percentual.text = '${turma.percentualMinimoLista}';
     _ultimasAulas.text = '${turma.ultimasAulasLista}';
     _semanas.text = '${turma.semanasSumido}';
@@ -116,11 +123,21 @@ class _TelaTurmaState extends State<TelaTurma> {
     if (mounted) setState(() => _carregando = false);
   }
 
-  bool get _quadroMudou {
+  bool get _diasMudaram {
     final atual = _turma?.quadroAtual?.dias;
     if (atual == null) return _dias.values.any((v) => v != 0);
     return diasDoQuadro.any((d) => atual[d] != _dias[d]);
   }
+
+  bool get _inicioMudou {
+    final quadro = _turma?.quadroAtual;
+    return quadro != null && _inicioQuadro != quadro.vigenciaInicio;
+  }
+
+  bool get _quadroMudou => _diasMudaram || _inicioMudou;
+
+  /// Com um quadro só (ou turma nova), o início pode ir para qualquer data passada.
+  bool get _podeRecuarInicio => (_turma?.quantidadeQuadros ?? 0) <= 1;
 
   bool get _regrasMudaram {
     final t = _turma;
@@ -170,7 +187,7 @@ class _TelaTurmaState extends State<TelaTurma> {
       if (_quadroMudou) {
         await repositorio.salvarQuadro(
           id,
-          vigenciaInicio: _inicioNovoQuadro,
+          vigenciaInicio: _inicioQuadro,
           dias: _dias,
         );
       }
@@ -201,25 +218,89 @@ class _TelaTurmaState extends State<TelaTurma> {
     if (mounted) setState(() => _salvando = false);
   }
 
-  void _alternarDia(String dia) =>
-      setState(() => _dias[dia] = ((_dias[dia] ?? 0) + 1) % 3);
+  void _alternarDia(String dia) => setState(() {
+    _dias[dia] = ((_dias[dia] ?? 0) + 1) % 3;
+    // Mudar os dias sem escolher a data cria um quadro novo a partir de hoje (o histórico fica).
+    final quadro = _turma?.quadroAtual;
+    if (quadro != null && !_inicioEscolhido) {
+      _inicioQuadro = _diasMudaram && _hoje.compareTo(quadro.vigenciaInicio) > 0
+          ? _hoje
+          : quadro.vigenciaInicio;
+    }
+  });
 
   Future<void> _escolherInicioQuadro() async {
-    final primeiro = _turma?.quadroAtual?.vigenciaInicio ?? '2020-01-01';
+    final primeiro = _podeRecuarInicio
+        ? '2020-01-01'
+        : _turma!.quadroAtual!.vigenciaInicio;
     final escolhida = await showDatePicker(
       context: context,
       initialDate: DateTime.parse(
-        _inicioNovoQuadro.compareTo(primeiro) < 0
-            ? primeiro
-            : _inicioNovoQuadro,
+        _inicioQuadro.compareTo(primeiro) < 0 ? primeiro : _inicioQuadro,
       ),
       firstDate: DateTime.parse(primeiro),
       lastDate: DateTime.parse(somarDiasNaData(_hoje, 365)),
-      helpText: 'O quadro novo vale a partir de',
+      helpText: 'O quadro de aulas vale desde',
     );
     if (escolhida != null) {
-      setState(() => _inicioNovoQuadro = formatarData(escolhida));
+      setState(() {
+        _inicioQuadro = formatarData(escolhida);
+        _inicioEscolhido = true;
+      });
     }
+  }
+
+  Future<void> _excluir() async {
+    final turma = _turma!;
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Excluir a turma "${turma.nome}"?'),
+        content: const Text(
+          'A turma some da lista, do lançamento e dos relatórios em todos os aparelhos. '
+          'As presenças e matrículas ficam guardadas, mas não aparecem mais.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: estiloConfirmarDestrutivo,
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Excluir turma'),
+          ),
+        ],
+      ),
+    );
+    if (confirmou != true || !mounted) return;
+    final mensageiro = ScaffoldMessenger.of(context);
+    final navegador = Navigator.of(context);
+    setState(() => _excluindo = true);
+    try {
+      await _dependencias.turmas.excluirTurma(turma.id);
+      unawaited(_dependencias.coordenador.sincronizar());
+      mensageiro
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Turma "${turma.nome}" excluída.')),
+        );
+      navegador.pop();
+      return;
+    } on SessaoEncerrada {
+      await _dependencias.sessao.encerrarLocalmente();
+    } on SemConexao {
+      mensageiro.showSnackBar(
+        const SnackBar(
+          content: Text('Sem internet. Excluir a turma precisa de conexão.'),
+        ),
+      );
+    } catch (erro) {
+      mensageiro.showSnackBar(
+        SnackBar(content: Text(_descreverErroTurma(erro))),
+      );
+    }
+    if (mounted) setState(() => _excluindo = false);
   }
 
   Future<void> _adicionarAcesso() async {
@@ -333,9 +414,7 @@ class _TelaTurmaState extends State<TelaTurma> {
         ?.copyWith(fontWeight: FontWeight.w600);
     final apoio = TextStyle(color: cores.onSurfaceVariant, fontSize: 13);
     final quadro = _turma?.quadroAtual;
-    final inicioMostrado = _quadroMudou || quadro == null
-        ? _inicioNovoQuadro
-        : quadro.vigenciaInicio;
+    final recuou = _inicioQuadro.compareTo(quadro?.vigenciaInicio ?? _hoje) < 0;
     return Form(
       key: _formulario,
       child: ListView(
@@ -373,16 +452,19 @@ class _TelaTurmaState extends State<TelaTurma> {
             ),
           ),
           const SizedBox(height: 16),
-          InkWell(
-            onTap: _quadroMudou || quadro == null
-                ? _escolherInicioQuadro
-                : null,
-            child: Text(
-              'Quadro de aulas · desde ${formatarDataBr(inicioMostrado)}',
-              style: titulo,
+          Text('Quadro de aulas', style: titulo),
+          const SizedBox(height: 8),
+          // A data em destaque (contorno azul e calendário): antes ela só mudava tocando no título.
+          _CampoValeDesde(data: _inicioQuadro, aoTocar: _escolherInicioQuadro),
+          if (!_podeRecuarInicio) ...[
+            const SizedBox(height: 4),
+            Text(
+              'O calendário só deixa escolher de ${formatarDataBr(quadro!.vigenciaInicio)} em diante: '
+              'antes disso valem os dias do quadro anterior.',
+              style: apoio,
             ),
-          ),
-          const SizedBox(height: 4),
+          ],
+          const SizedBox(height: 10),
           // A dica fica fixa acima dos dias e o aviso do quadro novo vai embaixo: assim os dias
           // não mudam de lugar enquanto o usuário toca.
           Text('Toque no dia: sem aula, regular, reposição', style: apoio),
@@ -399,12 +481,22 @@ class _TelaTurmaState extends State<TelaTurma> {
                 ),
             ],
           ),
-          if (_quadroMudou && quadro != null) ...[
+          if (quadro != null &&
+              _quadroMudou &&
+              _inicioQuadro.compareTo(quadro.vigenciaInicio) > 0) ...[
             const SizedBox(height: 6),
             Text(
-              'Quadro novo a partir de ${formatarDataBr(_inicioNovoQuadro)} '
-              '(toque no título para mudar). O atual termina na véspera.',
+              'Quadro novo a partir de ${formatarDataBr(_inicioQuadro)}. '
+              'O atual termina na véspera.',
               style: apoio,
+            ),
+          ],
+          if (recuou) ...[
+            const SizedBox(height: 8),
+            _AvisoQuadro(
+              'Depois de salvar, o lançamento mostra os dias de aula desde '
+              '${formatarDataBr(_inicioQuadro)}. Para marcar presenças antigas, a matrícula '
+              'do aluno também precisa começar nessa data.',
             ),
           ],
           const SizedBox(height: 16),
@@ -472,10 +564,86 @@ class _TelaTurmaState extends State<TelaTurma> {
               ),
             Text('Só professor altera os acessos', style: apoio),
           ],
+          if (_ehProfessor && _turma != null) ...[
+            const SizedBox(height: 28),
+            OutlinedButton.icon(
+              style: estiloDestrutivo.copyWith(
+                minimumSize: const WidgetStatePropertyAll(Size.fromHeight(48)),
+              ),
+              onPressed: _excluindo ? null : _excluir,
+              icon: const Icon(Symbols.delete),
+              label: Text(_excluindo ? 'Excluindo…' : 'Excluir turma'),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Some do lançamento e dos relatórios. Pede confirmação.',
+              style: apoio,
+              textAlign: TextAlign.center,
+            ),
+          ],
         ],
       ),
     );
   }
+}
+
+/// A data em que o quadro de aulas passa a valer: campo em destaque que abre o calendário.
+class _CampoValeDesde extends StatelessWidget {
+  const _CampoValeDesde({required this.data, required this.aoTocar});
+  final String data;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    const borda = OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(12)),
+      borderSide: BorderSide(color: CoresV2.tatame, width: 2),
+    );
+    return Semantics(
+      button: true,
+      label: 'Vale desde ${formatarDataBr(data)}. Toque para mudar a data',
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: aoTocar,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Vale desde',
+            filled: true,
+            fillColor: CoresV2.tatameClaro,
+            border: borda,
+            enabledBorder: borda,
+            suffixIcon: Icon(Symbols.event, color: CoresV2.tatame),
+          ),
+          child: Text(formatarDataBr(data)),
+        ),
+      ),
+    );
+  }
+}
+
+/// Lembrete ao recuar o início do quadro: a matrícula também precisa começar na data.
+class _AvisoQuadro extends StatelessWidget {
+  const _AvisoQuadro(this.texto);
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+      decoration: const BoxDecoration(
+        color: CoresV2.cartao,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+        border: Border(left: BorderSide(color: CoresV2.aviso, width: 4)),
+        boxShadow: sombraCartao,
+      ),
+      child: Text(
+        texto,
+        style: const TextStyle(color: CoresV2.grafite, fontSize: 13),
+      ),
+    ),
+  );
 }
 
 class _Caixa extends StatelessWidget {

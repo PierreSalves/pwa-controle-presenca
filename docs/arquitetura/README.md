@@ -84,6 +84,7 @@ Sem conexão, as telas online mostram um aviso e ficam desabilitadas. Se no futu
 | Criar os primeiros professores do tenant e fazer a carga inicial (importação) | ✅ | — | — |
 | Cadastrar usuários (professores, assistentes) e definir acesso às turmas | — | ✅ | — |
 | Cadastrar alunos, turmas, quadro de aulas, matrículas | — | ✅ | ✅ |
+| Excluir turma (exclusão lógica, com confirmação) | — | ✅ | — |
 | Lançar presenças e mensalidades | — | ✅ | ✅ |
 | Configurar a turma (frequência mínima, cabeçalho, regras) | — | ✅ | ✅ |
 

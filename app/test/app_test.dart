@@ -84,6 +84,7 @@ class _ApiFalsa {
   final List<Map<String, dynamic>> alunosCriados = [];
   final List<Map<String, dynamic>> graduacoesEnviadas = [];
   final List<Map<String, dynamic>> quadrosCriados = [];
+  final List<String> turmasExcluidas = [];
   int alunosImportados = 0;
   final List<Map<String, dynamic>> importacoes = [];
   String tipoUsuario = 'assistente';
@@ -392,6 +393,10 @@ class _ApiFalsa {
     if (caminho.endsWith('/quadros') && req.method == 'POST') {
       quadrosCriados.add(jsonDecode(req.body) as Map<String, dynamic>);
       return _json({'quadros': []}, 201);
+    }
+    if (caminho.endsWith('/api/turmas/$turmaId') && req.method == 'DELETE') {
+      turmasExcluidas.add(turmaId);
+      return http.Response('', 204);
     }
     if (caminho.endsWith('/api/turmas/$turmaId') && req.method == 'PUT') {
       return _json({
@@ -718,10 +723,18 @@ void main() {
 
     await tester.tap(find.text('Turma $turmaId'));
     await esperar(tester);
-    expect(find.text('Quadro de aulas · desde 01/01/2026'), findsOneWidget);
+    // Campo "Vale desde" em destaque; mudar os dias leva a data para hoje (quadro novo).
+    expect(find.text('Vale desde'), findsOneWidget);
+    expect(find.text('01/01/2026'), findsOneWidget);
     await tester.tap(find.text('seg'));
     await tester.pump();
-    expect(find.text('Quadro de aulas · desde 12/11/2026'), findsOneWidget);
+    expect(find.text('12/11/2026'), findsOneWidget);
+    expect(
+      find.text(
+        'Quadro novo a partir de 12/11/2026. O atual termina na véspera.',
+      ),
+      findsOneWidget,
+    );
 
     await tester.dragUntilVisible(
       find.text('Só professor altera os acessos'),
@@ -730,12 +743,70 @@ void main() {
     );
     expect(find.text('Carla (assistente)'), findsOneWidget);
     expect(find.byTooltip('Tirar acesso de Carla'), findsNothing); // assistente
+    expect(find.text('Excluir turma'), findsNothing); // só o professor exclui
     await tester.tap(find.text('Salvar'));
     await esperar(tester);
     expect(api.quadrosCriados.single['vigencia_inicio'], '2026-11-12');
     expect((api.quadrosCriados.single['dias'] as Map)['segunda'], 1);
     expect((api.quadrosCriados.single['dias'] as Map)['sabado'], 2);
     expect(find.text('Alterações salvas.'), findsOneWidget);
+    await fecharApp(tester);
+  });
+
+  testWidgets('professor recua o início do quadro único e exclui a turma', (
+    tester,
+  ) async {
+    api.tipoUsuario = 'professor';
+    await entrar(tester);
+    await tester.tap(find.byTooltip('Abrir menu de navegação'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Turmas'));
+    await esperar(tester);
+    await tester.tap(find.text('Turma $turmaId'));
+    await esperar(tester);
+
+    // Um quadro só: o calendário aceita uma data anterior ao início atual.
+    await tester.tap(find.text('01/01/2026'));
+    await tester.pumpAndSettle();
+    expect(find.text('O quadro de aulas vale desde'), findsOneWidget);
+    await tester.tap(
+      find.byTooltip(
+        RegExp('input|entrada|digita|texto', caseSensitive: false),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '02/06/2025');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('02/06/2025'), findsOneWidget);
+    expect(
+      find.textContaining('a matrícula do aluno também precisa começar'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Salvar'));
+    await esperar(tester);
+    expect(api.quadrosCriados.single['vigencia_inicio'], '2025-06-02');
+
+    // Excluir pede confirmação: Cancelar não exclui.
+    await tester.dragUntilVisible(
+      find.text('Excluir turma'),
+      find.byType(ListView),
+      const Offset(0, -300),
+    );
+    await tester.tap(find.text('Excluir turma'));
+    await tester.pumpAndSettle();
+    expect(find.text('Excluir a turma "Turma $turmaId"?'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(api.turmasExcluidas, isEmpty);
+
+    await tester.tap(find.text('Excluir turma'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Excluir turma'));
+    await esperar(tester);
+    expect(find.text('Turma "Turma $turmaId" excluída.'), findsOneWidget);
+    expect(find.text('Turma "Turma $turmaId" excluída.'), findsOneWidget);
+    expect(find.text('Vale desde'), findsNothing); // voltou para a lista
     await fecharApp(tester);
   });
 

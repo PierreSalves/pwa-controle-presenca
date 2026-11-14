@@ -7,6 +7,7 @@ export type Acao =
   | 'editar_tenant'
   | 'gerenciar_alunos'
   | 'gerenciar_turmas'
+  | 'excluir_turmas'
   | 'gerenciar_matriculas'
   | 'lancar_presenca'
   | 'lancar_mensalidade'
@@ -21,6 +22,7 @@ const MATRIZ: Record<TipoUsuario, ReadonlySet<Acao>> = {
     'editar_tenant',
     'gerenciar_alunos',
     'gerenciar_turmas',
+    'excluir_turmas',
     'gerenciar_matriculas',
     'lancar_presenca',
     'lancar_mensalidade',

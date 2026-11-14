@@ -143,7 +143,8 @@ const _coresFaixa = {
   'preta': Color(0xFF1E1E1E),
 };
 
-/// A faixa do aluno: a cor da faixa e os graus como listras brancas na ponta preta.
+/// A faixa do aluno: a cor da faixa e os graus como listras brancas na ponteira (preta; vermelha
+/// na faixa preta, como na faixa de verdade).
 class FaixaDoAluno extends StatelessWidget {
   const FaixaDoAluno({
     super.key,
@@ -160,6 +161,9 @@ class FaixaDoAluno extends StatelessWidget {
   Widget build(BuildContext context) {
     final cor = _coresFaixa[faixa.toLowerCase()] ?? CoresV2.contorno;
     final listras = grau.clamp(0, 6);
+    final ponteira = faixa.toLowerCase() == 'preta'
+        ? CoresV2.ponta
+        : const Color(0xFF1E1E1E);
     return Semantics(
       label: grau == 0 ? 'Faixa $faixa' : 'Faixa $faixa, $grau grau',
       excludeSemantics: true,
@@ -176,7 +180,7 @@ class FaixaDoAluno extends StatelessWidget {
             Expanded(child: Container(color: cor)),
             Container(
               width: largura * 0.36,
-              color: const Color(0xFF1E1E1E),
+              color: ponteira,
               alignment: Alignment.center,
               child: Row(
                 mainAxisSize: MainAxisSize.min,

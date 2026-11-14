@@ -10,7 +10,7 @@
 
 ### 1. Entrar
 1. Abra **https://controlepresenca.tghservices.com.br** no celular ou no computador.
-2. Digite o **E-mail** e a **Senha** e toque em **Entrar**.
+2. No cartão branco **Entrar** (no computador, ele fica à direita da tela), digite o **E-mail** e a **Senha** e toque em **Entrar**. O olho no campo da senha mostra o que você digitou.
 3. Você cai no **Início**, com o nome da sua academia no topo.
 
 ### 2. Trocar a senha inicial

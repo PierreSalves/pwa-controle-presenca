@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe do login no desktop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+</head>
+<body>
+<style>
+/* Telas de desktop sem menu lateral (antes do login) */
+.tela-dk{width:1120px;max-width:100%;height:640px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);position:relative;overflow:hidden}
+.grade{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}
+/* Lado do formulário: fundo cinza (papel) e o formulário num cartão branco */
+.lado-form{display:flex;flex-direction:column;justify-content:center;align-items:center;position:relative;background:var(--papel)}
+.cartao-form{width:420px;background:var(--cartao);border-radius:20px;border:1px solid var(--linha);box-shadow:0 1px 2px rgba(35,38,43,.06),0 16px 36px -14px rgba(19,85,122,.28);padding:32px 32px 28px}
+.form{display:flex;flex-direction:column;gap:14px}
+.form .tit{font-size:24px;font-weight:600}
+.form .campo{min-height:52px}
+.link{color:var(--tatame);text-decoration:underline;font-size:13px}
+.copy{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:12px;color:var(--nevoa)}
+.erro-campo{box-shadow:inset 0 0 0 2px var(--ponta)!important}
+.msg-erro{color:var(--ponta);font-size:13px;margin-top:-6px}
+/* Painel da esquerda: apresentação do sistema */
+.livre{background:var(--tatame-claro);padding:56px;display:flex;flex-direction:column;justify-content:center;gap:22px;position:relative;overflow:hidden}
+.livre .marca{font-size:30px;font-weight:600;line-height:1.2}
+.livre .sub{color:var(--nevoa);font-size:16px;max-width:38ch}
+.item{display:flex;gap:12px;align-items:flex-start}
+.item .ic2{width:40px;height:40px;border-radius:12px;background:var(--cartao);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;box-shadow:var(--sombra)}
+.item b{display:block;font-weight:600}.item span{color:var(--nevoa);font-size:14px}
+.faixas{display:flex;gap:10px;margin-top:6px}
+.faixas .faixa{width:86px;height:14px}
+.f-branca2{background:#F4F4F2}.f-preta{background:#1E1E1E}
+.nota{max-width:1180px;margin:0 auto;padding:0 24px 12px}
+.nota ul{margin:6px 0 0;padding-left:20px;color:var(--nevoa)}
+.antes{width:1120px;max-width:100%;border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:block}
+.lado-a-lado{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.mini .tela-dk{width:560px;height:360px;border-radius:14px}
+.mini .livre{padding:28px;gap:12px}
+.mini .livre .marca{font-size:20px}
+.mini .cartao-form{width:240px;padding:16px;border-radius:14px}
+.mini .form{gap:8px}
+.mini .form .tit{font-size:17px}
+.mini .form .campo{min-height:36px;padding:6px 10px;font-size:12px}
+.mini .bp{min-height:36px;font-size:13px}
+.cel .cartao-form{width:auto;padding:20px 18px;border-radius:18px}
+</style>
+
+<div class="intro">
+  <h1>Login no desktop · aprovado (v2)</h1>
+  <p>A tela 1 (Entrar) só tinha wireframe de celular. No computador, o app usa hoje o mesmo formulário, esticado e encostado à esquerda (a regra das telas internas, por causa do menu lateral). Pedidos de 14/11/2026: <b>tela dividida com o formulário à direita</b>, a <b>apresentação do sistema fixa à esquerda</b> (e não o logotipo da academia; lembrar a academia no aparelho ficou de fora) e o <b>formulário dentro de um cartão branco</b>, destacado do fundo cinza. Visual da v2.</p>
+</div>
+
+<div class="nota"><div class="cartao">
+  <div class="h">Regras</div>
+  <ul>
+    <li><b>Tela dividida ao meio</b> a partir de ~1000 px (o mesmo ponto em que o menu lateral aparece). À esquerda, o painel azul-claro com a apresentação do sistema; à direita, o fundo cinza do app com o formulário num <b>cartão branco</b> (420 px, cantos arredondados, contorno fino e sombra suave), centralizado na metade dele.</li>
+    <li><b>Painel da esquerda fixo:</b> sempre a apresentação do sistema ("Controle de presença", três itens e as faixas como enfeite). Não muda por academia.</li>
+    <li><b>Mesmos textos e regras da tela 1:</b> título "Entrar", "Entre com o e-mail e a senha que você recebeu.", E-mail, Senha, Entrar, "Esqueceu a senha? Fale com o professor". A TghServices só no copyright discreto, no rodapé, fora do cartão.</li>
+    <li><b>Celular:</b> abaixo de ~1000 px não há painel; o formulário também vai num cartão branco sobre o fundo cinza, para o celular e o desktop ficarem iguais.</li>
+    <li><b>Acessibilidade (web-design-guidelines):</b> campos com rótulo e preenchimento automático de e-mail e senha; Enter na senha entra; foco visível; o botão mostra "Entrando…" durante o envio; erro junto dos campos e anunciado ao leitor de tela; botão de mostrar a senha com rótulo; o painel da esquerda é decorativo para o leitor de tela, exceto o título.</li>
+  </ul>
+</div></div>
+
+<div class="sec"><h2>Hoje (produção, 1440 px)</h2></div>
+<div class="g"><img class="antes" src="img/login-desktop-hoje.png" alt="Login atual no desktop: formulário largo encostado à esquerda" width="1440" height="900"></div>
+
+<div class="sec"><h2>DL1. Entrar (desktop)</h2><p>Apresentação do sistema à esquerda; formulário à direita, num cartão branco sobre o fundo cinza.</p></div>
+<div class="g">
+  <div><div class="tela-dk"><div class="grade">
+    <div class="livre">
+      <div class="marca">Controle de presença</div>
+      <div class="sub">A chamada da academia no celular, e os relatórios prontos no fim do mês.</div>
+      <div class="item"><span class="ic2"><i class="ti ti-checkbox"></i></span><div><b>Lance a presença no tatame</b><span>Funciona mesmo sem internet; envia quando o sinal voltar.</span></div></div>
+      <div class="item"><span class="ic2"><i class="ti ti-chart-bar"></i></span><div><b>Relatórios sem somar à mão</b><span>Semanal, mensal, anual e por aluno, para imprimir ou salvar em PDF.</span></div></div>
+      <div class="item"><span class="ic2"><i class="ti ti-award"></i></span><div><b>Frequência para graduação</b><span>Quem está abaixo do mínimo da turma, a qualquer momento.</span></div></div>
+      <div class="faixas" aria-hidden="true">
+        <span class="faixa"><span class="cor f-branca2"></span><span class="pt"><i></i></span></span>
+        <span class="faixa"><span class="cor f-azul"></span><span class="pt"><i></i><i></i></span></span>
+        <span class="faixa"><span class="cor f-roxa"></span><span class="pt"><i></i><i></i><i></i></span></span>
+        <span class="faixa"><span class="cor f-marrom"></span><span class="pt"></span></span>
+        <span class="faixa"><span class="cor f-preta"></span><span class="pt" style="background:#B3261E"></span></span>
+      </div>
+    </div>
+    <div class="lado-form">
+      <div class="cartao-form"><div class="form">
+        <div class="tit">Entrar</div>
+        <div class="mu" style="font-size:14px">Entre com o e-mail e a senha que você recebeu.</div>
+        <div class="campo"><b>E-mail</b><span>ana@academia.com.br</span></div>
+        <div class="campo"><b>Senha</b><span>••••••••</span><i class="ti ti-eye" style="float:right"></i></div>
+        <span class="bp lg">Entrar<span class="ic"><i class="ti ti-arrow-right"></i></span></span>
+        <div class="mu">Esqueceu a senha? Fale com o professor</div>
+      </div></div>
+      <div class="copy">© 2026 TghServices</div>
+    </div>
+  </div></div></div>
+</div>
+
+<div class="sec"><h2>Celular (abaixo de ~1000 px)</h2><p>Sem o painel; o formulário no mesmo cartão branco sobre o fundo cinza.</p></div>
+<div class="g lado-a-lado">
+  <div><p class="rot">1. Entrar</p><div class="cel">
+    <div class="corpo" style="justify-content:center;padding:24px 16px">
+      <div class="cartao-form"><div class="form">
+        <div class="tit">Entrar</div>
+        <div class="mu">Entre com o e-mail e a senha que você recebeu.</div>
+        <div class="campo"><b>E-mail</b><span>ana@academia.com.br</span></div>
+        <div class="campo"><b>Senha</b><span>••••••••</span></div>
+        <span class="bp lg">Entrar<span class="ic"><i class="ti ti-arrow-right"></i></span></span>
+        <div class="mu" style="text-align:center">Esqueceu a senha? Fale com o professor</div>
+      </div></div>
+    </div>
+    <div class="mu" style="text-align:center;font-size:12px;padding:10px">© 2026 TghServices</div>
+  </div></div>
+</div>
+
+<div class="sec"><h2>Erro ao entrar</h2></div>
+<div class="g">
+  <div class="mini"><div class="tela-dk"><div class="grade">
+    <div class="livre"><div class="marca">Controle de presença</div></div>
+    <div class="lado-form"><div class="cartao-form"><div class="form">
+      <div class="tit">Entrar</div>
+      <div class="campo erro-campo">ana@academia.com.br</div>
+      <div class="campo erro-campo">••••••</div>
+      <div class="msg-erro">E-mail ou senha incorretos.</div>
+      <span class="bp lg">Entrar</span>
+    </div></div></div>
+  </div></div></div>
+</div>
+
+</body>
+</html>

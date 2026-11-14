@@ -507,7 +507,7 @@ void main() {
       'carla@exemplo.com',
     );
     await tester.enterText(find.byType(TextFormField).at(1), senha);
-    await tester.tap(find.text('Entrar'));
+    await tester.tap(find.widgetWithText(BotaoPrincipal, 'Entrar'));
     await esperar(tester);
   }
 
@@ -526,11 +526,34 @@ void main() {
 
   testWidgets('sem usuário gravado abre a tela de entrar', (tester) async {
     await abrirApp(tester);
-    expect(find.text('Controle de presença'), findsOneWidget);
-    expect(find.text('Entrar'), findsOneWidget);
+    // Celular: só o cartão do formulário, sem o painel de apresentação.
+    expect(find.text('Entrar'), findsNWidgets(2)); // título e botão
+    expect(find.text('Controle de presença'), findsNothing);
     // A TghServices só como copyright discreto no fim, nunca em destaque.
     expect(find.text('© 2026 TghServices'), findsOneWidget);
     expect(find.text('TghServices'), findsNothing);
+    await fecharApp(tester);
+  });
+
+  testWidgets('no desktop o login divide a tela: apresentação e cartão (DL1)', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await abrirApp(tester);
+    final titulo = tester.getRect(find.text('Controle de presença'));
+    final email = tester.getRect(find.byType(TextFormField).at(0));
+    // Apresentação na metade esquerda; formulário na direita, com largura de cartão.
+    expect(titulo.right, lessThanOrEqualTo(640));
+    expect(email.left, greaterThan(640));
+    expect(email.width, lessThan(420));
+    expect(find.text('Lance a presença no tatame'), findsOneWidget);
+
+    // O botão de mostrar a senha alterna o campo.
+    await tester.tap(find.byTooltip('Mostrar a senha'));
+    await tester.pump();
+    expect(find.byTooltip('Esconder a senha'), findsOneWidget);
     await fecharApp(tester);
   });
 

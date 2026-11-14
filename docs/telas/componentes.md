@@ -249,6 +249,15 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Acessibilidade:** campos com rótulo e preenchimento automático de senha atual e nova senha; botão de mostrar com dica ("Mostrar a senha" / "Esconder a senha").
 - **Uso:** item "Meus dados e senha" no menu de todos os usuários, inclusive o superadmin.
 
+### 2.31 Entrar (`TelaEntrar` em `tela_entrar.dart`), tela 1 e DL1
+- **Aparência:**
+  - fundo `papel`; o formulário num cartão branco próprio (`_CartaoFormulario`): até 420 px, cantos de 20 px, contorno `linha` e sombra azulada mais forte que a do `Cartao`, para se destacar do fundo cinza;
+  - no cartão: título "Entrar", "Entre com o e-mail e a senha que você recebeu.", E-mail, Senha (com o botão de mostrar a senha), "Entrar" (`BotaoPrincipal` largo, "Entrando…" durante o envio) e "Esqueceu a senha? Fale com o professor";
+  - desktop (`ehDesktop`): tela dividida ao meio; à esquerda, o painel `tatameClaro` com a apresentação fixa do sistema (`_PainelApresentacao`: "Controle de presença", subtítulo, três itens com ícone em quadrado branco e as faixas como enfeite); à direita, o cartão centralizado;
+  - `RodapeCopyright` embaixo, do lado do cartão.
+- **Estados:** erros de validação embaixo dos campos; erro do servidor em `ponta` embaixo da senha ("E-mail ou senha incorretos.", sem internet ou falha genérica).
+- **Acessibilidade:** preenchimento automático de e-mail e senha; Enter na senha entra; títulos marcados como cabeçalho; o erro é região ao vivo; as faixas do painel ficam fora do leitor de tela.
+
 ## 3. Ainda não implementado (previsto na v2)
 
 - Nada pendente dos wireframes aprovados.

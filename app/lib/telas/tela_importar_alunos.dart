@@ -224,7 +224,7 @@ class _TelaImportarAlunosState extends State<TelaImportarAlunos> {
           style: const TextStyle(fontSize: 13),
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            hintText: '(01) Augusto E. B. Torres\n(03) Lucas V. S. da Mata',
+            hintText: '(01) Ana P. Ribeiro\n(02) Bruno S. Lima',
           ),
         ),
         const SizedBox(height: 8),

@@ -25,4 +25,21 @@ void main() {
     expect(listras, hasLength(2));
     expect(find.bySemanticsLabel('Faixa Azul, 2 grau'), findsOneWidget);
   });
+
+  testWidgets('faixa preta tem a ponteira vermelha com os graus', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(child: FaixaDoAluno(faixa: 'Preta', grau: 3)),
+      ),
+    );
+    final cores = tester
+        .widgetList<Container>(find.byType(Container))
+        .map((c) => c.color)
+        .toList();
+    expect(cores, contains(const Color(0xFFB3261E)));
+    expect(cores.where((c) => c == Colors.white), hasLength(3));
+  });
 }

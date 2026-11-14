@@ -274,7 +274,7 @@ class _PainelApresentacao extends StatelessWidget {
                       FaixaDoAluno(faixa: 'azul', grau: 2, largura: 72),
                       FaixaDoAluno(faixa: 'roxa', grau: 3, largura: 72),
                       FaixaDoAluno(faixa: 'marrom', grau: 0, largura: 72),
-                      FaixaDoAluno(faixa: 'preta', grau: 0, largura: 72),
+                      FaixaDoAluno(faixa: 'preta', grau: 2, largura: 72),
                     ],
                   ),
                 ),

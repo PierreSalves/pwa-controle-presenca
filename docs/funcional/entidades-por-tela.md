@@ -114,7 +114,8 @@ stateDiagram-v2
 - **Relações:** uma aula e um aluno, que precisa estar matriculado na turma na data.
 
 ### Graduação
-- **O que é:** a faixa e o grau que o aluno recebeu numa data.
+- **O que é:** a faixa e o grau que o aluno recebeu numa data, pelo sistema da CBJJ; na faixa preta, também a **ponteira** (vermelha: professor; branca: competidor).
+- **Regras:** faixas infantis (cinza, amarela, laranja e verde, cada uma "e branca", lisa e "e preta"), adultas (branca, azul, roxa, marrom, preta) e de mestres (coral e vermelha). Graus de 0 a 4, de 0 a 6 na preta; coral 7º e 8º, vermelha 9º ou 10º. A API recusa o que foge disso (`docs/casos-regras/faixas.json`).
 - **Comportamento:** registrada no cadastro do aluno (UC15); excluída com toque longo. A mais recente é a **faixa atual** (mostrada na lista de alunos do desktop).
 - **Relações:** do aluno. Só no servidor.
 

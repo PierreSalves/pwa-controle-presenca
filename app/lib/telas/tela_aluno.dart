@@ -8,22 +8,12 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../dados/cliente_api.dart';
 import '../dados/repositorio_alunos.dart';
 import '../estado/dependencias.dart';
+import '../regras/faixas.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
 import 'formatacao.dart';
+import 'tema.dart';
 import 'tela_alunos.dart';
-
-const _faixas = [
-  'Branca',
-  'Cinza',
-  'Amarela',
-  'Laranja',
-  'Verde',
-  'Azul',
-  'Roxa',
-  'Marrom',
-  'Preta',
-];
 
 const _situacoes = {
   'matriculado': 'matriculado',
@@ -281,7 +271,7 @@ class _TelaAlunoState extends State<TelaAluno> {
   }
 
   Future<void> _adicionarGraduacao() async {
-    final escolha = await showDialog<(String, int, String)>(
+    final escolha = await showDialog<_EscolhaGraduacao>(
       context: context,
       builder: (_) =>
           _DialogoGraduacao(hoje: _hoje, escolherData: _escolherData),
@@ -291,9 +281,10 @@ class _TelaAlunoState extends State<TelaAluno> {
       await _atualizar(
         await _dependencias.alunos.adicionarGraduacao(
           _id!,
-          faixa: escolha.$1,
-          grau: escolha.$2,
-          data: escolha.$3,
+          faixa: escolha.faixa,
+          grau: escolha.grau,
+          data: escolha.data,
+          ponteira: escolha.ponteira,
         ),
       );
     });
@@ -327,8 +318,11 @@ class _TelaAlunoState extends State<TelaAluno> {
     });
   }
 
-  String _descreverGraduacao(Graduacao g) =>
-      g.grau == 0 ? g.faixa : '${g.faixa} · ${g.grau}º grau';
+  String _descreverGraduacao(Graduacao g) => [
+    g.faixa,
+    if (g.grau > 0) '${g.grau}º grau',
+    if (g.ponteira != null) 'ponteira ${g.ponteira}',
+  ].join(' · ');
 
   @override
   Widget build(BuildContext context) {
@@ -575,7 +569,11 @@ class _TelaAlunoState extends State<TelaAluno> {
                 contentPadding: EdgeInsets.zero,
                 title: Row(
                   children: [
-                    FaixaDoAluno(faixa: g.faixa, grau: g.grau),
+                    FaixaDoAluno(
+                      faixa: g.faixa,
+                      grau: g.grau,
+                      ponteira: g.ponteira,
+                    ),
                     const SizedBox(width: 10),
                     Flexible(child: Text(_descreverGraduacao(g))),
                   ],
@@ -701,6 +699,20 @@ class _DialogoMatriculaState extends State<_DialogoMatricula> {
   );
 }
 
+/// O que o diálogo de graduação devolve.
+typedef _EscolhaGraduacao = ({
+  String faixa,
+  int grau,
+  String? ponteira,
+  String data,
+});
+
+const _titulosGrupo = {
+  'infantil': 'INFANTIL',
+  'adulto': 'ADULTO',
+  'mestres': 'MESTRES',
+};
+
 class _DialogoGraduacao extends StatefulWidget {
   const _DialogoGraduacao({required this.hoje, required this.escolherData});
   final String hoje;
@@ -711,73 +723,228 @@ class _DialogoGraduacao extends StatefulWidget {
 }
 
 class _DialogoGraduacaoState extends State<_DialogoGraduacao> {
-  String _faixa = _faixas.first;
+  String _faixa = faixas.first.nome;
   int _grau = 0;
+  String? _ponteira;
   late String _data = widget.hoje;
 
-  @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Graduação'),
-    content: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        DropdownButtonFormField<String>(
-          initialValue: _faixa,
-          decoration: const InputDecoration(
-            labelText: 'Faixa',
-            border: OutlineInputBorder(),
-          ),
-          items: [
-            for (final f in _faixas) DropdownMenuItem(value: f, child: Text(f)),
-          ],
-          onChanged: (v) => setState(() => _faixa = v ?? _faixa),
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<int>(
-          initialValue: _grau,
-          decoration: const InputDecoration(
-            labelText: 'Grau',
-            border: OutlineInputBorder(),
-          ),
-          items: [
-            for (var g = 0; g <= 10; g++)
-              DropdownMenuItem(
-                value: g,
-                child: Text(g == 0 ? 'Sem grau' : '$gº grau'),
+  void _escolherFaixa(String faixa) => setState(() {
+    _faixa = faixa;
+    // O grau vai para dentro do limite da faixa nova (preta 6º → marrom 4º).
+    _grau = calcularGrauAjustado(faixa, _grau);
+    _ponteira = temPonteiraEscolhida(faixa) ? (_ponteira ?? 'vermelha') : null;
+  });
+
+  /// Itens da lista de faixas, com o título de cada grupo (Infantil, Adulto, Mestres).
+  List<DropdownMenuItem<String>> _montarItensFaixa() {
+    final itens = <DropdownMenuItem<String>>[];
+    String? grupoAtual;
+    for (final f in faixas) {
+      final titulo = _titulosGrupo[f.grupo];
+      if (titulo != null && f.grupo != grupoAtual) {
+        itens.add(
+          DropdownMenuItem(
+            value: '#${f.grupo}',
+            enabled: false,
+            child: Text(
+              titulo,
+              style: const TextStyle(
+                color: CoresV2.nevoa,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
-          ],
-          onChanged: (v) => setState(() => _grau = v ?? _grau),
-        ),
-        const SizedBox(height: 12),
-        InkWell(
-          onTap: () async {
-            final data = await widget.escolherData(
-              _data,
-              ultima: widget.hoje,
-              titulo: 'Data da graduação',
-            );
-            if (data != null) setState(() => _data = data);
-          },
-          child: InputDecorator(
-            decoration: const InputDecoration(
-              labelText: 'Data',
-              border: OutlineInputBorder(),
-              suffixIcon: Icon(Symbols.calendar_month),
             ),
-            child: Text(formatarDataBr(_data)),
           ),
+        );
+      }
+      grupoAtual = f.grupo;
+      itens.add(
+        DropdownMenuItem(
+          value: f.nome,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FaixaDoAluno(faixa: f.nome, grau: 0, largura: 44),
+              const SizedBox(width: 10),
+              Flexible(child: Text(f.nome, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+        ),
+      );
+    }
+    return itens;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (grauMinimo, grauMaximo) = obterLimitesGrau(_faixa)!;
+    return AlertDialog(
+      title: const Text('Graduação'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DropdownButtonFormField<String>(
+              initialValue: _faixa,
+              isExpanded: true,
+              menuMaxHeight: 420,
+              decoration: const InputDecoration(
+                labelText: 'Faixa',
+                border: OutlineInputBorder(),
+              ),
+              items: _montarItensFaixa(),
+              onChanged: (v) {
+                if (v != null && !v.startsWith('#')) _escolherFaixa(v);
+              },
+            ),
+            // Coral (7º e 8º) já diz o grau: o campo só aparece quando há escolha.
+            if (grauMaximo > grauMinimo) ...[
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                key: ValueKey('grau-$_faixa'),
+                initialValue: _grau,
+                decoration: const InputDecoration(
+                  labelText: 'Grau',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  for (var g = grauMinimo; g <= grauMaximo; g++)
+                    DropdownMenuItem(
+                      value: g,
+                      child: Text(g == 0 ? 'Sem grau' : '$gº grau'),
+                    ),
+                ],
+                onChanged: (v) => setState(() => _grau = v ?? _grau),
+              ),
+            ],
+            if (temPonteiraEscolhida(_faixa)) ...[
+              const SizedBox(height: 12),
+              const Text(
+                'Ponteira',
+                style: TextStyle(color: CoresV2.nevoa, fontSize: 13),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: _OpcaoPonteira(
+                      ponteira: 'vermelha',
+                      titulo: 'Vermelha',
+                      apoio: 'Professor',
+                      selecionada: _ponteira == 'vermelha',
+                      aoTocar: () => setState(() => _ponteira = 'vermelha'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _OpcaoPonteira(
+                      ponteira: 'branca',
+                      titulo: 'Branca',
+                      apoio: 'Competidor',
+                      selecionada: _ponteira == 'branca',
+                      aoTocar: () => setState(() => _ponteira = 'branca'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            InkWell(
+              onTap: () async {
+                final data = await widget.escolherData(
+                  _data,
+                  ultima: widget.hoje,
+                  titulo: 'Data da graduação',
+                );
+                if (data != null) setState(() => _data = data);
+              },
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Data',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Symbols.calendar_month),
+                ),
+                child: Text(formatarDataBr(_data)),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop<_EscolhaGraduacao>((
+            faixa: _faixa,
+            grau: _grau,
+            ponteira: _ponteira,
+            data: _data,
+          )),
+          child: const Text('Registrar'),
         ),
       ],
+    );
+  }
+}
+
+/// Opção de ponteira da faixa preta: a faixa desenhada, o nome e para quem é.
+class _OpcaoPonteira extends StatelessWidget {
+  const _OpcaoPonteira({
+    required this.ponteira,
+    required this.titulo,
+    required this.apoio,
+    required this.selecionada,
+    required this.aoTocar,
+  });
+
+  final String ponteira;
+  final String titulo;
+  final String apoio;
+  final bool selecionada;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    selected: selecionada,
+    label: 'Ponteira $titulo, $apoio',
+    excludeSemantics: true,
+    child: Material(
+      color: selecionada ? CoresV2.tatameClaro : CoresV2.cartao,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: selecionada ? CoresV2.tatame : CoresV2.contorno,
+          width: selecionada ? 2 : 1.5,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: aoTocar,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FaixaDoAluno(
+                faixa: 'Preta',
+                grau: 0,
+                ponteira: ponteira,
+                largura: 64,
+              ),
+              const SizedBox(height: 6),
+              Text(titulo, style: const TextStyle(fontWeight: FontWeight.w600)),
+              Text(
+                apoio,
+                style: const TextStyle(color: CoresV2.nevoa, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      ),
     ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.of(context).pop(),
-        child: const Text('Cancelar'),
-      ),
-      FilledButton(
-        onPressed: () => Navigator.of(context).pop((_faixa, _grau, _data)),
-        child: const Text('Registrar'),
-      ),
-    ],
   );
 }

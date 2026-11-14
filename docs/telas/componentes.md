@@ -117,8 +117,8 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Usado em:** lançamento (frequentes e pouco frequentes) e busca de aluno.
 
 ### 2.9 Faixa do aluno (`FaixaDoAluno`) — o único destaque da v2
-- **Aparência:** barra de 96 × 16 px com a cor real da faixa e, à direita (36% da largura), a ponteira com uma listra branca por grau (até 6): preta em todas as faixas e vermelha na faixa preta.
-- **Acessibilidade:** rótulo "Faixa Azul, 2 grau".
+- **Aparência:** barra de 96 × 16 px com a cor real da faixa e, à direita (36% da largura), a ponteira com uma listra por grau (até 6): preta nas faixas coloridas; na faixa preta, vermelha (professor) ou branca (competidor, com listras escuras). Faixas infantis de duas cores ("Cinza e branca") com a listra do meio; coral em blocos vermelhos alternados com pretos ou brancos e vermelha lisa, sem ponteira.
+- **Acessibilidade:** rótulo "Faixa Azul, 2º grau"; na preta, "Faixa Preta, 3º grau, ponteira branca".
 - **Regra:** cores reais das faixas, nunca como enfeite em outro lugar.
 - **Usado em:** graduações no cadastro do aluno.
 

@@ -143,29 +143,41 @@ const _coresFaixa = {
   'preta': Color(0xFF1E1E1E),
 };
 
-/// A faixa do aluno: a cor da faixa e os graus como listras brancas na ponteira (preta; vermelha
-/// na faixa preta, como na faixa de verdade).
+/// A faixa do aluno (sistema da CBJJ): a cor da faixa, a listra do meio nas faixas infantis de duas
+/// cores ("Cinza e branca") e os graus como listras na ponteira: preta nas faixas coloridas e, na
+/// faixa preta, vermelha (professor) ou branca (competidor). Coral e vermelha não têm ponteira.
 class FaixaDoAluno extends StatelessWidget {
   const FaixaDoAluno({
     super.key,
     required this.faixa,
     required this.grau,
+    this.ponteira,
     this.largura = 96,
   });
 
   final String faixa;
   final int grau;
+
+  /// Só na faixa preta: 'vermelha' (padrão) ou 'branca'.
+  final String? ponteira;
   final double largura;
+
+  static const _preta = Color(0xFF1E1E1E);
+
+  String _descrever() {
+    final partes = ['Faixa $faixa'];
+    if (grau > 0) partes.add('$grauº grau');
+    if (faixa.toLowerCase() == 'preta') {
+      partes.add('ponteira ${ponteira ?? 'vermelha'}');
+    }
+    return partes.join(', ');
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cor = _coresFaixa[faixa.toLowerCase()] ?? CoresV2.contorno;
-    final listras = grau.clamp(0, 6);
-    final ponteira = faixa.toLowerCase() == 'preta'
-        ? CoresV2.ponta
-        : const Color(0xFF1E1E1E);
+    final nome = faixa.toLowerCase();
     return Semantics(
-      label: grau == 0 ? 'Faixa $faixa' : 'Faixa $faixa, $grau grau',
+      label: _descrever(),
       excludeSemantics: true,
       child: Container(
         width: largura,
@@ -175,29 +187,72 @@ class FaixaDoAluno extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: const Color(0x1F000000)),
         ),
-        child: Row(
-          children: [
-            Expanded(child: Container(color: cor)),
-            Container(
-              width: largura * 0.36,
-              color: ponteira,
-              alignment: Alignment.center,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < listras; i++)
-                    Container(
-                      width: 3,
-                      height: 10,
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      color: Colors.white,
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        child: nome.startsWith('coral')
+            ? _montarBlocos(nome.contains('branca'))
+            : nome == 'vermelha'
+            ? Container(color: CoresV2.ponta)
+            : _montarComPonteira(nome),
       ),
+    );
+  }
+
+  /// Coral: blocos vermelhos alternados com pretos (7º grau) ou brancos (8º grau).
+  Widget _montarBlocos(bool comBranco) => Row(
+    children: [
+      for (var i = 0; i < 6; i++)
+        Expanded(
+          child: Container(
+            color: i.isEven
+                ? CoresV2.ponta
+                : (comBranco ? _coresFaixa['branca']! : _preta),
+          ),
+        ),
+    ],
+  );
+
+  Widget _montarComPonteira(String nome) {
+    final partes = nome.split(' e ');
+    final cor = _coresFaixa[partes.first] ?? CoresV2.contorno;
+    final corMeio = partes.length > 1 ? _coresFaixa[partes.last] : null;
+    final ehPreta = nome == 'preta';
+    final ponteiraBranca = ehPreta && ponteira == 'branca';
+    final corPonteira = !ehPreta
+        ? _preta
+        : (ponteiraBranca ? _coresFaixa['branca']! : CoresV2.ponta);
+    final listras = grau.clamp(0, 6);
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            color: cor,
+            alignment: Alignment.center,
+            child: corMeio == null
+                ? null
+                : FractionallySizedBox(
+                    heightFactor: 0.34,
+                    widthFactor: 1,
+                    child: ColoredBox(color: corMeio),
+                  ),
+          ),
+        ),
+        Container(
+          width: largura * 0.36,
+          color: corPonteira,
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < listras; i++)
+                Container(
+                  width: 3,
+                  height: 10,
+                  margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                  color: ponteiraBranca ? _preta : Colors.white,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

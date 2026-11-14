@@ -55,6 +55,20 @@ describe('migrações', () => {
     assert.equal(banco.prepare('PRAGMA foreign_key_check').all().length, 0);
   });
 
+  test('graduação: ponteira só vermelha, branca ou nula', () => {
+    const banco = criarBancoMigrado();
+    inserir(banco, 'tenants', { id: 't1', nome: 'Academia' });
+    inserir(banco, 'alunos', { id: 'a1', tenant_id: 't1', codigo: '1', nome: 'Ana' });
+    const graduar = (id, ponteira) =>
+      inserir(banco, 'graduacoes', {
+        id, tenant_id: 't1', aluno_id: 'a1', faixa: 'Preta', grau: 1, data_graduacao: '2026-06-05', ponteira,
+      });
+    graduar('g1', 'vermelha');
+    graduar('g2', 'branca');
+    graduar('g3', null);
+    assert.throws(() => graduar('g4', 'azul'));
+  });
+
   test('integridade das chaves estrangeiras e do banco', () => {
     const banco = criarBancoMigrado();
     assert.equal(banco.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');

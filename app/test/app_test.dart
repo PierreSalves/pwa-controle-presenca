@@ -82,6 +82,7 @@ class _ApiFalsa {
   final List<List<dynamic>> envios = [];
   final List<Map<String, dynamic>> matriculasEncerradas = [];
   final List<Map<String, dynamic>> alunosCriados = [];
+  final List<Map<String, dynamic>> graduacoesEnviadas = [];
   final List<Map<String, dynamic>> quadrosCriados = [];
   int alunosImportados = 0;
   final List<Map<String, dynamic>> importacoes = [];
@@ -356,6 +357,21 @@ class _ApiFalsa {
           },
         ],
       });
+    }
+    if (caminho.endsWith('/alunos/$alunoId/graduacoes') &&
+        req.method == 'POST') {
+      graduacoesEnviadas.add(jsonDecode(req.body) as Map<String, dynamic>);
+      return _json({
+        'aluno': {
+          'id': alunoId,
+          'codigo': '10A',
+          'nome': 'Ana',
+          'ativo': 1,
+          'data_nascimento': null,
+        },
+        'matriculas': [],
+        'graduacoes': [],
+      }, 201);
     }
     if (caminho.endsWith('/alunos') && req.method == 'POST') {
       final corpo = jsonDecode(req.body) as Map<String, dynamic>;
@@ -1018,11 +1034,58 @@ void main() {
     // Na lista e no cadastro: a faixa azul com 2 graus.
     expect(find.text('Azul · 2º grau'), findsOneWidget);
     expect(
-      find.bySemanticsLabel(RegExp('Faixa Azul, 2 grau')),
+      find.bySemanticsLabel(RegExp('Faixa Azul, 2º grau')),
       findsNWidgets(2),
     );
     await fecharApp(tester);
     semantica.dispose();
+  });
+
+  testWidgets('graduação segue a CBJJ: graus da faixa e ponteira na preta', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await entrar(tester);
+    await tester.tap(find.text('Alunos'));
+    await esperar(tester);
+    await tester.tap(find.text('(10A) Ana'));
+    await esperar(tester);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Graduação'));
+    await tester.pumpAndSettle();
+
+    // Faixa colorida: graus de 0 a 4, sem ponteira.
+    await tester.tap(find.text('Sem grau'));
+    await tester.pumpAndSettle();
+    expect(find.text('4º grau').last, findsOneWidget);
+    expect(find.text('5º grau'), findsNothing);
+    await tester.tap(find.text('4º grau').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Ponteira'), findsNothing);
+
+    // Faixa preta: o grau 4 continua valendo, vão até 6 e aparece a ponteira.
+    await tester.tap(find.text('Branca').last);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Preta'),
+      80,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Preta').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Ponteira'), findsOneWidget);
+    await tester.tap(find.text('Competidor'));
+    await tester.pump();
+    await tester.tap(find.text('Registrar'));
+    await esperar(tester);
+    expect(api.graduacoesEnviadas.single, {
+      'faixa': 'Preta',
+      'grau': 4,
+      'data_graduacao': '2026-11-12',
+      'ponteira': 'branca',
+    });
+    await fecharApp(tester);
   });
 
   testWidgets('no desktop o lançamento mostra a grade da semana', (

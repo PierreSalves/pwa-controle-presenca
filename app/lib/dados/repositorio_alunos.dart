@@ -11,6 +11,7 @@ class ResumoAluno {
     required this.turmas,
     this.faixa,
     this.grau = 0,
+    this.ponteira,
   });
 
   factory ResumoAluno.lerJson(Map<String, dynamic> json) {
@@ -23,6 +24,7 @@ class ResumoAluno {
       turmas: ((json['turmas'] as List?) ?? const []).cast<String>(),
       faixa: graduacao?['faixa'] as String?,
       grau: (graduacao?['grau'] as num?)?.toInt() ?? 0,
+      ponteira: graduacao?['ponteira'] as String?,
     );
   }
 
@@ -37,6 +39,9 @@ class ResumoAluno {
   /// Faixa atual (a graduação mais recente); null sem graduação.
   final String? faixa;
   final int grau;
+
+  /// Só na faixa preta: 'vermelha' ou 'branca'.
+  final String? ponteira;
 }
 
 class MatriculaDoCadastro {
@@ -75,6 +80,7 @@ class Graduacao {
     required this.faixa,
     required this.grau,
     required this.dataGraduacao,
+    this.ponteira,
   });
 
   factory Graduacao.lerJson(Map<String, dynamic> json) => Graduacao(
@@ -82,12 +88,16 @@ class Graduacao {
     faixa: json['faixa'] as String,
     grau: json['grau'] as int,
     dataGraduacao: json['data_graduacao'] as String,
+    ponteira: json['ponteira'] as String?,
   );
 
   final String id;
   final String faixa;
   final int grau;
   final String dataGraduacao;
+
+  /// Só na faixa preta: 'vermelha' ou 'branca'.
+  final String? ponteira;
 }
 
 /// Campos do cadastro que vão e voltam da API como texto opcional (dados sensíveis). O PUT grava
@@ -333,11 +343,17 @@ class RepositorioAlunos {
     required String faixa,
     required int grau,
     required String data,
+    String? ponteira,
   }) async => AlunoCompleto.lerJson(
     await _cliente.enviar(
       'POST',
       'alunos/$alunoId/graduacoes',
-      corpo: {'faixa': faixa, 'grau': grau, 'data_graduacao': data},
+      corpo: {
+        'faixa': faixa,
+        'grau': grau,
+        'data_graduacao': data,
+        'ponteira': ?ponteira,
+      },
     ),
   );
 

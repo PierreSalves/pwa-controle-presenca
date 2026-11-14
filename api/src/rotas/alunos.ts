@@ -5,6 +5,7 @@
 import { Hono, type Context } from 'hono';
 import { autenticar, exigirPermissao } from '../middleware/autenticar';
 import { calcularProximoCodigo } from '../regras/alunos';
+import { ehGraduacaoValida, temPonteiraEscolhida } from '../regras/faixas';
 import { ehDataValida } from '../regras/presenca';
 import { temAcessoATurma } from '../seguranca/acesso-turmas';
 import { importarAlunos, responderImportacao } from '../servicos/importacao-alunos';
@@ -99,7 +100,7 @@ async function obterAlunoCompleto(db: D1Database, tenantId: string, alunoId: str
       .bind(alunoId, tenantId),
     db
       .prepare(
-        `SELECT id, faixa, grau, data_graduacao, observacoes FROM graduacoes
+        `SELECT id, faixa, grau, ponteira, data_graduacao, observacoes FROM graduacoes
           WHERE aluno_id = ?1 AND tenant_id = ?2 AND excluido = 0 ORDER BY data_graduacao DESC`,
       )
       .bind(alunoId, tenantId),
@@ -121,7 +122,7 @@ rotasAlunos.get('/', async (c) => {
     `SELECT a.id, a.codigo, a.nome, a.ativo,
             (SELECT json_group_array(t.nome) FROM matriculas m JOIN turmas t ON t.id = m.turma_id
               WHERE m.aluno_id = a.id AND m.excluido = 0 AND t.excluido = 0 AND m.data_fim IS NULL) AS turmas,
-            (SELECT json_object('faixa', g.faixa, 'grau', g.grau) FROM graduacoes g
+            (SELECT json_object('faixa', g.faixa, 'grau', g.grau, 'ponteira', g.ponteira) FROM graduacoes g
               WHERE g.aluno_id = a.id AND g.excluido = 0
               ORDER BY g.data_graduacao DESC, g.created_at DESC LIMIT 1) AS graduacao
        FROM alunos a
@@ -136,7 +137,10 @@ rotasAlunos.get('/', async (c) => {
     alunos: results.map((a) => ({
       ...a,
       turmas: JSON.parse(a.turmas) as string[],
-      graduacao: a.graduacao === null ? null : (JSON.parse(a.graduacao) as { faixa: string; grau: number }),
+      graduacao:
+        a.graduacao === null
+          ? null
+          : (JSON.parse(a.graduacao) as { faixa: string; grau: number; ponteira: string | null }),
     })),
   });
 });
@@ -262,7 +266,7 @@ rotasAlunos.delete('/:id', async (c) => {
   return c.body(null, 204);
 });
 
-/** Registra uma graduação (faixa e grau) do aluno. */
+/** Registra uma graduação do aluno: faixa e grau da CBJJ e, na faixa preta, a ponteira (padrão vermelha). */
 rotasAlunos.post('/:id/graduacoes', async (c) => {
   const tenantId = obterTenantId(c);
   const alunoId = c.req.param('id');
@@ -274,9 +278,15 @@ rotasAlunos.post('/:id/graduacoes', async (c) => {
   const faixa = lerTextoObrigatorio(corpo?.faixa, 40);
   const grau = corpo?.grau === undefined ? 0 : lerInteiro(corpo.grau, 0, 10);
   const observacoes = lerTextoOpcional(corpo?.observacoes, 500);
+  const ponteira =
+    faixa !== undefined && temPonteiraEscolhida(faixa) && corpo?.ponteira === undefined
+      ? 'vermelha'
+      : (corpo?.ponteira ?? null);
   if (
     faixa === undefined ||
     grau === undefined ||
+    (typeof ponteira !== 'string' && ponteira !== null) ||
+    !ehGraduacaoValida(faixa, grau, ponteira) ||
     observacoes === undefined ||
     !ehDataValida(corpo?.data_graduacao)
   ) {
@@ -286,11 +296,22 @@ rotasAlunos.post('/:id/graduacoes', async (c) => {
   const usuarioId = c.get('usuario').id;
   await db
     .prepare(
-      `INSERT INTO graduacoes (id, tenant_id, aluno_id, faixa, grau, data_graduacao, observacoes,
+      `INSERT INTO graduacoes (id, tenant_id, aluno_id, faixa, grau, ponteira, data_graduacao, observacoes,
                                created_at, updated_at, created_by, updated_by)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8, ?9, ?9)`,
+       VALUES (?1, ?2, ?3, ?4, ?5, ?10, ?6, ?7, ?8, ?8, ?9, ?9)`,
     )
-    .bind(gerarUuidV7(), tenantId, alunoId, faixa, grau, corpo?.data_graduacao, observacoes, agora, usuarioId)
+    .bind(
+      gerarUuidV7(),
+      tenantId,
+      alunoId,
+      faixa,
+      grau,
+      corpo?.data_graduacao,
+      observacoes,
+      agora,
+      usuarioId,
+      ponteira,
+    )
     .run();
   return c.json(await obterAlunoCompleto(db, tenantId, alunoId), 201);
 });

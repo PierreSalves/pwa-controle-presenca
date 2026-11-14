@@ -82,6 +82,7 @@ Sem conexão, as telas online mostram um aviso e ficam desabilitadas. Se no futu
 |---|---|---|---|
 | Cadastrar tenants | ✅ | — | — |
 | Criar os primeiros professores do tenant e fazer a carga inicial (importação) | ✅ | — | — |
+| Mudar o acesso (professor ou assistente) e remover usuários de um tenant, sem deixá-lo sem professor | ✅ | — | — |
 | Cadastrar usuários (professores, assistentes) e definir acesso às turmas | — | ✅ | — |
 | Cadastrar alunos, turmas, quadro de aulas, matrículas | — | ✅ | ✅ |
 | Excluir turma (exclusão lógica, com confirmação) | — | ✅ | — |
@@ -228,7 +229,7 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 
 **Dados da academia** (`api/src/rotas/academia.ts`, tela 14). Só professor (`editar_tenant`): `GET /api/academia` e `PUT /api/academia` (`nome`, `nome_curto` até 15 caracteres, `cabecalho_impressao`). Logotipo: `PUT /api/academia/logotipo` com `{ logotipo, icone_192, icone_512 }` em base64. O app gera os dois ícones num canvas do navegador (fundo branco, logotipo inteiro dentro de 56% do lado, a área segura do ícone redondo). A API confere o tipo pelos primeiros bytes (PNG ou JPEG; nunca pelo nome) e o tamanho de cada ícone pelo cabeçalho PNG; acima de 1 MB → `413 logotipo_grande_demais`, imagem inválida → `400 imagem_invalida`. Os arquivos vão para o R2 (binding `ARQUIVOS`, bucket `controle-presenca-arquivos`) em `academias/<tenant>/<versão>/`, com uma versão nova a cada envio; os da versão anterior são apagados. `DELETE /api/academia/logotipo` remove. Qualquer usuário da academia baixa o próprio logotipo em `GET /api/eu/logotipo/original|192|512`, e o `GET /api/eu` traz `logotipo_versao`: o app só baixa de novo quando ela muda e guarda o ícone e o original no aparelho (menu lateral, prévia e relatórios impressos funcionam offline).
 
-**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`). No app (`app/lib/telas/tela_academias.dart`), o superadmin cai direto em Academias depois do login (único item do menu); a carga inicial reaproveita as telas 8b e 8c apontando para `/api/admin/academias/:id/alunos/importacao`. Tocar numa academia abre a tela dela (`app/lib/telas/tela_academia.dart`, 13a; no desktop, ao lado da lista, D7a): professores com o último acesso, novo professor, carga inicial e **Redefinir senha**. A redefinição abre um painel de baixo no celular (13b, 13c) ou um diálogo no desktop (D7b, D7c); **Gerar senha** sorteia uma senha fácil de ditar (`tatame-7429`, com `Random.secure`) e a confirmação mostra a senha uma única vez, com **Copiar**.
+**Administrador do sistema** (`api/src/rotas/admin.ts`, tela 13). Só superadmin (`gerenciar_tenants`). No app (`app/lib/telas/tela_academias.dart`), o superadmin cai direto em Academias depois do login (único item do menu); a carga inicial reaproveita as telas 8b e 8c apontando para `/api/admin/academias/:id/alunos/importacao`. Tocar numa academia abre a tela dela (`app/lib/telas/tela_academia.dart`, 13a; no desktop, ao lado da lista, D7a): usuários ativos (professores e assistentes) com o último acesso, novo professor e carga inicial. Tocar num usuário abre o painel dele (13d): mudar o acesso, **Redefinir senha** (professor) e **Remover da academia** com confirmação; o único professor não muda de acesso nem sai (13f). A redefinição abre um painel de baixo no celular (13b, 13c) ou um diálogo no desktop (D7b, D7c); **Gerar senha** sorteia uma senha fácil de ditar (`tatame-7429`, com `Random.secure`) e a confirmação mostra a senha uma única vez, com **Copiar**.
 
 | Rota | O que faz |
 |---|---|
@@ -238,6 +239,9 @@ Rotas que o app chama direto, só com internet. Respostas e erros no formato `{ 
 | `GET`/`POST /api/admin/academias/:id/professores` | lista e cria professores |
 | `DELETE /api/admin/academias/:id/professores/:usuarioId` | desativa o professor e encerra as sessões |
 | `POST /api/admin/academias/:id/professores/:usuarioId/senha` | `senha` (8+); redefine a senha de um professor ativo da academia (esqueceu a senha) e encerra as sessões dele; assistente, professor desativado ou de outra academia → `404 usuario_nao_encontrado`. Atende o professor autônomo, que não tem outro professor para redefinir a senha dele |
+| `GET /api/admin/academias/:id/usuarios` | professores e assistentes ativos (`id`, `nome`, `email`, `tipo`, `ultimo_login_em`) |
+| `PUT /api/admin/academias/:id/usuarios/:usuarioId/tipo` | `tipo` (`professor` ou `assistente`); muda o acesso e encerra as sessões. Único professor ativo → `409 ultimo_professor`; usuário inativo ou de outra academia → `404 usuario_nao_encontrado` |
+| `DELETE /api/admin/academias/:id/usuarios/:usuarioId` | remove da academia: desativa e encerra as sessões (nada é apagado). Único professor ativo → `409 ultimo_professor` |
 | `GET /api/admin/academias/:id/turmas` | `{ turmas: [{ id, nome }] }`, para escolher a turma da carga inicial |
 | `POST /api/admin/academias/:id/alunos/importacao` | carga inicial; mesmas regras de `POST /api/alunos/importacao`, podendo matricular em qualquer turma da academia |
 

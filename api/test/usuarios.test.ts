@@ -387,6 +387,84 @@ describe('administrador do sistema', () => {
     expect((await chamar(sessaoB.tokenAcesso, 'GET', '/api/eu')).status).toBe(200);
   });
 
+  it('superadmin lista os usuários, muda o acesso e remove da academia, sem deixá-la sem professor', async () => {
+    const admin = await entrarComo(null, 'superadmin');
+    const emailProf = novoEmail();
+    const { academia } = await (
+      await chamar(admin.token, 'POST', '/api/admin/academias', {
+        nome: 'Academia',
+        professor: { nome: 'Prof. Único', email: emailProf, senha: SENHA_PADRAO },
+      })
+    ).json<{ academia: { id: string } }>();
+    const base = `/api/admin/academias/${academia.id}/usuarios`;
+    const professor = await entrar(emailProf, SENHA_PADRAO);
+    const emailAssist = novoEmail();
+    const { usuario: assistente } = await (
+      await chamar(professor.tokenAcesso, 'POST', '/api/usuarios', {
+        nome: 'Bia',
+        email: emailAssist,
+        tipo: 'assistente',
+        senha: SENHA_PADRAO,
+      })
+    ).json<{ usuario: { id: string } }>();
+    const listar = async () =>
+      (await (await chamar(admin.token, 'GET', base)).json<{ usuarios: { id: string; tipo: string }[] }>())
+        .usuarios;
+    const usuarios = await listar();
+    expect(usuarios.map((u) => u.tipo).sort()).toEqual(['assistente', 'professor']);
+    const professorId = usuarios.find((u) => u.tipo === 'professor')?.id ?? '';
+
+    // O único professor não vira assistente nem sai da academia.
+    expect(
+      (await chamar(admin.token, 'PUT', `${base}/${professorId}/tipo`, { tipo: 'assistente' })).status,
+    ).toBe(409);
+    expect((await chamar(admin.token, 'DELETE', `${base}/${professorId}`)).status).toBe(409);
+    expect(
+      (await chamar(admin.token, 'PUT', `${base}/${assistente.id}/tipo`, { tipo: 'chefe' })).status,
+    ).toBe(400);
+
+    // A assistente vira professora: sai dos aparelhos e entra de novo como professora.
+    const sessaoAssist = await entrar(emailAssist, SENHA_PADRAO);
+    expect(
+      (await chamar(admin.token, 'PUT', `${base}/${assistente.id}/tipo`, { tipo: 'professor' })).status,
+    ).toBe(204);
+    expect((await chamar(sessaoAssist.tokenAcesso, 'GET', '/api/eu')).status).toBe(401);
+    expect((await listar()).every((u) => u.tipo === 'professor')).toBe(true);
+
+    // Com outro professor, o primeiro pode ser removido: sai dos aparelhos e não entra mais.
+    expect((await chamar(admin.token, 'DELETE', `${base}/${professorId}`)).status).toBe(204);
+    expect((await chamar(professor.tokenAcesso, 'GET', '/api/eu')).status).toBe(401);
+    expect((await entrar(emailProf, SENHA_PADRAO)).resposta.status).not.toBe(200);
+    expect((await listar()).map((u) => u.id)).toEqual([assistente.id]);
+    expect((await chamar(admin.token, 'DELETE', `${base}/${professorId}`)).status).toBe(404);
+
+    // Quem não é superadmin não usa estas rotas.
+    const novaProfessora = await entrar(emailAssist, SENHA_PADRAO);
+    expect((await chamar(novaProfessora.tokenAcesso, 'GET', base)).status).toBe(403);
+  });
+
+  it('não muda nem remove usuário de outra academia', async () => {
+    const admin = await entrarComo(null, 'superadmin');
+    const criar = async () =>
+      (
+        await (
+          await chamar(admin.token, 'POST', '/api/admin/academias', {
+            nome: 'Academia',
+            professor: { nome: 'Prof.', email: novoEmail(), senha: SENHA_PADRAO },
+          })
+        ).json<{ academia: { id: string } }>()
+      ).academia.id;
+    const a = await criar();
+    const b = await criar();
+    const { usuarios } = await (
+      await chamar(admin.token, 'GET', `/api/admin/academias/${b}/usuarios`)
+    ).json<{ usuarios: { id: string }[] }>();
+    const deB = usuarios[0]?.id ?? '';
+    const baseA = `/api/admin/academias/${a}/usuarios/${deB}`;
+    expect((await chamar(admin.token, 'PUT', `${baseA}/tipo`, { tipo: 'assistente' })).status).toBe(404);
+    expect((await chamar(admin.token, 'DELETE', baseA)).status).toBe(404);
+  });
+
   it('valida os dados e responde 404 para academia inexistente', async () => {
     const admin = await entrarComo(null, 'superadmin');
     expect(

@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Usuários da academia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+<body>
+<style>
+.nota{max-width:1180px;margin:0 auto;padding:0 24px 12px}
+.nota ul{margin:6px 0 0;padding-left:20px;color:var(--nevoa)}
+.usu{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--linha)}
+.usu:last-child{border-bottom:0}
+.usu .nm{font-weight:600}
+.usu .info{flex:1;min-width:0}
+.chip{border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.chip.prof{background:var(--tatame-claro);color:var(--tatame)}
+.chip.ass{background:#EDEFEC;color:var(--nevoa)}
+.resumo{display:flex;gap:8px;flex-wrap:wrap}
+.resumo .pl{background:var(--cartao);border-radius:999px;padding:5px 12px;font-size:13px;box-shadow:var(--sombra)}
+.vela{position:relative;flex:1;display:flex;flex-direction:column}
+.vela::before{content:"";position:absolute;inset:0;background:rgba(35,38,43,.45)}
+.folhaBaixo{position:absolute;left:0;right:0;bottom:0;background:var(--papel);border-radius:24px 24px 0 0;padding:10px 16px 18px;display:flex;flex-direction:column;gap:12px}
+.alca{width:40px;height:4px;border-radius:2px;background:var(--linha);margin:0 auto 4px}
+.segm{display:flex;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--contorno);overflow:hidden}
+.segm span{flex:1;text-align:center;padding:11px 6px;font-size:14px;font-weight:600;color:var(--nevoa)}
+.segm span.on{background:var(--tatame);color:#fff}
+.segm.off span{color:var(--desativado)}
+.segm.off span.on{background:#C9CED2;color:#fff}
+.bdes{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:#FBE9E7;color:var(--ponta);font-weight:600;min-height:48px;font-size:15px}
+.bdes.off{opacity:.45}
+.aviso2{background:var(--aviso-claro);color:var(--aviso);border-radius:12px;padding:10px 12px;font-size:13px}
+.dlg{position:absolute;left:20px;right:20px;top:50%;transform:translateY(-50%);background:var(--cartao);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 32px -12px rgba(0,0,0,.35)}
+.dlg .t{font-size:20px;font-weight:600}
+.dlg .acoesD{display:flex;justify-content:flex-end;gap:14px;align-items:center}
+.bconf{background:var(--ponta);color:#fff;border-radius:999px;padding:10px 18px;font-weight:600;font-size:14px}
+.lado-a-lado{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.cel{position:relative}
+.snack{position:absolute;left:12px;right:12px;bottom:14px;background:#2B2F33;color:#fff;border-radius:10px;padding:12px 14px;font-size:14px}
+</style>
+
+<div class="intro">
+  <h1>Superadmin: acesso e remoção de usuários · aprovado (v9)</h1>
+  <p>Pedido de 14/11/2026: na <b>tela 13 (Administrador do sistema)</b>, o superadmin passa a <b>mudar o tipo de acesso</b> de um usuário da academia (professor ou assistente) e a <b>remover o usuário da academia</b>. Hoje a academia aberta só lista os professores, com "Redefinir senha".</p>
+</div>
+
+<div class="nota"><div class="cartao">
+  <div class="h">Regras</div>
+  <ul>
+    <li><b>Lista "Usuários":</b> a academia aberta (13a) passa a mostrar professores e assistentes ativos, com o tipo numa etiqueta, o e-mail e o último acesso. Tocar num usuário abre o painel dele (13d).</li>
+    <li><b>Mudar o acesso:</b> no painel, "Acesso na academia" com <b>Professor</b> ou <b>Assistente</b> e o botão "Salvar acesso". Ao salvar, a pessoa sai de todos os aparelhos e entra de novo já com o acesso novo (menus e turmas certos).
+      <ul>
+        <li>Professor vê todas as turmas e cadastra usuários; assistente vê só as turmas a que tem acesso (as que já tinha continuam; o professor ajusta em Usuários).</li>
+      </ul>
+    </li>
+    <li><b>Remover da academia:</b> botão vermelho-claro no painel, sempre com <b>confirmação</b> (13e). A pessoa é desativada (nada é apagado): sai de todos os aparelhos na hora, o app apaga os dados dela na próxima conexão e o login deixa de funcionar. Presenças e cadastros que ela lançou continuam nos relatórios e na auditoria. O e-mail continua reservado; para voltar, o professor da academia reativa em Usuários.</li>
+    <li><b>Último professor:</b> a academia precisa de pelo menos um professor ativo. Se a pessoa é o único professor, "Assistente" e "Remover da academia" ficam desabilitados, com a explicação (13f): crie outro professor antes.</li>
+    <li><b>Redefinir senha</b> continua no painel, só para professor (como hoje).</li>
+    <li><b>Quem pode:</b> só o superadmin, nesta tela; a API confere que o usuário é daquela academia. Precisa de internet.</li>
+    <li><b>Desktop:</b> o painel abre como diálogo central, como a "Nova senha" (D7b).</li>
+    <li><b>Acessibilidade:</b> a escolha de acesso é um grupo de opções com o selecionado anunciado; botões com 48 px; o painel fecha com Esc ou Cancelar; o aviso de pronto é anunciado.</li>
+  </ul>
+</div></div>
+
+<div class="g lado-a-lado">
+  <div><p class="rot">13a · Academia aberta: usuários</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Exemplo</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div class="resumo"><span class="pl">42 alunos</span><span class="pl">3 turmas</span></div>
+      <div class="cartao">
+        <div class="h" style="margin-bottom:2px">Usuários</div>
+        <div class="usu"><div class="info"><div class="nm">Marcos Lima</div><div class="mu">marcos@exemplo.com.br · 02/11/2026</div></div><span class="chip prof">professor</span><i class="ti ti-chevron-right" style="color:var(--nevoa)"></i></div>
+        <div class="usu"><div class="info"><div class="nm">Rita Alves</div><div class="mu">rita@exemplo.com.br · nunca entrou</div></div><span class="chip prof">professor</span><i class="ti ti-chevron-right" style="color:var(--nevoa)"></i></div>
+        <div class="usu"><div class="info"><div class="nm">Bia Rocha</div><div class="mu">bia@exemplo.com.br · 13/11/2026</div></div><span class="chip ass">assistente</span><i class="ti ti-chevron-right" style="color:var(--nevoa)"></i></div>
+      </div>
+      <span class="bs lg"><i class="ti ti-user-plus"></i>Novo professor</span>
+      <span class="bs lg"><i class="ti ti-file-import"></i>Carga inicial de alunos</span>
+    </div>
+  </div></div>
+
+  <div><p class="rot">13d · Painel do usuário</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Exemplo</span><span style="width:48px"></span></div>
+    <div class="vela">
+      <div class="folhaBaixo">
+        <div class="alca"></div>
+        <div><div style="font-size:18px;font-weight:600">Bia Rocha</div><div class="mu">bia@exemplo.com.br</div></div>
+        <div class="mu" style="font-size:13px">Acesso na academia</div>
+        <div class="segm"><span>Professor</span><span class="on">Assistente</span></div>
+        <div class="mu" style="font-size:13px">Assistente lança presenças e cadastra alunos e turmas, só nas turmas a que tem acesso. Ao salvar, a pessoa sai dos aparelhos e entra de novo.</div>
+        <span class="bp lg">Salvar acesso<span class="ic"><i class="ti ti-check"></i></span></span>
+        <div class="bdes"><i class="ti ti-user-minus"></i>Remover da academia</div>
+        <div class="mu" style="text-align:center">Cancelar</div>
+      </div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">13e · Confirmar a remoção</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Exemplo</span><span style="width:48px"></span></div>
+    <div class="vela">
+      <div class="dlg">
+        <div class="t">Remover Bia Rocha da academia?</div>
+        <div class="mu" style="font-size:14px;line-height:1.5">A pessoa sai de todos os aparelhos e não consegue mais entrar. As presenças e cadastros que ela lançou continuam nos relatórios. Para voltar, o professor reativa em Usuários.</div>
+        <div class="acoesD"><span class="mu">Cancelar</span><span class="bconf">Remover</span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div><p class="rot">13f · Único professor: bloqueado</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Academia Solo</span><span style="width:48px"></span></div>
+    <div class="vela">
+      <div class="folhaBaixo">
+        <div class="alca"></div>
+        <div><div style="font-size:18px;font-weight:600">Marcos Lima</div><div class="mu">marcos@exemplo.com.br</div></div>
+        <div class="mu" style="font-size:13px">Acesso na academia</div>
+        <div class="segm off"><span class="on">Professor</span><span>Assistente</span></div>
+        <div class="aviso2">É o único professor da academia. Para mudar o acesso ou remover, crie outro professor antes.</div>
+        <span class="bs lg"><i class="ti ti-key"></i>Redefinir senha</span>
+        <div class="bdes off"><i class="ti ti-user-minus"></i>Remover da academia</div>
+        <div class="mu" style="text-align:center">Cancelar</div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<div class="g lado-a-lado" style="margin-top:8px">
+  <div><p class="rot">13g · Depois de remover</p><div class="cel">
+    <div class="topo"><span class="voltar"><i class="ti ti-arrow-left"></i></span><span class="tit">Equipe Exemplo</span><span style="width:48px"></span></div>
+    <div class="corpo">
+      <div class="cartao">
+        <div class="h" style="margin-bottom:2px">Usuários</div>
+        <div class="usu"><div class="info"><div class="nm">Marcos Lima</div><div class="mu">marcos@exemplo.com.br · 02/11/2026</div></div><span class="chip prof">professor</span><i class="ti ti-chevron-right" style="color:var(--nevoa)"></i></div>
+        <div class="usu"><div class="info"><div class="nm">Rita Alves</div><div class="mu">rita@exemplo.com.br · nunca entrou</div></div><span class="chip prof">professor</span><i class="ti ti-chevron-right" style="color:var(--nevoa)"></i></div>
+      </div>
+    </div>
+    <div class="snack">Bia Rocha não faz mais parte da academia.</div>
+  </div></div>
+</div>
+
+</body>
+</html>

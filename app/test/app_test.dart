@@ -114,6 +114,8 @@ class _ApiFalsa {
   final List<Map<String, dynamic>> senhasTrocadas = [];
   final List<Map<String, dynamic>> senhasRedefinidas = [];
   final List<Map<String, dynamic>> professoresCriados = [];
+  final List<Map<String, dynamic>> tiposDefinidos = [];
+  final List<String> usuariosRemovidos = [];
   bool online = true;
 
   Future<http.Response> responder(http.Request req) async {
@@ -129,32 +131,42 @@ class _ApiFalsa {
       return http.Response('', 204);
     }
     if (caminho.contains('/admin/academias/') &&
-        caminho.endsWith('/professores')) {
-      if (req.method == 'POST') {
-        professoresCriados.add(jsonDecode(req.body) as Map<String, dynamic>);
-        return _json({'professor': {}}, 201);
-      }
+        caminho.endsWith('/professores') &&
+        req.method == 'POST') {
+      professoresCriados.add(jsonDecode(req.body) as Map<String, dynamic>);
+      return _json({'professor': {}}, 201);
+    }
+    if (caminho.contains('/admin/academias/') &&
+        caminho.endsWith('/tipo') &&
+        req.method == 'PUT') {
+      tiposDefinidos.add({
+        'caminho': caminho,
+        ...jsonDecode(req.body) as Map<String, dynamic>,
+      });
+      return http.Response('', 204);
+    }
+    if (caminho.contains('/admin/academias/') &&
+        caminho.contains('/usuarios/') &&
+        req.method == 'DELETE') {
+      usuariosRemovidos.add(caminho.split('/').last);
+      return http.Response('', 204);
+    }
+    if (caminho.contains('/admin/academias/') &&
+        caminho.endsWith('/usuarios')) {
       return _json({
-        'professores': [
+        'usuarios': [
           {
             'id': '0190f5a0-0000-7000-8000-0000000000p1',
             'nome': 'Marcos Silva',
             'email': 'marcos@juniao.com.br',
-            'ativo': 1,
+            'tipo': 'professor',
             'ultimo_login_em': '2026-11-02T13:00:00.000Z',
           },
           {
             'id': '0190f5a0-0000-7000-8000-0000000000p2',
             'nome': 'Carla Souza',
             'email': 'carla@juniao.com.br',
-            'ativo': 1,
-            'ultimo_login_em': null,
-          },
-          {
-            'id': '0190f5a0-0000-7000-8000-0000000000p3',
-            'nome': 'Rui Antigo',
-            'email': 'rui@juniao.com.br',
-            'ativo': 0,
+            'tipo': 'assistente',
             'ultimo_login_em': null,
           },
         ],
@@ -1450,7 +1462,7 @@ void main() {
     api.tipoUsuario = 'superadmin';
     await entrar(tester);
 
-    // 13a: tocar na academia abre os professores dela.
+    // 13a: tocar na academia abre os usuários dela, com o tipo.
     await tester.tap(find.text('Academia Teste'));
     await esperar(tester);
     expect(
@@ -1458,12 +1470,12 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('carla@juniao.com.br · nunca entrou'), findsOneWidget);
-    expect(find.text('rui@juniao.com.br · desativado'), findsOneWidget);
-    // Professor desativado não tem o botão.
-    expect(find.text('Redefinir senha'), findsNWidgets(2));
+    expect(find.text('assistente'), findsOneWidget);
 
-    // 13b: painel de baixo; senha curta não vai para a API.
-    await tester.tap(find.text('Redefinir senha').first);
+    // 13d: o painel do professor tem "Redefinir senha"; 13b: senha curta não vai para a API.
+    await tester.tap(find.text('Marcos Silva'));
+    await esperar(tester);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Redefinir senha'));
     await esperar(tester);
     expect(find.text('Redefinir a senha de Marcos Silva'), findsOneWidget);
     expect(
@@ -1531,6 +1543,71 @@ void main() {
     await fecharApp(tester);
   });
 
+  testWidgets(
+    'superadmin muda o acesso e remove usuário, sem tirar o único professor',
+    (tester) async {
+      tester.view.physicalSize = const Size(420, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      api.tipoUsuario = 'superadmin';
+      await entrar(tester);
+      await tester.tap(find.text('Academia Teste'));
+      await esperar(tester);
+
+      // 13f: o único professor não muda de acesso nem sai da academia.
+      await tester.tap(find.text('Marcos Silva'));
+      await esperar(tester);
+      expect(
+        find.textContaining('É o único professor da academia'),
+        findsOneWidget,
+      );
+      final remover = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Remover da academia'),
+      );
+      expect(remover.onPressed, isNull);
+      await tester.tap(find.text('Cancelar'));
+      await esperar(tester);
+
+      // 13d: a assistente vira professora.
+      await tester.tap(find.text('Carla Souza'));
+      await esperar(tester);
+      await tester.tap(find.text('Professor'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(BotaoPrincipal, 'Salvar acesso'));
+      await esperar(tester);
+      expect(api.tiposDefinidos.single, {
+        'caminho':
+            '/api/admin/academias/0190f5a0-0000-7000-8000-0000000000c1/'
+            'usuarios/0190f5a0-0000-7000-8000-0000000000p2/tipo',
+        'tipo': 'professor',
+      });
+      expect(
+        find.textContaining('Acesso de Carla Souza salvo'),
+        findsOneWidget,
+      );
+
+      // 13e: remover pede confirmação; Cancelar não remove.
+      await tester.tap(find.text('Carla Souza'));
+      await esperar(tester);
+      await tester.tap(find.text('Remover da academia'));
+      await esperar(tester);
+      expect(find.text('Remover Carla Souza da academia?'), findsOneWidget);
+      await tester.tap(find.text('Cancelar').last);
+      await esperar(tester);
+      expect(api.usuariosRemovidos, isEmpty);
+      await tester.tap(find.text('Remover da academia'));
+      await esperar(tester);
+      await tester.tap(find.widgetWithText(FilledButton, 'Remover'));
+      await esperar(tester);
+      expect(api.usuariosRemovidos, ['0190f5a0-0000-7000-8000-0000000000p2']);
+      expect(
+        find.text('Carla Souza não faz mais parte da academia.'),
+        findsOneWidget,
+      );
+      await fecharApp(tester);
+    },
+  );
+
   testWidgets('no desktop a academia abre ao lado e a senha num diálogo', (
     tester,
   ) async {
@@ -1541,7 +1618,7 @@ void main() {
     await entrar(tester);
 
     expect(
-      find.text('Escolha uma academia para ver os professores.'),
+      find.text('Escolha uma academia para ver os usuários.'),
       findsOneWidget,
     );
     await tester.tap(find.text('Academia Teste'));
@@ -1550,7 +1627,9 @@ void main() {
     expect(find.text('Academia Teste'), findsNWidgets(2));
     expect(find.text('Marcos Silva'), findsOneWidget);
 
-    await tester.tap(find.text('Redefinir senha').first);
+    await tester.tap(find.text('Marcos Silva'));
+    await esperar(tester);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Redefinir senha'));
     await esperar(tester);
     // D7b: diálogo central, com Gerar senha ao lado de Cancelar.
     expect(find.byType(Dialog), findsOneWidget);

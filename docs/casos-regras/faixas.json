@@ -1,0 +1,40 @@
+{
+  "descricao": "Casos de teste das faixas e graus (sistema de graduação da CBJJ, docs/telas/wireframes-faixas.html). Os mesmos casos rodam na API (TypeScript) e no app (Dart).",
+  "limites_do_grau": [
+    { "faixa": "Branca", "esperado": [0, 4] },
+    { "faixa": "Cinza e branca", "esperado": [0, 4] },
+    { "faixa": "Verde e preta", "esperado": [0, 4] },
+    { "faixa": "Marrom", "esperado": [0, 4] },
+    { "faixa": "Preta", "esperado": [0, 6] },
+    { "faixa": "Coral (vermelha e preta)", "esperado": [7, 7] },
+    { "faixa": "Coral (vermelha e branca)", "esperado": [8, 8] },
+    { "faixa": "Vermelha", "esperado": [9, 10] },
+    { "faixa": "Rosa", "esperado": null },
+    { "faixa": "preta", "esperado": null }
+  ],
+  "graduacao_valida": [
+    { "faixa": "Azul", "grau": 0, "ponteira": null, "esperado": true },
+    { "faixa": "Azul", "grau": 4, "ponteira": null, "esperado": true },
+    { "faixa": "Azul", "grau": 5, "ponteira": null, "esperado": false },
+    { "faixa": "Azul", "grau": -1, "ponteira": null, "esperado": false },
+    { "faixa": "Azul", "grau": 2, "ponteira": "branca", "esperado": false },
+    { "faixa": "Amarela e preta", "grau": 3, "ponteira": null, "esperado": true },
+    { "faixa": "Preta", "grau": 6, "ponteira": "vermelha", "esperado": true },
+    { "faixa": "Preta", "grau": 3, "ponteira": "branca", "esperado": true },
+    { "faixa": "Preta", "grau": 7, "ponteira": "vermelha", "esperado": false },
+    { "faixa": "Preta", "grau": 0, "ponteira": null, "esperado": false },
+    { "faixa": "Preta", "grau": 0, "ponteira": "azul", "esperado": false },
+    { "faixa": "Coral (vermelha e preta)", "grau": 7, "ponteira": null, "esperado": true },
+    { "faixa": "Coral (vermelha e preta)", "grau": 6, "ponteira": null, "esperado": false },
+    { "faixa": "Vermelha", "grau": 10, "ponteira": null, "esperado": true },
+    { "faixa": "Vermelha", "grau": 8, "ponteira": null, "esperado": false },
+    { "faixa": "Rosa", "grau": 0, "ponteira": null, "esperado": false }
+  ],
+  "grau_ajustado": [
+    { "faixa": "Marrom", "grau": 6, "esperado": 4 },
+    { "faixa": "Preta", "grau": 2, "esperado": 2 },
+    { "faixa": "Coral (vermelha e branca)", "grau": 0, "esperado": 8 },
+    { "faixa": "Vermelha", "grau": 3, "esperado": 9 },
+    { "faixa": "Branca", "grau": 9, "esperado": 4 }
+  ]
+}

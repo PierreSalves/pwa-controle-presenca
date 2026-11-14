@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faixas e graus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --papel:#F5F6F4; --cartao:#FFFFFF; --grafite:#23262B; --nevoa:#5E646B; --linha:#E1E4E0; --contorno:#868D94; --desativado:#80878E;
+  --tatame:#13557A; --tatame-hover:#0E4462; --tatame-claro:#E3EEF4;
+  --ok:#2E6B45; --ok-claro:#E4F1E8; --aviso:#8A5A00; --aviso-claro:#FBEFD5; --ponta:#B3261E; --ponta-claro:#FBE7E5;
+  --sombra:0 1px 2px rgba(35,38,43,.06),0 8px 24px -12px rgba(35,38,43,.18);
+  --mola:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E9ECE8;font-family:"Lexend",system-ui,sans-serif;color:var(--grafite);font-size:15px;line-height:1.45}
+.intro{max-width:1180px;margin:0 auto;padding:28px 24px 8px}
+.intro h1{font-size:28px;margin:0 0 6px}
+.intro p{color:var(--nevoa);margin:0 0 10px;max-width:78ch}
+.tokens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1180px;margin:0 auto;padding:12px 24px}
+.tk{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:16px}
+.tk h2{font-size:15px;margin:0 0 10px}
+.cor{display:flex;align-items:center;gap:10px;font-size:13px;margin:6px 0}
+.cor i{width:28px;height:28px;border-radius:8px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sec{max-width:1180px;margin:0 auto;padding:18px 24px 4px}
+.sec h2{font-size:22px;margin:0}
+.sec p{color:var(--nevoa);margin:4px 0 0}
+.g{display:flex;flex-wrap:wrap;gap:28px;max-width:1180px;margin:0 auto;padding:16px 24px 32px}
+.rot{font-size:13px;color:var(--nevoa);margin:0 0 8px}
+/* celular */
+.cel{width:360px;min-height:640px;background:var(--papel);border-radius:28px;box-shadow:0 0 0 8px #1b1d20,0 20px 40px -20px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column}
+.topo{display:flex;align-items:center;gap:10px;padding:14px 14px 10px}
+.topo .tit{flex:1;font-weight:600;font-size:17px;text-align:center}
+.voltar{width:48px;height:48px;border-radius:50%;background:var(--tatame-claro);color:var(--tatame);display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.corpo{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px;flex:1}
+/* botões */
+.bp{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--tatame);color:#fff;border-radius:999px;padding:6px 6px 6px 18px;font-weight:600;font-size:15px;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola);cursor:pointer}
+.bp .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .5s var(--mola)}
+.bp:hover{background:var(--tatame-hover)} .bp:hover .ic{transform:translateX(2px)} .bp:active{transform:scale(.98)}
+.bp.lg{width:100%;padding-left:22px;justify-content:space-between}
+.bp.sm{min-height:48px;font-size:14px;padding:4px 4px 4px 14px}.bp.sm .ic{width:28px;height:28px;font-size:15px}
+.bs{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:10px 18px;font-weight:600;min-height:48px;transition:transform .5s var(--mola),background .3s var(--mola)}
+.bs:hover{background:#D3E4EE}.bs:active{transform:scale(.98)}
+.bs.lg{width:100%}
+.bd{background:var(--ponta-claro);color:var(--ponta)}
+/* foco visível só no teclado; números em colunas alinhadas */
+:focus-visible{outline:3px solid var(--tatame);outline-offset:3px}
+.foco{outline:3px solid var(--tatame);outline-offset:3px}
+.kpi .v,td,.mu,.lin{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* conteúdo */
+.cartao{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);padding:12px 14px}
+.campo{background:var(--cartao);border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:12px;min-height:48px;color:var(--nevoa)}
+.campo b{display:block;font-size:12px;color:var(--nevoa);font-weight:400}
+.campo span{color:var(--grafite)}
+.lin{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--linha)}
+.mu{color:var(--nevoa);font-size:13px}
+.h{font-weight:600}
+.ck{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px var(--contorno);outline:11px solid transparent;display:flex;align-items:center;justify-content:center}
+.ck.on{background:var(--tatame);box-shadow:none;color:#fff}
+.ok{white-space:nowrap;background:var(--ok-claro);color:var(--ok);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.av{background:var(--aviso-claro);color:var(--aviso);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.er{background:var(--ponta-claro);color:var(--ponta);border-radius:12px;padding:8px 12px;font-size:13px}
+.tag{background:var(--tatame-claro);color:var(--tatame);border-radius:999px;padding:1px 8px;font-size:12px;margin-left:6px}
+.dias{display:flex;gap:6px}
+.dia{flex:1;min-height:48px;border-radius:14px;background:var(--cartao);box-shadow:var(--sombra);text-align:center;padding:8px 2px;font-size:13px}
+.dia.sel{background:var(--tatame);color:#fff;box-shadow:none}
+.dia.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--linha);color:var(--desativado)}
+/* faixa: a cor da faixa e os graus na ponta preta (o elemento de destaque) */
+.faixa{display:inline-flex;align-items:center;height:16px;width:96px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle}
+.faixa .cor{flex:1;height:100%;margin:0}
+.faixa .pt{width:34px;height:100%;background:#1E1E1E;display:flex;gap:3px;align-items:center;justify-content:center}
+.faixa .pt i{width:3px;height:10px;background:#fff;border-radius:1px}
+.f-azul{background:#2456A6}.f-roxa{background:#6A3D9A}.f-branca{background:#F4F4F2}.f-marrom{background:#6B4226}
+.logo{height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--nevoa);box-shadow:inset 0 0 0 1.5px var(--linha)}
+/* desktop */
+.dk{width:1120px;max-width:100%;min-height:560px;background:var(--papel);border-radius:18px;box-shadow:0 20px 40px -24px rgba(0,0,0,.45);display:grid;grid-template-columns:232px 1fr;overflow:hidden}
+.lado{background:#ECEFEB;padding:18px 14px;display:flex;flex-direction:column;gap:4px}
+.nav{display:flex;align-items:center;gap:10px;padding:12px 14px;min-height:48px;border-radius:999px;color:var(--grafite)}
+.nav:not(.at):hover{background:#E1E6E1}
+.nav i{font-size:19px;color:var(--nevoa)}
+.nav.at{background:var(--tatame);color:#fff}.nav.at i{color:#fff}
+.princ{padding:22px 28px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;gap:12px}
+.cab .tit{font-size:22px;font-weight:600;flex:1}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi .mu{font-size:13px}.kpi .v{font-size:22px;font-weight:600}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:400;color:var(--nevoa);text-align:center;padding:8px 6px;border-bottom:1px solid var(--linha)}
+td{padding:10px 6px;border-bottom:1px solid var(--linha);text-align:center}
+td:first-child,th:first-child{text-align:left}
+.diff{max-width:1180px;margin:0 auto;padding:0 24px 40px}
+.diff table{background:var(--cartao);border-radius:16px;box-shadow:var(--sombra);overflow:hidden}
+.diff td,.diff th{text-align:left;vertical-align:top;padding:10px 14px}
+</style>
+</head>
+<body>
+<style>
+.fx{display:inline-flex;width:120px;height:18px;border-radius:4px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);vertical-align:middle;flex:none}
+.fx .c{flex:1;position:relative}
+.fx .c.meio::after{content:"";position:absolute;left:0;right:0;top:33%;height:34%;background:var(--m)}
+.fx .c.blocos{background:repeating-linear-gradient(90deg,var(--a) 0 12px,var(--b) 12px 24px)}
+.fx .p{width:36%;display:flex;align-items:center;justify-content:center;gap:3px}
+.fx .p i{width:3px;height:12px;background:#fff;display:block}
+.fx .p.br i{background:#1E1E1E}
+.tab{width:100%;border-collapse:collapse;background:var(--cartao);border-radius:16px;overflow:hidden;box-shadow:var(--sombra)}
+.tab th,.tab td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--linha);font-size:14px;vertical-align:middle}
+.tab th{color:var(--nevoa);font-weight:600;font-size:13px;background:#FAFBFA}
+.tab td.mu{color:var(--nevoa)}
+.grupo td{background:var(--tatame-claro);font-weight:600;color:var(--tatame)}
+.nota{max-width:1180px;margin:0 auto;padding:0 24px 12px}
+.nota ul{margin:6px 0 0;padding-left:20px;color:var(--nevoa)}
+.lado-a-lado{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.dlg{background:var(--cartao);border-radius:24px;box-shadow:0 12px 32px -12px rgba(0,0,0,.35);padding:22px;display:flex;flex-direction:column;gap:12px;margin:auto 0}
+.dlg .tit{font-size:20px;font-weight:600}
+.sel{display:flex;justify-content:space-between;align-items:center}
+.opcoes{display:flex;gap:8px}
+.op{flex:1;border-radius:12px;box-shadow:inset 0 0 0 1.5px var(--contorno);padding:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;font-size:13px}
+.op.on{box-shadow:inset 0 0 0 2px var(--tatame);background:var(--tatame-claro)}
+.op b{font-size:14px}
+.lista-menu{background:var(--cartao);border-radius:12px;box-shadow:0 8px 24px -8px rgba(0,0,0,.3);padding:6px 0;font-size:14px}
+.lista-menu div{padding:8px 14px}
+.lista-menu .on{background:var(--tatame-claro)}
+.lista-menu .off{color:var(--desativado)}
+</style>
+
+<div class="intro">
+  <h1>Faixas e graus (CBJJ) · aprovado (v7)</h1>
+  <p>Pedido de 14/11/2026: a graduação do aluno deixa escolher até 10 graus em qualquer faixa. Passa a seguir o sistema de graduação da CBJJ: <b>faixas infantis e adultas, graus de cada faixa</b> e, na faixa preta, a escolha da <b>ponteira</b> (vermelha para professor, branca para competidor). Muda o diálogo "Graduação" da tela do aluno (tela 9) e o desenho da faixa (<code>FaixaDoAluno</code>); o resto da tela não muda.</p>
+</div>
+
+<div class="nota"><div class="cartao">
+  <div class="h">Regras</div>
+  <ul>
+    <li><b>Faixas:</b> a lista segue a tabela abaixo, em grupos (Infantil, Adulto, Mestres). As faixas infantis de duas cores aparecem com a listra do meio.</li>
+    <li><b>Graus:</b> de 0 a 4 nas faixas infantis e de branca a marrom; de 0 a 6 na preta. Na coral e na vermelha, o grau vem da faixa (7º, 8º, 9º ou 10º) e o campo Grau não aparece (só a vermelha pede 9º ou 10º).</li>
+    <li><b>Ponteira:</b> só na faixa preta, escolhendo <b>vermelha</b> (padrão: professor/instrutor) ou <b>branca</b> (competidor faixa preta). Nas outras faixas a ponteira é sempre preta.</li>
+    <li><b>Trocar a faixa</b> no diálogo ajusta o grau escolhido ao limite da faixa nova (ex.: preta 6º → marrom vira 4º).</li>
+    <li><b>Validação no servidor:</b> a API aceita só faixa da lista, grau dentro do limite da faixa e ponteira só na preta (casos de teste compartilhados entre Dart e TypeScript). Graduações já gravadas fora dessas regras continuam aparecendo como estão.</li>
+    <li><b>Leitor de tela:</b> "Faixa Preta, 3º grau, ponteira branca".</li>
+  </ul>
+</div></div>
+
+<div class="sec"><h2>Tabela de faixas e graus</h2></div>
+<div class="g"><table class="tab">
+  <tr><th>Faixa</th><th>Desenho</th><th>Graus</th><th>Ponteira</th></tr>
+  <tr class="grupo"><td colspan="4">Infantil (até 15 anos)</td></tr>
+  <tr><td>Branca</td><td><span class="fx"><span class="c" style="background:#F4F4F2"></span><span class="p" style="background:#1E1E1E"><i></i><i></i></span></span></td><td>0 a 4</td><td class="mu">preta</td></tr>
+  <tr><td>Cinza e branca · Cinza · Cinza e preta</td><td><span class="fx"><span class="c meio" style="background:#8C8C8C;--m:#F4F4F2"></span><span class="p" style="background:#1E1E1E"><i></i></span></span> <span class="fx"><span class="c" style="background:#8C8C8C"></span><span class="p" style="background:#1E1E1E"></span></span> <span class="fx"><span class="c meio" style="background:#8C8C8C;--m:#1E1E1E"></span><span class="p" style="background:#1E1E1E"><i></i><i></i><i></i><i></i></span></span></td><td>0 a 4</td><td class="mu">preta</td></tr>
+  <tr><td>Amarela e branca · Amarela · Amarela e preta</td><td><span class="fx"><span class="c meio" style="background:#E8C33A;--m:#F4F4F2"></span><span class="p" style="background:#1E1E1E"></span></span> <span class="fx"><span class="c" style="background:#E8C33A"></span><span class="p" style="background:#1E1E1E"><i></i><i></i></span></span> <span class="fx"><span class="c meio" style="background:#E8C33A;--m:#1E1E1E"></span><span class="p" style="background:#1E1E1E"></span></span></td><td>0 a 4</td><td class="mu">preta</td></tr>
+  <tr><td>Laranja e branca · Laranja · Laranja e preta</td><td><span class="fx"><span class="c meio" style="background:#E07A2E;--m:#F4F4F2"></span><span class="p" style="background:#1E1E1E"></span></span> <span class="fx"><span class="c" style="background:#E07A2E"></span><span class="p" style="background:#1E1E1E"><i></i></span></span> <span class="fx"><span class="c meio" style="background:#E07A2E;--m:#1E1E1E"></span><span class="p" style="background:#1E1E1E"></span></span></td><td>0 a 4</td><td class="mu">preta</td></tr>
+  <tr><td>Verde e branca · Verde · Verde e preta</td><td><span class="fx"><span class="c meio" style="background:#3C8C4A;--m:#F4F4F2"></span><span class="p" style="background:#1E1E1E"></span></span> <span class="fx"><span class="c" style="background:#3C8C4A"></span><span class="p" style="background:#1E1E1E"><i></i><i></i><i></i></span></span> <span class="fx"><span class="c meio" style="background:#3C8C4A;--m:#1E1E1E"></span><span class="p" style="background:#1E1E1E"></span></span></td><td>0 a 4</td><td class="mu">preta</td></tr>
+  <tr class="grupo"><td colspan="4">Adulto (16 anos ou mais)</td></tr>
+  <tr><td>Branca · Azul · Roxa · Marrom</td><td><span class="fx"><span class="c" style="background:#F4F4F2"></span><span class="p" style="background:#1E1E1E"><i></i></span></span> <span class="fx"><span class="c" style="background:#2456A6"></span><span class="p" style="background:#1E1E1E"><i></i><i></i></span></span> <span class="fx"><span class="c" style="background:#6A3D9A"></span><span class="p" style="background:#1E1E1E"><i></i><i></i><i></i></span></span> <span class="fx"><span class="c" style="background:#6B4226"></span><span class="p" style="background:#1E1E1E"><i></i><i></i><i></i><i></i></span></span></td><td>0 a 4</td><td class="mu">preta</td></tr>
+  <tr><td>Preta</td><td><span class="fx"><span class="c" style="background:#1E1E1E"></span><span class="p" style="background:#B3261E"><i></i><i></i><i></i></span></span> <span class="fx"><span class="c" style="background:#1E1E1E"></span><span class="p br" style="background:#F4F4F2"><i></i><i></i></span></span></td><td>0 a 6</td><td><b>vermelha</b> (professor) ou <b>branca</b> (competidor)</td></tr>
+  <tr class="grupo"><td colspan="4">Mestres</td></tr>
+  <tr><td>Coral (vermelha e preta)</td><td><span class="fx"><span class="c blocos" style="--a:#B3261E;--b:#1E1E1E"></span></span></td><td>7º (fixo)</td><td class="mu">—</td></tr>
+  <tr><td>Coral (vermelha e branca)</td><td><span class="fx"><span class="c blocos" style="--a:#B3261E;--b:#F4F4F2"></span></span></td><td>8º (fixo)</td><td class="mu">—</td></tr>
+  <tr><td>Vermelha</td><td><span class="fx"><span class="c" style="background:#B3261E"></span></span></td><td>9º ou 10º</td><td class="mu">—</td></tr>
+</table></div>
+
+<div class="sec"><h2>Diálogo "Graduação" (tela 9)</h2></div>
+<div class="g lado-a-lado">
+  <div><p class="rot">9g. Faixa colorida: graus de 0 a 4</p><div class="cel"><div class="corpo" style="justify-content:center;background:rgba(0,0,0,.35)">
+    <div class="dlg">
+      <div class="tit">Graduação</div>
+      <div class="campo sel"><span><b>Faixa</b><span>Azul</span></span><span class="fx" style="width:70px"><span class="c" style="background:#2456A6"></span><span class="p" style="background:#1E1E1E"><i></i><i></i></span></span></div>
+      <div class="campo sel"><span><b>Grau</b><span>2º grau</span></span><i class="ti ti-chevron-down"></i></div>
+      <div class="lista-menu"><div>Sem grau</div><div>1º grau</div><div class="on">2º grau</div><div>3º grau</div><div>4º grau</div></div>
+      <div class="campo"><b>Data</b><span>14/11/2026</span></div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center"><span class="mu">Cancelar</span><span class="bp">Registrar</span></div>
+    </div>
+  </div></div></div>
+
+  <div><p class="rot">9h. Faixa preta: graus de 0 a 6 e a ponteira</p><div class="cel"><div class="corpo" style="justify-content:center;background:rgba(0,0,0,.35)">
+    <div class="dlg">
+      <div class="tit">Graduação</div>
+      <div class="campo sel"><span><b>Faixa</b><span>Preta</span></span><span class="fx" style="width:70px"><span class="c" style="background:#1E1E1E"></span><span class="p br" style="background:#F4F4F2"><i></i><i></i><i></i></span></span></div>
+      <div class="campo sel"><span><b>Grau</b><span>3º grau</span></span><i class="ti ti-chevron-down"></i></div>
+      <div style="font-size:13px;color:var(--nevoa)">Ponteira</div>
+      <div class="opcoes">
+        <div class="op"><span class="fx" style="width:64px"><span class="c" style="background:#1E1E1E"></span><span class="p" style="background:#B3261E"></span></span><b>Vermelha</b><span class="mu">Professor</span></div>
+        <div class="op on"><span class="fx" style="width:64px"><span class="c" style="background:#1E1E1E"></span><span class="p br" style="background:#F4F4F2"></span></span><b>Branca</b><span class="mu">Competidor</span></div>
+      </div>
+      <div class="campo"><b>Data</b><span>14/11/2026</span></div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;align-items:center"><span class="mu">Cancelar</span><span class="bp">Registrar</span></div>
+    </div>
+  </div></div></div>
+
+  <div><p class="rot">9i. Lista de faixas, em grupos</p><div class="cel"><div class="corpo" style="justify-content:center;background:rgba(0,0,0,.35)">
+    <div class="lista-menu" style="max-height:560px;overflow:hidden">
+      <div class="mu" style="font-size:12px;font-weight:600">INFANTIL</div>
+      <div>Branca</div><div>Cinza e branca</div><div>Cinza</div><div>Cinza e preta</div><div>Amarela e branca</div><div>Amarela</div><div>…</div><div>Verde e preta</div>
+      <div class="mu" style="font-size:12px;font-weight:600">ADULTO</div>
+      <div>Branca</div><div>Azul</div><div>Roxa</div><div>Marrom</div><div class="on">Preta</div>
+      <div class="mu" style="font-size:12px;font-weight:600">MESTRES</div>
+      <div>Coral (vermelha e preta)</div><div>Coral (vermelha e branca)</div><div>Vermelha</div>
+    </div>
+  </div></div></div>
+</div>
+
+<div class="sec"><h2>Como aparece no aluno</h2></div>
+<div class="g"><table class="tab" style="max-width:560px">
+  <tr><th>Graduação</th><th>Desenho</th><th>Data</th></tr>
+  <tr><td>Preta · 3º grau · ponteira branca</td><td><span class="fx" style="width:96px"><span class="c" style="background:#1E1E1E"></span><span class="p br" style="background:#F4F4F2"><i></i><i></i><i></i></span></span></td><td class="mu">14/11/2026</td></tr>
+  <tr><td>Marrom · 4º grau</td><td><span class="fx" style="width:96px"><span class="c" style="background:#6B4226"></span><span class="p" style="background:#1E1E1E"><i></i><i></i><i></i><i></i></span></span></td><td class="mu">02/2024</td></tr>
+  <tr><td>Amarela e preta</td><td><span class="fx" style="width:96px"><span class="c meio" style="background:#E8C33A;--m:#1E1E1E"></span><span class="p" style="background:#1E1E1E"></span></span></td><td class="mu">06/2019</td></tr>
+</table></div>
+
+</body>
+</html>

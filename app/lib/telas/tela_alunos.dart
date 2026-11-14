@@ -393,7 +393,12 @@ class _LinhaAlunoDesktop extends StatelessWidget {
                   ),
                   if (faixa != null) ...[
                     const SizedBox(width: 8),
-                    FaixaDoAluno(faixa: faixa, grau: aluno.grau, largura: 70),
+                    FaixaDoAluno(
+                      faixa: faixa,
+                      grau: aluno.grau,
+                      ponteira: aluno.ponteira,
+                      largura: 70,
+                    ),
                   ],
                 ],
               ),

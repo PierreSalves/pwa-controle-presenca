@@ -148,6 +148,32 @@ describe('alunos: cadastro', () => {
     expect((await chamar(a.professor, 'DELETE', caminho)).status).toBe(404);
   });
 
+  it('graduação segue as faixas e graus da CBJJ, com a ponteira só na preta', async () => {
+    const a = await montarAcademia();
+    const id = await criarAluno(a.professor, '1', 'Ana');
+    const graduar = (corpo: Record<string, unknown>) =>
+      chamar(a.professor, 'POST', `/api/alunos/${id}/graduacoes`, { data_graduacao: '2026-06-05', ...corpo });
+    expect((await graduar({ faixa: 'Azul', grau: 5 })).status).toBe(400);
+    expect((await graduar({ faixa: 'Rosa', grau: 0 })).status).toBe(400);
+    expect((await graduar({ faixa: 'Azul', grau: 1, ponteira: 'branca' })).status).toBe(400);
+    expect((await graduar({ faixa: 'Preta', grau: 7 })).status).toBe(400);
+    expect((await graduar({ faixa: 'Preta', grau: 2, ponteira: 'azul' })).status).toBe(400);
+    expect((await graduar({ faixa: 'Preta', grau: 6 })).status).toBe(201);
+    const resposta = await graduar({ faixa: 'Preta', grau: 3, ponteira: 'branca' });
+    expect(resposta.status).toBe(201);
+    const { graduacoes } = await resposta.json<{ graduacoes: { grau: number; ponteira: string | null }[] }>();
+    expect(graduacoes.map((g) => [g.grau, g.ponteira]).sort()).toEqual([
+      [3, 'branca'],
+      [6, 'vermelha'],
+    ]);
+    const lista = await (
+      await chamar(a.professor, 'GET', '/api/alunos')
+    ).json<{
+      alunos: { graduacao: { faixa: string; ponteira: string | null } }[];
+    }>();
+    expect(lista.alunos[0]?.graduacao.faixa).toBe('Preta');
+  });
+
   it('a lista traz a faixa atual: a graduação mais recente, sem as excluídas', async () => {
     const a = await montarAcademia();
     const id = await criarAluno(a.professor, '1', 'Ana');
@@ -176,7 +202,7 @@ describe('alunos: cadastro', () => {
     expect((await chamar(a.professor, 'DELETE', `/api/alunos/${id}/graduacoes/${roxa?.id}`)).status).toBe(
       204,
     );
-    expect((await listar())[0]?.graduacao).toEqual({ faixa: 'Azul', grau: 2 });
+    expect((await listar())[0]?.graduacao).toEqual({ faixa: 'Azul', grau: 2, ponteira: null });
   });
 });
 

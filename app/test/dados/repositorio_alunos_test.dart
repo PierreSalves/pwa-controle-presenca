@@ -88,7 +88,7 @@ void main() {
         {
           'id': 'a1',
           'codigo': '01',
-          'nome': 'Augusto',
+          'nome': 'Paula',
           'ativo': 1,
           'turmas': ['Adulto'],
         },
@@ -205,7 +205,7 @@ void main() {
         },
       ],
       'codigos_existentes': [
-        {'codigo': '03', 'linha': 4, 'nome_cadastrado': 'Lucas'},
+        {'codigo': '03', 'linha': 4, 'nome_cadastrado': 'Bruno'},
       ],
       'nomes_repetidos': [
         {
@@ -225,7 +225,7 @@ void main() {
     expect(conferido.relatorio.codigosRepetidos.single.linhas, [1, 2]);
     expect(
       conferido.relatorio.codigosExistentes.single.nomeCadastrado,
-      'Lucas',
+      'Bruno',
     );
     expect(conferido.relatorio.nomesRepetidos.single.nome, 'Ana');
     expect(jsonDecode(recebidas.last.body), {

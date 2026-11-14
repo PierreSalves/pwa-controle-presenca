@@ -8,8 +8,8 @@
 
 | Código | Nome |
 |---|---|
-| (01) | Augusto Eduardo Barbosa Torres |
-| (03) | Lucas Vieira Santos da Mata |
+| (01) | Ana Paula Ribeiro |
+| (03) | Bruno Silva Lima |
 
 - A turma já existe ([manual 03](03-abrir-turma-nova.md)). Se os alunos são de turmas diferentes, importe uma turma de cada vez.
 

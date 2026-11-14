@@ -9,16 +9,16 @@ void main() {
   test('cópia de planilha separa por tab e ignora colunas a mais', () {
     expect(
       _ler(
-        '(01)\tAugusto E. B. Torres\tAdulto\r\n10A\tLucas A. Costelinha\r\n',
+        '(01)\tAna P. Ribeiro\tAdulto\r\n10A\tCaio M. Duarte\r\n',
       ),
-      [(1, '(01)', 'Augusto E. B. Torres'), (2, '10A', 'Lucas A. Costelinha')],
+      [(1, '(01)', 'Ana P. Ribeiro'), (2, '10A', 'Caio M. Duarte')],
     );
   });
 
   test('ponto e vírgula e espaço também separam', () {
-    expect(_ler('03;Lucas V. S. da Mata\n(10A)   Lucas  A.  Costelinha'), [
-      (1, '03', 'Lucas V. S. da Mata'),
-      (2, '(10A)', 'Lucas A. Costelinha'),
+    expect(_ler('03;Bruno S. Lima\n(10A)   Caio  M.  Duarte'), [
+      (1, '03', 'Bruno S. Lima'),
+      (2, '(10A)', 'Caio M. Duarte'),
     ]);
   });
 

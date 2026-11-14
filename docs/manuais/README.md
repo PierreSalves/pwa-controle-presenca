@@ -17,6 +17,7 @@ Endereço do sistema: **https://controlepresenca.tghservices.com.br** (abre no c
 |---|---|
 | abrir uma turma nova | [03 — Abrir uma turma nova](03-abrir-turma-nova.md) |
 | mudar os dias de aula de uma turma | [04 — Mudar os dias de aula](04-mudar-dias-de-aula.md) |
+| excluir uma turma que acabou | [15 — Excluir uma turma](15-excluir-turma.md) |
 | matricular um aluno novo que chegou agora na academia | [06 — Matricular um aluno novo](06-matricular-aluno-novo.md) |
 | trazer a lista de alunos que está na minha planilha | [07 — Importar alunos da planilha](07-importar-alunos-da-planilha.md) |
 | tirar da turma um aluno que parou de vir, ou trocá-lo de turma | [12 — Aluno que parou de vir ou mudou de turma](12-aluno-que-parou-de-vir.md) |

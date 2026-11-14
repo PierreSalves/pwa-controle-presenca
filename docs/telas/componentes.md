@@ -258,6 +258,11 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Estados:** erros de validação embaixo dos campos; erro do servidor em `ponta` embaixo da senha ("E-mail ou senha incorretos.", sem internet ou falha genérica).
 - **Acessibilidade:** preenchimento automático de e-mail e senha; Enter na senha entra; títulos marcados como cabeçalho; o erro é região ao vivo; as faixas do painel ficam fora do leitor de tela.
 
+### 2.32 Turma: "Vale desde" e Excluir turma (`tela_turma.dart`), tela 10
+- **Vale desde (`_CampoValeDesde`):** embaixo do título "Quadro de aulas", campo com contorno `tatame` de 2 px, fundo `tatameClaro` e ícone de calendário; tocar abre o calendário ("O quadro de aulas vale desde"). Com um quadro só, aceita qualquer data passada; com mais de um, a partir do início do quadro atual (com a explicação embaixo). Mudar os dias sem escolher a data leva o campo para hoje.
+- **Aviso ao recuar (`_AvisoQuadro`):** cartão com faixa `aviso` à esquerda lembrando que a matrícula também precisa começar na data (região ao vivo).
+- **Excluir turma:** `OutlinedButton` com `estiloDestrutivo`, largura total e 48 px, no fim da tela, só para o professor e só em turma existente; "Excluindo…" durante o envio. A confirmação é um `AlertDialog` com "Cancelar" e "Excluir turma" (`estiloConfirmarDestrutivo`).
+
 ## 3. Ainda não implementado (previsto na v2)
 
 - Nada pendente dos wireframes aprovados.

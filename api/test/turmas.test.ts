@@ -153,7 +153,10 @@ describe('turmas: cadastro', () => {
     expect(completa.regras).toEqual(REGRAS_PADRAO_TURMA);
     expect(completa.acessos.map((u) => u.id)).toEqual([a.assistente.id]);
 
-    expect((await chamar(a.assistente.token, 'DELETE', `/api/turmas/${id}`)).status).toBe(204);
+    // Só o professor exclui a turma.
+    expect((await chamar(a.assistente.token, 'DELETE', `/api/turmas/${id}`)).status).toBe(403);
+    expect(await listarIdsTurmas(a.assistente.token)).toEqual([id]);
+    expect((await chamar(a.professor.token, 'DELETE', `/api/turmas/${id}`)).status).toBe(204);
     expect(await listarIdsTurmas(a.assistente.token)).toEqual([]);
     expect((await puxar(a.assistente.token)).turmas_permitidas).toEqual([]);
   });
@@ -202,6 +205,24 @@ describe('turmas: quadro de aulas', () => {
 
     const pull = await puxar(a.professor.token);
     expect(pull.quadros_aulas.filter((q) => q.turma_id === id)).toHaveLength(2);
+  });
+
+  it('com um quadro só, o início recua para uma data passada (sem criar outro quadro)', async () => {
+    const a = await montarAcademia();
+    const id = await criarTurmaPelaApi(a.professor.token, 'Adulto');
+    const caminho = `/api/turmas/${id}/quadros`;
+    await chamar(a.professor.token, 'POST', caminho, { vigencia_inicio: HOJE, dias: { terca: 1 } });
+    const junho = '2026-06-02';
+    const resposta = await chamar(a.professor.token, 'POST', caminho, {
+      vigencia_inicio: junho,
+      dias: { terca: 1, quinta: 1 },
+    });
+    expect(resposta.status).toBe(201);
+    const { quadros } = await resposta.json<{ quadros: Record<string, unknown>[] }>();
+    expect(quadros).toHaveLength(1);
+    expect(quadros[0]).toMatchObject({ vigencia_inicio: junho, vigencia_fim: null, terca: 1, quinta: 1 });
+    const pull = await puxar(a.professor.token);
+    expect(pull.quadros_aulas.filter((q) => q.turma_id === id)).toMatchObject([{ vigencia_inicio: junho }]);
   });
 
   it('recusa data inválida e valor de dia fora de 0, 1 e 2', async () => {

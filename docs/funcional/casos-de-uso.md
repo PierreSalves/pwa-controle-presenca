@@ -43,7 +43,7 @@ Convenções:
 **Fluxo principal**
 1. Menu → "Turmas" → "Nova turma" (botão "+").
 2. Na tela 10 (Turma), preenche **Nome** e, se quiser, **Frequência mínima (%)** e **Cabeçalho de impressão (opcional)**.
-3. Em **Quadro de aulas**, toca em cada dia da semana até mostrar o tipo desejado: *sem aula* → *regular* → *reposição*.
+3. Em **Quadro de aulas**, toca em cada dia da semana até mostrar o tipo desejado: *sem aula* → *regular* → *reposição*. No campo **Vale desde** (padrão: hoje), escolhe outra data se as aulas começaram antes (ex.: para lançar presenças desde junho).
 4. Ajusta, se quiser, a **Lista do lançamento** e o aviso de **sumidos** (UC04).
 5. Professor: em **Quem acessa**, toca em "Dar acesso" para escolher as assistentes (UC17).
 6. Toca em "Salvar" → "Turma criada.".
@@ -53,7 +53,7 @@ Convenções:
 - Sair com alterações não salvas → o app pergunta "Descartar alterações?".
 
 **Regras**
-- O primeiro quadro de aulas vale a partir de hoje; mudanças depois criam um quadro novo (UC03).
+- O primeiro quadro de aulas vale desde a data do campo **Vale desde** (padrão: hoje). Enquanto a turma tem um quadro só, essa data pode recuar para qualquer dia passado; mudanças de dias depois criam um quadro novo (UC03).
 - Dia **regular** entra na conta da frequência; dia de **reposição** aparece no lançamento como reposição fixa e conta como presença extra.
 - Quem cria a turma passa a acessá-la automaticamente; quem dá acesso a outras pessoas é o professor.
 
@@ -70,12 +70,12 @@ Convenções:
 **Fluxo principal**
 1. Menu → "Turmas" → toca na turma.
 2. Em **Quadro de aulas**, muda os dias.
-3. Escolhe a data em **O quadro novo vale a partir de** (padrão: hoje).
+3. Ao mudar os dias, o campo **Vale desde** passa para hoje; toque nele para escolher outra data.
 4. "Salvar".
 
 **Regras**
 - O quadro anterior continua valendo para as datas antes da nova data; o lançamento e a frequência usam, em cada dia, o quadro vigente naquela data.
-- A data do quadro novo não pode ser anterior à do quadro atual.
+- A data do quadro novo não pode ser anterior à do quadro atual, exceto quando a turma tem um quadro só: aí a data mais antiga move o início desse quadro (antes dele não havia quadro nenhum).
 
 **Entidades:** Quadro de aulas (um novo registro com nova vigência).
 
@@ -362,6 +362,30 @@ Convenções:
 - O professor não muda o próprio tipo nem se desativa.
 
 **Entidades:** Usuário, Acesso à turma, Sessão.
+
+---
+
+## UC25 — Excluir uma turma
+
+- **Objetivo:** tirar de uso uma turma que não existe mais (ou foi criada por engano).
+- **Ator:** professor.
+- **Pré-condições:** online; a turma existe.
+
+**Fluxo principal**
+1. Menu → "Turmas" → toca na turma.
+2. No fim da tela 10, toca em **Excluir turma**.
+3. O app pergunta **Excluir a turma "Nome"?** e explica o que acontece.
+4. Toca em **Excluir turma** (vermelho) → volta para Turmas com "Turma "Nome" excluída.".
+
+**Variações e erros**
+- "Cancelar", tocar fora do diálogo ou voltar → nada muda.
+- Sem internet → "Sem internet. Excluir a turma precisa de conexão." e nada muda.
+- Assistente não vê o botão; a API também recusa.
+
+**Regras**
+- Exclusão lógica: a turma some da lista, do lançamento, do Início e dos relatórios em todos os aparelhos (no próximo recebimento). Presenças, aulas e matrículas ficam guardadas no servidor, sem aparecer.
+
+**Entidades:** Turma (marcada como excluída).
 
 ---
 

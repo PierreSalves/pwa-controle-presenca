@@ -56,6 +56,7 @@ class TurmaCompleta {
     required this.frequenciaMinima,
     required this.cabecalhoImpressao,
     required this.quadroAtual,
+    required this.quantidadeQuadros,
     required this.percentualMinimoLista,
     required this.ultimasAulasLista,
     required this.semanasSumido,
@@ -82,6 +83,7 @@ class TurmaCompleta {
               vigenciaFim: ultimo['vigencia_fim'] as String?,
               dias: {for (final d in diasDoQuadro) d: ultimo[d] as int},
             ),
+      quantidadeQuadros: quadros.length,
       percentualMinimoLista: lista['percentual_minimo'] as int,
       ultimasAulasLista: lista['ultimas_aulas'] as int,
       semanasSumido: sumidos['semanas'] as int,
@@ -101,6 +103,9 @@ class TurmaCompleta {
   final int? frequenciaMinima;
   final String? cabecalhoImpressao;
   final QuadroDaTurma? quadroAtual;
+
+  /// Quantos quadros a turma já teve: com um só, o início dele pode recuar para uma data passada.
+  final int quantidadeQuadros;
   final int percentualMinimoLista;
   final int ultimasAulasLista;
   final int semanasSumido;
@@ -149,7 +154,8 @@ class RepositorioTurmas {
   }
 
   /// Novo quadro a partir de [vigenciaInicio] (o anterior termina na véspera; a mesma data corrige
-  /// o último). Início anterior ao do último quadro: `vigencia_anterior_ao_quadro_atual`.
+  /// o último). Com um quadro só, uma data anterior move o início dele. Com mais de um, início
+  /// anterior ao do último quadro: `vigencia_anterior_ao_quadro_atual`.
   Future<void> salvarQuadro(
     String turmaId, {
     required String vigenciaInicio,
@@ -159,6 +165,10 @@ class RepositorioTurmas {
     'turmas/$turmaId/quadros',
     corpo: {'vigencia_inicio': vigenciaInicio, 'dias': dias},
   );
+
+  /// Exclusão lógica (só o professor): a turma some dos aparelhos no próximo recebimento.
+  Future<void> excluirTurma(String turmaId) =>
+      _cliente.enviar('DELETE', 'turmas/$turmaId');
 
   Future<void> salvarRegras(
     String turmaId, {

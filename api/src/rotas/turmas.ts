@@ -241,8 +241,8 @@ rotasTurmas.put('/:id', async (c) => {
   return c.json({ turma: await obterTurma(db, usuario.tenantId, turmaId) });
 });
 
-/** Exclusão lógica. A turma some do aparelho de quem a acessava no próximo pull. */
-rotasTurmas.delete('/:id', async (c) => {
+/** Exclusão lógica, só pelo professor. A turma some do aparelho de quem a acessava no próximo pull. */
+rotasTurmas.delete('/:id', exigirPermissao('excluir_turmas'), async (c) => {
   const usuario = obterUsuarioComTenant(c);
   const turmaId = c.req.param('id');
   const db = c.env.DB;
@@ -264,7 +264,8 @@ rotasTurmas.delete('/:id', async (c) => {
 /**
  * Novo quadro de aulas a partir de `vigencia_inicio` (cada dia: 0 sem aula, 1 regular, 2 reposição).
  * O quadro anterior em aberto termina na véspera. Mesma data de início do último quadro = corrige esse quadro.
- * Não aceita início anterior ao do último quadro (para não reescrever o histórico do meio).
+ * Não aceita início anterior ao do último quadro (para não reescrever o histórico do meio), exceto
+ * quando a turma tem um quadro só: aí o início recua (antes dele não havia quadro nenhum).
  */
 rotasTurmas.post('/:id/quadros', async (c) => {
   const usuario = obterUsuarioComTenant(c);
@@ -284,20 +285,22 @@ rotasTurmas.post('/:id/quadros', async (c) => {
 
   const quadros = await obterQuadros(db, usuario.tenantId, turmaId);
   const ultimo = quadros[quadros.length - 1];
-  if (ultimo && inicio < ultimo.vigencia_inicio)
+  const recuaPrimeiro = quadros.length === 1 && ultimo !== undefined && inicio < ultimo.vigencia_inicio;
+  if (ultimo && inicio < ultimo.vigencia_inicio && !recuaPrimeiro)
     return responderErro(c, 409, 'vigencia_anterior_ao_quadro_atual');
 
   const agora = obterAgoraIso();
   const comandos: D1PreparedStatement[] = [prepararIncrementoVersao(db)];
-  if (ultimo && ultimo.vigencia_inicio === inicio) {
+  if (ultimo && (ultimo.vigencia_inicio === inicio || recuaPrimeiro)) {
+    // Mesma data corrige o último quadro; no quadro único, a data mais antiga também move o início.
     comandos.push(
       db
         .prepare(
           `UPDATE quadros_aulas SET ${DIAS.map((d, i) => `${d} = ?${i + 1}`).join(', ')},
-                  updated_at = ?8, updated_by = ?9, server_version = ${SQL_VERSAO_ATUAL}
+                  vigencia_inicio = ?12, updated_at = ?8, updated_by = ?9, server_version = ${SQL_VERSAO_ATUAL}
             WHERE id = ?10 AND tenant_id = ?11`,
         )
-        .bind(...dias, agora, usuario.id, ultimo.id, usuario.tenantId),
+        .bind(...dias, agora, usuario.id, ultimo.id, usuario.tenantId, inicio),
     );
   } else {
     if (ultimo && (ultimo.vigencia_fim === null || ultimo.vigencia_fim >= inicio)) {

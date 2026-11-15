@@ -1,5 +1,6 @@
 // Quem está logado. O usuário fica gravado no banco local para o app abrir sem internet; a sessão
-// no servidor continua pelo cookie de renovação. Sair ou ter a sessão encerrada apaga tudo.
+// no servidor continua pelo cookie de renovação. Sair ou ter a sessão encerrada apaga tudo, menos
+// a academia lembrada (só nome e ícone, para a tela de entrar; docs/telas/wireframes-academia-lembrada.html).
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -24,6 +25,8 @@ class SessaoApp extends ChangeNotifier {
   static const _chaveLogotipoVersao = 'academia_logotipo_versao';
   static const _chaveNomeCurto = 'academia_nome_curto';
   static const _chaveConviteDispensado = 'convite_instalacao_dispensado';
+  static const _chaveLembradaNome = 'academia_lembrada_nome';
+  static const _chaveLembradaIcone = 'academia_lembrada_icone';
 
   SituacaoSessao _situacao = SituacaoSessao.carregando;
   SituacaoSessao get situacao => _situacao;
@@ -51,6 +54,51 @@ class SessaoApp extends ChangeNotifier {
     _conviteDispensado = true;
     await _gravarEstado(_chaveConviteDispensado, '1');
     notifyListeners();
+  }
+
+  /// Academia do último login neste aparelho (só nome e ícone): a tela de entrar mostra no topo do
+  /// cartão. Sobrevive a Sair e à sessão encerrada; some com [esquecerAcademia] ou com o login do
+  /// superadmin, e é trocada quando alguém de outra academia entra.
+  String? _academiaLembrada;
+  String? get academiaLembrada => _academiaLembrada;
+  Uint8List? _iconeLembrado;
+  Uint8List? get iconeLembrado => _iconeLembrado;
+
+  Future<void> _gravarLembrada() async {
+    final nome = _academiaLembrada;
+    if (nome == null) return;
+    await _gravarEstado(_chaveLembradaNome, nome);
+    await _gravarEstado(
+      _chaveLembradaIcone,
+      _iconeLembrado == null ? '' : base64Encode(_iconeLembrado!),
+    );
+  }
+
+  /// Passa a lembrar a academia de quem está logado (com os dados atuais dela).
+  Future<void> _lembrarAcademia() async {
+    final nome = _nomeAcademia;
+    if (nome == null) return;
+    if (nome == _academiaLembrada && _iconeAcademia == _iconeLembrado) return;
+    _academiaLembrada = nome;
+    _iconeLembrado = _iconeAcademia;
+    await _gravarLembrada();
+  }
+
+  /// "Não é desta academia?": esquece o nome e o ícone guardados.
+  Future<void> esquecerAcademia() async {
+    _academiaLembrada = null;
+    _iconeLembrado = null;
+    await (_banco.delete(_banco.estadoSync)..where(
+          (e) => e.chave.isIn([_chaveLembradaNome, _chaveLembradaIcone]),
+        ))
+        .go();
+    notifyListeners();
+  }
+
+  /// Apaga os dados do aparelho, menos a academia lembrada.
+  Future<void> _apagarDadosLocais() async {
+    await _banco.apagarTudo();
+    await _gravarLembrada();
   }
 
   /// Ícone 512 px da academia (menu lateral e prévia do ícone) e o logotipo original (relatórios
@@ -134,6 +182,7 @@ class SessaoApp extends ChangeNotifier {
         notifyListeners();
       }
       await _atualizarLogotipo(tenant?['logotipo_versao'] as String?);
+      if (tenant != null) await _lembrarAcademia();
     } on SemConexao {
       // segue com o nome guardado
     } on ErroApi {
@@ -160,6 +209,8 @@ class SessaoApp extends ChangeNotifier {
       _definir(SituacaoSessao.falhaNoBanco, null);
       return;
     }
+    _academiaLembrada = await _obterEstado(_chaveLembradaNome);
+    _iconeLembrado = _converterEstado(await _obterEstado(_chaveLembradaIcone));
     if (gravado == null) {
       _definir(SituacaoSessao.deslogado, null);
       return;
@@ -195,7 +246,7 @@ class SessaoApp extends ChangeNotifier {
   /// Login. O primeiro carregamento dos dados precisa de internet (lança [SemConexao]).
   Future<void> entrar(String email, String senha) async {
     final usuario = await _cliente.entrar(email.trim(), senha);
-    await _banco.apagarTudo();
+    await _apagarDadosLocais();
     _nomeAcademia = null;
     _cabecalhoAcademia = null;
     _iconeAcademia = null;
@@ -210,9 +261,12 @@ class SessaoApp extends ChangeNotifier {
         await _atualizarAcademia();
       } catch (_) {
         // Sem a primeira carga o app não tem o que mostrar offline: volta ao login.
-        await _banco.apagarTudo();
+        await _apagarDadosLocais();
         rethrow;
       }
+    } else {
+      // O superadmin não pertence a academia: o aparelho não lembra nenhuma.
+      await esquecerAcademia();
     }
     _definir(SituacaoSessao.logado, usuario);
   }
@@ -225,7 +279,7 @@ class SessaoApp extends ChangeNotifier {
 
   /// Apaga os dados locais e volta ao login (sessão encerrada ou revogada no servidor).
   Future<void> encerrarLocalmente() async {
-    await _banco.apagarTudo();
+    await _apagarDadosLocais();
     _nomeAcademia = null;
     _cabecalhoAcademia = null;
     _iconeAcademia = null;

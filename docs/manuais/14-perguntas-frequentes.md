@@ -11,7 +11,7 @@ Menu → **Meus dados e senha** ([manual 01](01-primeiro-acesso.md)).
 Pode. Cada aparelho fica logado separadamente; trocar a senha faz os outros saírem da conta.
 
 **O que acontece quando eu toco em Sair?**
-O sistema apaga os dados guardados neste aparelho (é uma proteção para celular emprestado ou perdido). Se houver presença aguardando envio, o app avisa antes.
+O sistema apaga os dados guardados neste aparelho (é uma proteção para celular emprestado ou perdido). Se houver presença aguardando envio, o app avisa antes. Fica só o nome e o ícone da academia, para a tela de entrar mostrar; **Não é desta academia?** apaga os dois.
 
 ## Presença
 **Preciso de internet na academia?**

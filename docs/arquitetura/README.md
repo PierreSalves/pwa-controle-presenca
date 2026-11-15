@@ -136,7 +136,7 @@ Por que `server_version` e não a hora do celular para o pull: relógio de celul
 - `consulta_lancamento.dart`: leitura para a tela de lançamento (dias de aula da semana pelo quadro, matriculados na data com a frequência da lista do lançamento e quem já foi marcado). Observa o banco e recalcula a cada marcação ou pull.
 
 ### Sessão e sincronização no app (`app/lib/estado/`)
-- `sessao_app.dart`: o usuário logado fica no `estado_sync` do banco local, então o app **abre sem internet** e confere a sessão em seguida. Se o servidor responder que a sessão acabou (saiu, expirou, usuário revogado), apaga o banco local e volta ao login. O primeiro login precisa de internet e só termina depois da primeira carga (pull desde 0).
+- `sessao_app.dart`: o usuário logado fica no `estado_sync` do banco local, então o app **abre sem internet** e confere a sessão em seguida. Se o servidor responder que a sessão acabou (saiu, expirou, usuário revogado), apaga o banco local e volta ao login. A exceção é a **academia lembrada** (`academia_lembrada_nome` e `academia_lembrada_icone` no `estado_sync`, regravados depois de apagar): só o nome e o ícone da academia do último login, para a tela de entrar; `esquecerAcademia` os apaga e o login do superadmin também. O primeiro login precisa de internet e só termina depois da primeira carga (pull desde 0).
 - `coordenador_sincronizacao.dart`: uma rodada por vez (push e depois pull); um pedido durante uma rodada agenda outra logo depois. Roda após cada marcação e a cada 12 s com a tela de lançamento aberta. Indica online/offline para o status "Tudo enviado ✓ / N aguardando envio · sem internet".
 - Sair: tenta enviar a outbox antes; se ainda houver pendências, avisa que serão perdidas.
 

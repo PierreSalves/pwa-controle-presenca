@@ -590,6 +590,56 @@ void main() {
     await fecharApp(tester);
   });
 
+  testWidgets('depois de sair, o cartão lembra a academia até ser esquecida', (
+    tester,
+  ) async {
+    await entrar(tester);
+    await tester.runAsync(dependencias.sessao.encerrarLocalmente);
+    await esperar(tester);
+
+    // DL2 / 1b: nome da academia (sem logotipo, a inicial) no topo do cartão.
+    expect(find.text('Academia Teste'), findsOneWidget);
+    expect(find.text('Bom te ver de novo.'), findsOneWidget);
+    expect(find.text('A'), findsOneWidget);
+    expect(
+      find.text('Entre com o e-mail e a senha que você recebeu.'),
+      findsNothing,
+    );
+    // Só o nome e o ícone ficam no aparelho; o resto foi apagado.
+    expect(dependencias.sessao.academiaLembrada, 'Academia Teste');
+    expect(dependencias.sessao.usuario, isNull);
+
+    // "Não é desta academia?" esquece e volta ao cartão sem academia.
+    await tester.tap(find.text('Não é desta academia?'));
+    await esperar(tester);
+    expect(find.text('Bom te ver de novo.'), findsNothing);
+    expect(
+      find.text('Entre com o e-mail e a senha que você recebeu.'),
+      findsOneWidget,
+    );
+    expect(dependencias.sessao.academiaLembrada, isNull);
+    await fecharApp(tester);
+  });
+
+  testWidgets('o login do superadmin esquece a academia lembrada', (
+    tester,
+  ) async {
+    await entrar(tester);
+    await tester.runAsync(dependencias.sessao.encerrarLocalmente);
+    await esperar(tester);
+    expect(dependencias.sessao.academiaLembrada, 'Academia Teste');
+    api.tipoUsuario = 'superadmin';
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'carla@exemplo.com',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'segredo123');
+    await tester.tap(find.widgetWithText(BotaoPrincipal, 'Entrar'));
+    await esperar(tester);
+    expect(dependencias.sessao.academiaLembrada, isNull);
+    await fecharApp(tester);
+  });
+
   testWidgets('senha errada mostra o aviso', (tester) async {
     await entrar(tester, senha: 'errada');
     expect(find.text('E-mail ou senha incorretos.'), findsOneWidget);

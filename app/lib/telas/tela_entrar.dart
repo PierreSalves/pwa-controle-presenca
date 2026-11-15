@@ -1,6 +1,9 @@
 // Tela 1 — Entrar (docs/telas/wireframes-login-desktop.html, v6). Login por e-mail e senha; o
 // primeiro acesso exige internet. O formulário fica num cartão branco sobre o fundo cinza; no
-// desktop, a tela se divide: apresentação do sistema à esquerda e o cartão à direita (DL1).
+// desktop, a tela se divide: apresentação do sistema à esquerda e o cartão à direita (DL1). Com a
+// academia lembrada (v10), o nome e o ícone dela ficam no topo do cartão (DL2, 1a, 1b).
+import 'dart:typed_data';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -86,14 +89,25 @@ class _TelaEntrarState extends State<TelaEntrar> {
     );
   }
 
+  Future<void> _esquecerAcademia() async {
+    await EscopoDependencias.obter(context).sessao.esquecerAcademia();
+    if (mounted) setState(() {});
+  }
+
   Widget _montarFormulario() {
     const textoApoio = TextStyle(color: CoresV2.nevoa, fontSize: 14);
+    final sessao = EscopoDependencias.obter(context).sessao;
+    final academia = sessao.academiaLembrada;
     return Form(
       key: _formulario,
       child: AutofillGroup(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (academia != null) ...[
+              _AcademiaLembrada(nome: academia, icone: sessao.iconeLembrado),
+              const SizedBox(height: 16),
+            ],
             Semantics(
               header: true,
               child: const Text(
@@ -101,11 +115,13 @@ class _TelaEntrarState extends State<TelaEntrar> {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
               ),
             ),
-            const SizedBox(height: 6),
-            const Text(
-              'Entre com o e-mail e a senha que você recebeu.',
-              style: textoApoio,
-            ),
+            if (academia == null) ...[
+              const SizedBox(height: 6),
+              const Text(
+                'Entre com o e-mail e a senha que você recebeu.',
+                style: textoApoio,
+              ),
+            ],
             const SizedBox(height: 20),
             TextFormField(
               controller: _email,
@@ -174,8 +190,92 @@ class _TelaEntrarState extends State<TelaEntrar> {
               'Esqueceu a senha? Fale com o professor',
               style: TextStyle(color: CoresV2.nevoa, fontSize: 13),
             ),
+            if (academia != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 48),
+                    foregroundColor: CoresV2.tatame,
+                    // Com a fonte do app: sem fontFamily o navegador buscaria outra (a CSP bloqueia).
+                    textStyle: const TextStyle(
+                      fontFamily: 'Lexend',
+                      fontSize: 13,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                  onPressed: _esquecerAcademia,
+                  child: const Text('Não é desta academia?'),
+                ),
+              ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Topo do cartão com a academia lembrada: ícone (ou a inicial) e o nome, com a saudação.
+class _AcademiaLembrada extends StatelessWidget {
+  const _AcademiaLembrada({required this.nome, required this.icone});
+  final String nome;
+  final Uint8List? icone;
+
+  @override
+  Widget build(BuildContext context) {
+    final inicial = nome.trim().isEmpty
+        ? '?'
+        : nome.trim().characters.first.toUpperCase();
+    return Container(
+      padding: const EdgeInsets.only(bottom: 14),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: CoresV2.linha)),
+      ),
+      child: Row(
+        children: [
+          // Decorativo: o nome já está escrito ao lado.
+          ExcludeSemantics(
+            child: Container(
+              width: 44,
+              height: 44,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: icone == null ? CoresV2.tatameClaro : CoresV2.cartao,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: CoresV2.linha),
+              ),
+              alignment: Alignment.center,
+              child: icone == null
+                  ? Text(
+                      inicial,
+                      style: const TextStyle(
+                        color: CoresV2.tatame,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                  : Image.memory(icone!, fit: BoxFit.contain),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  nome,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Text(
+                  'Bom te ver de novo.',
+                  style: TextStyle(color: CoresV2.nevoa, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

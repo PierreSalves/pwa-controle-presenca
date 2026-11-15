@@ -28,7 +28,7 @@ Convenções:
 - Usuário desativado ou academia desativada → a sessão é encerrada e o app apaga os dados do aparelho na próxima conexão.
 - Esqueceu a senha → não há recuperação automática: o professor redefine a senha da assistente (UC16) e o administrador, a do professor (UC23).
 
-**Regras:** usuário não se autocadastra. Sair (menu → "Sair") apaga os dados do aparelho; se houver presença aguardando envio, o app avisa antes.
+**Regras:** usuário não se autocadastra. Sair (menu → "Sair") apaga os dados do aparelho; se houver presença aguardando envio, o app avisa antes. Ficam só o nome e o ícone da academia do último login, que a tela de entrar mostra no topo do cartão; "Não é desta academia?" esquece os dois, e o login de outra academia (ou do superadmin) os troca.
 
 **Entidades:** Usuário, Sessão, Academia; no download, Turma, Acesso à turma, Quadro de aulas, Aluno, Matrícula, Aula, Presença.
 

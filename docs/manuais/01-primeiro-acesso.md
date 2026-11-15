@@ -34,4 +34,4 @@ Você entra com a sua nova senha e o ícone da academia aparece na tela do celul
 ## Dúvidas comuns
 - **"E-mail ou senha incorretos."** Confira o e-mail (sem espaço no fim). Se esqueceu a senha, peça a quem cadastrou você para redefinir.
 - **O convite para instalar não aparece.** Ele só aparece depois do login e em navegadores que permitem instalar (Chrome no Android; Safari no iPhone). Se você tocou em "Agora não", ele não volta neste aparelho: instale pelo menu do navegador.
-- **Sair do sistema:** menu → **Sair**. Isso apaga os dados deste aparelho; se houver presença ainda não enviada, o app avisa antes.
+- **Sair do sistema:** menu → **Sair**. Isso apaga os dados deste aparelho; se houver presença ainda não enviada, o app avisa antes. Na próxima vez, a tela de entrar mostra o nome da sua academia no topo. Aparelho de outra pessoa? Toque em **Não é desta academia?** para o aparelho esquecer.

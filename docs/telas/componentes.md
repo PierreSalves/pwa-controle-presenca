@@ -256,8 +256,9 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
   - no cartão: título "Entrar", "Entre com o e-mail e a senha que você recebeu.", E-mail, Senha (com o botão de mostrar a senha), "Entrar" (`BotaoPrincipal` largo, "Entrando…" durante o envio) e "Esqueceu a senha? Fale com o professor";
   - desktop (`ehDesktop`): tela dividida ao meio; à esquerda, o painel `tatameClaro` com a apresentação fixa do sistema (`_PainelApresentacao`: "Controle de presença", subtítulo, três itens com ícone em quadrado branco e as faixas como enfeite); à direita, o cartão centralizado;
   - `RodapeCopyright` embaixo, do lado do cartão.
+- **Academia lembrada (`_AcademiaLembrada`, v10):** com `SessaoApp.academiaLembrada`, o topo do cartão mostra o ícone guardado (44 px, cantos de 12 px; sem ícone, a inicial em `tatame` sobre `tatameClaro`), o nome e "Bom te ver de novo.", com uma linha `linha` embaixo; o subtítulo some e, no fim, o link "Não é desta academia?" (`TextButton` sublinhado, 48 px) chama `esquecerAcademia`.
 - **Estados:** erros de validação embaixo dos campos; erro do servidor em `ponta` embaixo da senha ("E-mail ou senha incorretos.", sem internet ou falha genérica).
-- **Acessibilidade:** preenchimento automático de e-mail e senha; Enter na senha entra; títulos marcados como cabeçalho; o erro é região ao vivo; as faixas do painel ficam fora do leitor de tela.
+- **Acessibilidade:** preenchimento automático de e-mail e senha; Enter na senha entra; títulos marcados como cabeçalho; o erro é região ao vivo; as faixas do painel e o ícone da academia lembrada ficam fora do leitor de tela.
 
 ### 2.32 Turma: "Vale desde" e Excluir turma (`tela_turma.dart`), tela 10
 - **Vale desde (`_CampoValeDesde`):** embaixo do título "Quadro de aulas", campo com contorno `tatame` de 2 px, fundo `tatameClaro` e ícone de calendário; tocar abre o calendário ("O quadro de aulas vale desde"). Com um quadro só, aceita qualquer data passada; com mais de um, a partir do início do quadro atual (com a explicação embaixo). Mudar os dias sem escolher a data leva o campo para hoje.

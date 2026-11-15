@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../dados/banco_local.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'tema.dart';
 import 'tela_frequencia_semestre.dart';
 import 'tela_lancamento.dart';
@@ -29,6 +30,38 @@ class TelaEscolherTurma extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (abrirDireto && turmas.length == 1) return abrir(turmas.single);
+    void escolher(Turma turma) {
+      final rota = MaterialPageRoute<void>(builder: (_) => abrir(turma));
+      final navegador = Navigator.of(context);
+      abrirDireto ? navegador.push(rota) : navegador.pushReplacement(rota);
+    }
+
+    if (ehDesktop(context)) {
+      // PD3: título à esquerda e a lista num cartão; voltar só quando aberta de outra página.
+      return PaginaDesktop(
+        titulo: titulo,
+        voltar: !abrirDireto,
+        corpo: ListaEmCartao(
+          titulo: turmas.isEmpty ? null : 'Escolha a turma',
+          itens: [
+            for (final turma in turmas)
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                title: Text(turma.nome),
+                trailing: const Icon(Symbols.chevron_right),
+                onTap: () => escolher(turma),
+              ),
+            if (turmas.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Nenhuma turma liberada para você. Fale com o professor.',
+                ),
+              ),
+          ],
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(titulo),
@@ -44,15 +77,7 @@ class TelaEscolherTurma extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 title: Text(turma.nome),
                 trailing: const Icon(Symbols.chevron_right),
-                onTap: () {
-                  final rota = MaterialPageRoute<void>(
-                    builder: (_) => abrir(turma),
-                  );
-                  final navegador = Navigator.of(context);
-                  abrirDireto
-                      ? navegador.push(rota)
-                      : navegador.pushReplacement(rota);
-                },
+                onTap: () => escolher(turma),
               ),
               const Divider(height: 1),
             ],

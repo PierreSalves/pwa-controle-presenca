@@ -191,7 +191,7 @@ class _GradeSemanaState extends State<GradeSemana> {
           '${dados.turmaNome} · ${formatarDiaMes(dados.domingo)} a '
           '${formatarDataBr(sabado)}',
           style: const TextStyle(
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w600,
             fontFeatures: numerosFixos,
           ),

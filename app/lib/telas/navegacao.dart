@@ -196,7 +196,10 @@ class EstruturaComMenu extends StatelessWidget {
             ),
             // Contêiner próprio de acessibilidade: a barreira de cada rota bloqueia o que vem antes
             // dela no mesmo contêiner, e sem isto o menu lateral sumiria para o leitor de tela.
-            Expanded(child: Semantics(container: true, child: child)),
+            // ClipRect: nenhuma transição de página desenha por cima do menu.
+            Expanded(
+              child: ClipRect(child: Semantics(container: true, child: child)),
+            ),
           ],
         );
       },

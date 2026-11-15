@@ -2,6 +2,8 @@
 // contornos com contraste de 3:1. As telas usam estes tokens, nunca cores soltas.
 import 'package:material_ui/material_ui.dart';
 
+import 'pagina_desktop.dart';
+
 abstract final class CoresV2 {
   /// Azul do tatame: tudo que é ação (botão principal, item ativo do menu, caixa marcada).
   static const tatame = Color(0xFF13557A);
@@ -117,6 +119,13 @@ ThemeData criarTemaV2() {
         side: BorderSide.none,
         textStyle: textoBotao,
       ),
+    ),
+    // Desktop: troca de página por esmaecimento, só na área do conteúdo (v11).
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        for (final plataforma in TargetPlatform.values)
+          plataforma: TransicaoSuave(),
+      },
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(

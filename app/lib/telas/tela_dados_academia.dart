@@ -12,6 +12,7 @@ import '../dados/repositorio_academia.dart';
 import '../estado/dependencias.dart';
 import '../plataforma/imagens.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 import 'tema.dart';
 
@@ -200,6 +201,37 @@ class _TelaDadosAcademiaState extends State<TelaDadosAcademia> {
       carregando: _salvando,
       aoTocar: _academia == null ? null : _salvar,
     );
+    if (desktop) {
+      return ProtecaoAlteracoes(
+        temAlteracoes: _temAlteracoes,
+        child: PaginaDesktop(
+          titulo: 'Dados da academia',
+          acoes: [salvar],
+          corpo: _erro != null
+              ? Cartao(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_erro!),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: _carregar,
+                        child: const Text('Tentar de novo'),
+                      ),
+                    ],
+                  ),
+                )
+              : _academia == null
+              ? const Cartao(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Carregando(),
+                  ),
+                )
+              : _montarDesktop(),
+        ),
+      );
+    }
     return ProtecaoAlteracoes(
       temAlteracoes: _temAlteracoes,
       child: Scaffold(
@@ -228,13 +260,13 @@ class _TelaDadosAcademiaState extends State<TelaDadosAcademia> {
                 )
               : _academia == null
               ? const Carregando()
-              : _montarFormulario(desktop, salvar),
+              : _montarFormulario(),
         ),
       ),
     );
   }
 
-  Widget _montarFormulario(bool desktop, Widget salvar) {
+  Widget _montarFormulario() {
     const apoio = TextStyle(color: CoresV2.nevoa, fontSize: 13);
     const titulo = TextStyle(fontWeight: FontWeight.w600);
     final logotipo = _dependencias.sessao.iconeAcademia;
@@ -242,24 +274,8 @@ class _TelaDadosAcademiaState extends State<TelaDadosAcademia> {
     return Form(
       key: _formulario,
       child: ListView(
-        padding: desktop
-            ? const EdgeInsets.fromLTRB(28, 24, 28, 28)
-            : const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
-          if (desktop) ...[
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Dados da academia',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                salvar,
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
           TextFormField(
             controller: _nome,
             textCapitalization: TextCapitalization.words,
@@ -349,6 +365,133 @@ class _TelaDadosAcademiaState extends State<TelaDadosAcademia> {
             'O logotipo também aparece nos relatórios impressos. Sem logotipo, o app '
             'usa o ícone da TghServices.',
             style: apoio,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// PD5: os campos em cartões por seção (Identificação, Logotipo, Impressão).
+  Widget _montarDesktop() {
+    const apoio = TextStyle(color: CoresV2.nevoa, fontSize: 13);
+    const titulo = TextStyle(fontWeight: FontWeight.w600);
+    final logotipo = _dependencias.sessao.iconeAcademia;
+    final temLogotipo = _academia!.temLogotipo;
+    return Form(
+      key: _formulario,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Cartao(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const TituloSecao('Identificação'),
+                TextFormField(
+                  controller: _nome,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome',
+                    isDense: true,
+                  ),
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? 'Informe o nome da academia'
+                      : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _nomeCurto,
+                  maxLength: 15,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome curto no celular',
+                    helperText: 'Aparece embaixo do ícone do app instalado.',
+                    isDense: true,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Cartao(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Logotipo', style: titulo),
+                const SizedBox(height: 10),
+                if (_enviandoLogotipo)
+                  const SizedBox(
+                    height: 96,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        semanticsLabel: 'Enviando o logotipo…',
+                      ),
+                    ),
+                  )
+                else if (!temLogotipo)
+                  _AreaEnviar(aoTocar: _enviarLogotipo)
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: _enviarLogotipo,
+                        icon: const Icon(Symbols.upload),
+                        label: const Text('Trocar logotipo'),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: _removerLogotipo,
+                        style: estiloDestrutivo,
+                        icon: const Icon(Symbols.delete),
+                        label: const Text('Remover'),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 14),
+                const Text('Prévia do ícone do app', style: titulo),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _PreviaIcone(icone: logotipo, redondo: false),
+                    const SizedBox(width: 12),
+                    _PreviaIcone(icone: logotipo, redondo: true),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Quadrado e redondo, como cada celular mostra.',
+                        style: apoio,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Cartao(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const TituloSecao('Impressão'),
+                TextFormField(
+                  controller: _cabecalho,
+                  maxLength: 200,
+                  decoration: const InputDecoration(
+                    labelText: 'Cabeçalho de impressão (opcional)',
+                    hintText: 'Ex.: Prof. Fulano de Tal…',
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'O logotipo também aparece nos relatórios impressos. Sem logotipo, o app '
+                  'usa o ícone da TghServices.',
+                  style: apoio,
+                ),
+              ],
+            ),
           ),
         ],
       ),

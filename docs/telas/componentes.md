@@ -61,16 +61,17 @@ Material Symbols (`material_symbols_icons`), traço fino (`weight: 300`, tamanho
 | | Celular (< 1000 px) | Desktop (≥ 1000 px, `ehDesktop`) |
 |---|---|---|
 | Menu | Escondido (☰, `MenuApp`) | **Menu lateral fixo** de 232 px à esquerda, sempre visível, inclusive com um aluno ou turma aberto |
-| Título | Barra de topo, centralizado | Barra de topo (telas internas) ou cabeçalho da página (Início, D1) |
-| Voltar | Círculo azul-claro | Igual; as telas principais (Alunos, Turmas, Usuários, Lançar presença) não mostram voltar, porque o menu faz esse papel |
-| Largura do conteúdo | Até 560 px, centralizado (`LarguraCelular`) | Até 880 px, à esquerda; Início até 1100 px |
+| Título | Barra de topo, centralizado | **Cabeçalho da página** (`PaginaDesktop`, v11): título de 22 px peso 600 à esquerda, ações à direita na mesma linha |
+| Voltar | Círculo azul-claro | Só nas subpáginas (uma turma, a grade da semana, reposição avulsa, frequência do semestre), à esquerda do título; as páginas do menu não mostram voltar |
+| Conteúdo | Lista e campos soltos | Em cartões (`Cartao`, `ListaEmCartao`), com `TituloSecao` de 14 px dentro |
+| Largura do conteúdo | Até 560 px, centralizado (`LarguraCelular`) | Até 1040 px (`larguraMaximaPagina`), à esquerda junto do título; margens de 28 px nas laterais e 24 px em cima |
 
 - Cada item do menu é uma **rota com endereço** (`/`, `/lancar`, `/relatorios`, `/alunos`, `/turmas`, `/usuarios`, `/academia`, `/meus-dados`): recarregar mantém a tela e o voltar do navegador funciona.
-- O menu lateral fica fora do navegador interno (`EstruturaComMenu`); o navegador é um contêiner próprio de acessibilidade, senão a barreira das rotas esconderia o menu do leitor de tela.
+- O menu lateral fica fora do navegador interno (`EstruturaComMenu`); o navegador é um contêiner próprio de acessibilidade, senão a barreira das rotas esconderia o menu do leitor de tela, e fica dentro de um `ClipRect`, para nenhuma transição desenhar por cima do menu.
 
 ### 1.6 Movimento
 
-Só onde responde a um toque: o botão principal encolhe 2% ao apertar (300 ms, curva de mola `Cubic(0.32, 0.72, 0, 1)`). Sem animação quando o aparelho pede menos movimento (`MediaQuery.disableAnimationsOf`). Sem animação de entrada nem ao rolar.
+Só onde responde a um toque: o botão principal encolhe 2% ao apertar (300 ms, curva de mola `Cubic(0.32, 0.72, 0, 1)`). Troca de página no desktop (`TransicaoSuave` no `pageTransitionsTheme`): só esmaecimento (~150 ms, `easeOut`), sem o zoom padrão que passava por cima do menu; no celular, a transição padrão. Sem animação quando o aparelho pede menos movimento (`MediaQuery.disableAnimationsOf`). Sem animação de entrada nem ao rolar.
 
 ## 2. Componentes
 
@@ -264,6 +265,12 @@ Cada componente: onde está, aparência, estados, acessibilidade e onde é usado
 - **Vale desde (`_CampoValeDesde`):** embaixo do título "Quadro de aulas", campo com contorno `tatame` de 2 px, fundo `tatameClaro` e ícone de calendário; tocar abre o calendário ("O quadro de aulas vale desde"). Com um quadro só, aceita qualquer data passada; com mais de um, a partir do início do quadro atual (com a explicação embaixo). Mudar os dias sem escolher a data leva o campo para hoje.
 - **Aviso ao recuar (`_AvisoQuadro`):** cartão com faixa `aviso` à esquerda lembrando que a matrícula também precisa começar na data (região ao vivo).
 - **Excluir turma:** `OutlinedButton` com `estiloDestrutivo`, largura total e 48 px, no fim da tela, só para o professor e só em turma existente; "Excluindo…" durante o envio. A confirmação é um `AlertDialog` com "Cancelar" e "Excluir turma" (`estiloConfirmarDestrutivo`).
+
+### 2.33 Página no desktop (`PaginaDesktop`, `ListaEmCartao` e `TituloSecao` em `pagina_desktop.dart`), v11
+- **Aparência:** cabeçalho com o título (22 px, peso 600, cortado com reticências) à esquerda e as ações à direita (secundária antes, principal por último, 10 px entre elas); nas subpáginas, o voltar (círculo azul-claro, dica "Voltar") à esquerda do título; o conteúdo embaixo, até 1040 px, com rolagem própria (ou sem, para telas que ocupam a altura toda).
+- **`ListaEmCartao`:** cartão branco com as linhas separadas por uma linha fina e título de seção opcional; o toque de cada linha fica recortado nos cantos do cartão.
+- **Acessibilidade:** título da página e títulos de seção marcados como cabeçalho; o voltar respeita a proteção de alterações (`maybePop`).
+- **Uso:** Lançar presença (escolher a turma), Relatórios, Turmas e uma turma, Usuários, Dados da academia, Meus dados, Reposição avulsa e Frequência do semestre; Início, Alunos e a grade da semana seguem as mesmas margens e largura.
 
 ## 3. Ainda não implementado (previsto na v2)
 

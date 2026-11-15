@@ -1322,7 +1322,11 @@ void main() {
     // D5: semanal do mês; só a aula de hoje foi lançada (coluna com a data) e a Ana veio.
     expect(find.text('Imprimir / PDF'), findsOneWidget);
     expect(find.text('qui 12/11'), findsOneWidget);
-    expect(find.bySemanticsLabel('veio'), findsOneWidget);
+    // A marca da célula (a legenda embaixo também escreve "veio").
+    expect(
+      find.byWidgetPredicate((w) => w is Icon && w.semanticLabel == 'veio'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Anual'));
     await esperar(tester);

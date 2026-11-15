@@ -6,6 +6,7 @@ import '../dados/consulta_inicio.dart';
 import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'formatacao.dart';
 import 'tema.dart';
 
@@ -32,11 +33,31 @@ class _TelaFrequenciaSemestreState extends State<TelaFrequenciaSemestre> {
 
   @override
   Widget build(BuildContext context) {
-    final cores = Theme.of(context).colorScheme;
     return StreamBuilder<DadosFrequenciaSemestre>(
       stream: _dados,
       builder: (context, snapshot) {
         final dados = snapshot.data;
+        final titulo = dados == null
+            ? 'Graduação'
+            : 'Graduação · ${dados.turmaNome}';
+        if (ehDesktop(context)) {
+          return PaginaDesktop(
+            titulo: titulo,
+            voltar: true,
+            corpo: Cartao(
+              padding: const EdgeInsets.all(16),
+              child: dados == null
+                  ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Carregando(),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: _montarConteudo(context, dados),
+                    ),
+            ),
+          );
+        }
         return Scaffold(
           appBar: AppBar(
             title: Text(
@@ -49,47 +70,52 @@ class _TelaFrequenciaSemestreState extends State<TelaFrequenciaSemestre> {
               : LarguraCelular(
                   child: ListView(
                     padding: const EdgeInsets.all(16),
-                    children: [
-                      InputDecorator(
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          isDense: true,
-                        ),
-                        child: Text(
-                          [
-                            '${dados.inicio.substring(5, 7) == '01' ? '1º' : '2º'} sem. ${dados.inicio.substring(0, 4)}',
-                            'até ${formatarDiaMes(dados.fim)}',
-                            dados.minimo == null
-                                ? 'sem mínimo definido'
-                                : 'mínimo ${dados.minimo}%',
-                          ].join(' · '),
-                          style: TextStyle(color: cores.onSurfaceVariant),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (dados.alunos.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Text('Nenhum aluno matriculado hoje.'),
-                        ),
-                      for (final aluno in dados.alunos) ...[
-                        _LinhaFrequencia(aluno: aluno),
-                        const Divider(height: 1),
-                      ],
-                      const SizedBox(height: 8),
-                      Text(
-                        'Presenças + reposições ÷ aulas lançadas na matrícula',
-                        style: TextStyle(
-                          color: cores.onSurfaceVariant,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                    children: [..._montarConteudo(context, dados)],
                   ),
                 ),
         );
       },
     );
+  }
+
+  List<Widget> _montarConteudo(
+    BuildContext context,
+    DadosFrequenciaSemestre dados,
+  ) {
+    final cores = Theme.of(context).colorScheme;
+    return [
+      InputDecorator(
+        decoration: const InputDecoration(
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        child: Text(
+          [
+            '${dados.inicio.substring(5, 7) == '01' ? '1º' : '2º'} sem. ${dados.inicio.substring(0, 4)}',
+            'até ${formatarDiaMes(dados.fim)}',
+            dados.minimo == null
+                ? 'sem mínimo definido'
+                : 'mínimo ${dados.minimo}%',
+          ].join(' · '),
+          style: TextStyle(color: cores.onSurfaceVariant),
+        ),
+      ),
+      const SizedBox(height: 8),
+      if (dados.alunos.isEmpty)
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Text('Nenhum aluno matriculado hoje.'),
+        ),
+      for (final aluno in dados.alunos) ...[
+        _LinhaFrequencia(aluno: aluno),
+        const Divider(height: 1),
+      ],
+      const SizedBox(height: 8),
+      Text(
+        'Presenças + reposições ÷ aulas lançadas na matrícula',
+        style: TextStyle(color: cores.onSurfaceVariant, fontSize: 13),
+      ),
+    ];
   }
 }
 

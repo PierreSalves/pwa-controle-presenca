@@ -9,6 +9,7 @@ import '../dados/cliente_api.dart';
 import '../dados/repositorio_alunos.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'tema.dart';
 import 'formatacao.dart';
 import 'tela_aluno.dart';
@@ -228,124 +229,145 @@ class _TelaAlunosState extends State<TelaAlunos> {
     final cores = Theme.of(context).colorScheme;
     final alunos = _alunos;
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
+      // Padrão das páginas (v11): conteúdo até 1040 px, margens de 28 e 24 px.
+      body: Align(
+        alignment: Alignment.topLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: larguraMaximaPagina + 56),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Expanded(
-                  child: Text(
-                    'Alunos',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: const Text(
+                          'Alunos',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    OutlinedButton(
+                      onPressed: _importarNoDesktop,
+                      child: const Text('Importar planilha'),
+                    ),
+                    const SizedBox(width: 10),
+                    BotaoPrincipal(
+                      rotulo: 'Novo aluno',
+                      icone: Symbols.add,
+                      aoTocar: () => _escolher(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        width: 380,
+                        child: Cartao(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextField(
+                                autocorrect: false,
+                                decoration: const InputDecoration(
+                                  prefixIcon: Icon(Symbols.search),
+                                  hintText: 'Nome ou código…',
+                                  isDense: true,
+                                ),
+                                onChanged: _definirBusca,
+                              ),
+                              const SizedBox(height: 8),
+                              if (_erro != null) ...[
+                                Text(
+                                  _erro!,
+                                  style: TextStyle(color: cores.error),
+                                ),
+                                OutlinedButton(
+                                  onPressed: _carregar,
+                                  child: const Text('Tentar de novo'),
+                                ),
+                              ] else if (alunos == null)
+                                const Padding(
+                                  padding: EdgeInsets.all(24),
+                                  child: Carregando(),
+                                )
+                              else ...[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  child: Text(
+                                    'Ativos · ${alunos.length}',
+                                    style: TextStyle(
+                                      color: cores.onSurfaceVariant,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                if (alunos.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: Text('Nenhum aluno encontrado.'),
+                                  ),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: alunos.length,
+                                    itemBuilder: (context, i) =>
+                                        _LinhaAlunoDesktop(
+                                          aluno: alunos[i],
+                                          selecionado:
+                                              !_novo &&
+                                              alunos[i].id == _selecionado,
+                                          aoTocar: () =>
+                                              _escolher(id: alunos[i].id),
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Cartao(
+                          padding: EdgeInsets.zero,
+                          child: _selecionado == null && !_novo
+                              ? Center(
+                                  child: Text(
+                                    'Escolha um aluno na lista ou cadastre um novo.',
+                                    style: TextStyle(
+                                      color: cores.onSurfaceVariant,
+                                    ),
+                                  ),
+                                )
+                              : TelaAluno(
+                                  key: ValueKey(_versaoDetalhe),
+                                  alunoId: _novo ? null : _selecionado,
+                                  embutido: true,
+                                  aoSalvar: _aoSalvarDetalhe,
+                                  aoRegistrarAlteracoes: (consulta) =>
+                                      _detalheTemAlteracoes = consulta,
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                OutlinedButton(
-                  onPressed: _importarNoDesktop,
-                  child: const Text('Importar planilha'),
-                ),
-                const SizedBox(width: 10),
-                BotaoPrincipal(
-                  rotulo: 'Novo aluno',
-                  icone: Symbols.add,
-                  aoTocar: () => _escolher(),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    width: 380,
-                    child: Cartao(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          TextField(
-                            autocorrect: false,
-                            decoration: const InputDecoration(
-                              prefixIcon: Icon(Symbols.search),
-                              hintText: 'Nome ou código…',
-                              isDense: true,
-                            ),
-                            onChanged: _definirBusca,
-                          ),
-                          const SizedBox(height: 8),
-                          if (_erro != null) ...[
-                            Text(_erro!, style: TextStyle(color: cores.error)),
-                            OutlinedButton(
-                              onPressed: _carregar,
-                              child: const Text('Tentar de novo'),
-                            ),
-                          ] else if (alunos == null)
-                            const Padding(
-                              padding: EdgeInsets.all(24),
-                              child: Carregando(),
-                            )
-                          else ...[
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              child: Text(
-                                'Ativos · ${alunos.length}',
-                                style: TextStyle(
-                                  color: cores.onSurfaceVariant,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            if (alunos.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Text('Nenhum aluno encontrado.'),
-                              ),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: alunos.length,
-                                itemBuilder: (context, i) => _LinhaAlunoDesktop(
-                                  aluno: alunos[i],
-                                  selecionado:
-                                      !_novo && alunos[i].id == _selecionado,
-                                  aoTocar: () => _escolher(id: alunos[i].id),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Cartao(
-                      padding: EdgeInsets.zero,
-                      child: _selecionado == null && !_novo
-                          ? Center(
-                              child: Text(
-                                'Escolha um aluno na lista ou cadastre um novo.',
-                                style: TextStyle(color: cores.onSurfaceVariant),
-                              ),
-                            )
-                          : TelaAluno(
-                              key: ValueKey(_versaoDetalhe),
-                              alunoId: _novo ? null : _selecionado,
-                              embutido: true,
-                              aoSalvar: _aoSalvarDetalhe,
-                              aoRegistrarAlteracoes: (consulta) =>
-                                  _detalheTemAlteracoes = consulta,
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -9,6 +9,7 @@ import '../dados/cliente_api.dart';
 import '../dados/repositorio_turmas.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'tema.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 import 'tela_turma.dart';
@@ -57,6 +58,7 @@ class _TelaTurmasState extends State<TelaTurmas> {
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
     final turmas = _turmas;
+    if (ehDesktop(context)) return _montarDesktop(cores, turmas);
     return Scaffold(
       appBar: AppBar(
         // No desktop o menu lateral faz o papel do voltar nas telas principais.
@@ -106,6 +108,62 @@ class _TelaTurmasState extends State<TelaTurmas> {
           ],
         ),
       ),
+    );
+  }
+
+  /// PD1: título à esquerda, 'Nova turma' à direita e a lista num cartão.
+  Widget _montarDesktop(ColorScheme cores, List<ResumoTurma>? turmas) {
+    final Widget corpo;
+    if (_erro != null) {
+      corpo = Cartao(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_erro!, style: TextStyle(color: cores.error)),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _carregar,
+              child: const Text('Tentar de novo'),
+            ),
+          ],
+        ),
+      );
+    } else if (turmas == null) {
+      corpo = const Cartao(
+        child: Padding(padding: EdgeInsets.all(24), child: Carregando()),
+      );
+    } else {
+      corpo = ListaEmCartao(
+        itens: [
+          for (final turma in turmas)
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              title: Text(turma.nome),
+              subtitle: Text(
+                '${turma.alunosMatriculados} '
+                '${turma.alunosMatriculados == 1 ? 'aluno' : 'alunos'}',
+              ),
+              trailing: const Icon(Symbols.chevron_right),
+              onTap: () => _abrir(id: turma.id),
+            ),
+          if (turmas.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Nenhuma turma. Use Nova turma para criar.'),
+            ),
+        ],
+      );
+    }
+    return PaginaDesktop(
+      titulo: 'Turmas',
+      acoes: [
+        BotaoPrincipal(
+          rotulo: 'Nova turma',
+          icone: Symbols.add,
+          aoTocar: () => _abrir(),
+        ),
+      ],
+      corpo: corpo,
     );
   }
 }

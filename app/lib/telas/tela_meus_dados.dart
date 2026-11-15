@@ -7,6 +7,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../dados/cliente_api.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 import 'tema.dart';
 
@@ -21,41 +22,30 @@ class TelaMeusDados extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final desktop = ehDesktop(context);
-    final dados = const _CartaoDados();
+    const dados = _CartaoDados();
     const senha = _CartaoSenha();
+    if (desktop) {
+      // D7 no padrão das páginas (v11): dados e troca de senha lado a lado.
+      return const PaginaDesktop(
+        titulo: 'Meus dados e senha',
+        corpo: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: dados),
+              SizedBox(width: 18),
+              Expanded(child: senha),
+            ],
+          ),
+        ),
+      );
+    }
     return Scaffold(
-      appBar: desktop
-          ? null
-          : AppBar(title: const Text('Meus dados'), centerTitle: true),
+      appBar: AppBar(title: const Text('Meus dados'), centerTitle: true),
       body: LarguraCelular(
         child: ListView(
-          padding: desktop
-              ? const EdgeInsets.fromLTRB(28, 24, 28, 28)
-              : const EdgeInsets.all(16),
-          children: [
-            if (desktop) ...[
-              const Text(
-                'Meus dados e senha',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 16),
-              // D7: dados e troca de senha lado a lado.
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: dados),
-                    const SizedBox(width: 18),
-                    const Expanded(child: senha),
-                  ],
-                ),
-              ),
-            ] else ...[
-              dados,
-              const SizedBox(height: 16),
-              senha,
-            ],
-          ],
+          padding: const EdgeInsets.all(16),
+          children: const [dados, SizedBox(height: 16), senha],
         ),
       ),
     );

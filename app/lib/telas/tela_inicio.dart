@@ -11,6 +11,7 @@ import '../dados/consulta_inicio.dart';
 import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'convite_instalacao.dart';
 import 'formatacao.dart';
 import 'menu_app.dart';
@@ -80,22 +81,26 @@ class _TelaInicioState extends State<TelaInicio> {
     return Align(
       alignment: Alignment.topLeft,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1100),
+        // Padrão das páginas (v11): conteúdo até 1040 px, margens de 28 e 24 px.
+        constraints: const BoxConstraints(maxWidth: larguraMaximaPagina + 56),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(28, 22, 28, 28),
+          padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
           children: [
             Row(
               children: [
                 Expanded(
                   child: ListenableBuilder(
                     listenable: _dependencias.sessao,
-                    builder: (context, _) => Text(
-                      'Início · ${_dependencias.sessao.nomeAcademia ?? 'Controle de presença'}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
+                    builder: (context, _) => Semantics(
+                      header: true,
+                      child: Text(
+                        'Início · ${_dependencias.sessao.nomeAcademia ?? 'Controle de presença'}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -109,7 +114,7 @@ class _TelaInicioState extends State<TelaInicio> {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(

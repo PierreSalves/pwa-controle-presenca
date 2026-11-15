@@ -13,6 +13,7 @@ import '../dados/repositorio_turmas.dart';
 import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'formatacao.dart';
 import 'tema.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
@@ -341,20 +342,51 @@ class _TelaTurmaState extends State<TelaTurma> {
 
   @override
   Widget build(BuildContext context) {
+    final salvar = BotaoPrincipal(
+      rotulo: 'Salvar',
+      icone: Symbols.check,
+      carregando: _salvando,
+      aoTocar: _carregando || _erro != null ? null : _salvar,
+    );
+    if (ehDesktop(context)) {
+      return ProtecaoAlteracoes(
+        temAlteracoes: _temAlteracoes,
+        child: PaginaDesktop(
+          titulo: _turma?.nome ?? (_id == null ? 'Nova turma' : 'Turma'),
+          voltar: true,
+          acoes: [salvar],
+          corpo: _carregando
+              ? const Cartao(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Carregando(),
+                  ),
+                )
+              : _erro != null
+              ? Cartao(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_erro!),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: _carregar,
+                        child: const Text('Tentar de novo'),
+                      ),
+                    ],
+                  ),
+                )
+              : _montarFormulario(context),
+        ),
+      );
+    }
     return ProtecaoAlteracoes(
       temAlteracoes: _temAlteracoes,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Turma'),
           centerTitle: true,
-          actions: [
-            BotaoPrincipal(
-              rotulo: 'Salvar',
-              icone: Symbols.check,
-              carregando: _salvando,
-              aoTocar: _carregando || _erro != null ? null : _salvar,
-            ),
-          ],
+          actions: [salvar],
         ),
         body: _carregando
             ? const Carregando()
@@ -415,172 +447,206 @@ class _TelaTurmaState extends State<TelaTurma> {
     final apoio = TextStyle(color: cores.onSurfaceVariant, fontSize: 13);
     final quadro = _turma?.quadroAtual;
     final recuou = _inicioQuadro.compareTo(quadro?.vigenciaInicio ?? _hoje) < 0;
+    final secaoDados = <Widget>[
+      TextFormField(
+        controller: _nome,
+        decoration: const InputDecoration(
+          labelText: 'Nome',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        validator: (v) =>
+            (v == null || v.trim().isEmpty) ? 'Informe o nome' : null,
+      ),
+      const SizedBox(height: 10),
+      TextFormField(
+        controller: _frequencia,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: const InputDecoration(
+          labelText: 'Frequência mínima (%)',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+        validator: (v) => _validarInteiro(v, 0, 100, opcional: true),
+      ),
+      const SizedBox(height: 10),
+      TextFormField(
+        controller: _cabecalho,
+        decoration: const InputDecoration(
+          labelText: 'Cabeçalho de impressão (opcional)',
+          border: OutlineInputBorder(),
+          isDense: true,
+        ),
+      ),
+    ];
+    final secaoQuadro = <Widget>[
+      // A data em destaque (contorno azul e calendário): antes ela só mudava tocando no título.
+      _CampoValeDesde(data: _inicioQuadro, aoTocar: _escolherInicioQuadro),
+      if (!_podeRecuarInicio) ...[
+        const SizedBox(height: 4),
+        Text(
+          'O calendário só deixa escolher de ${formatarDataBr(quadro!.vigenciaInicio)} em diante: '
+          'antes disso valem os dias do quadro anterior.',
+          style: apoio,
+        ),
+      ],
+      const SizedBox(height: 10),
+      // A dica fica fixa acima dos dias e o aviso do quadro novo vai embaixo: assim os dias
+      // não mudam de lugar enquanto o usuário toca.
+      Text('Toque no dia: sem aula, regular, reposição', style: apoio),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (var i = 0; i < 7; i++)
+            _ChipDia(
+              rotulo: _abreviados[i],
+              valor: _dias[diasDoQuadro[i]] ?? 0,
+              aoTocar: () => _alternarDia(diasDoQuadro[i]),
+            ),
+        ],
+      ),
+      if (quadro != null &&
+          _quadroMudou &&
+          _inicioQuadro.compareTo(quadro.vigenciaInicio) > 0) ...[
+        const SizedBox(height: 6),
+        Text(
+          'Quadro novo a partir de ${formatarDataBr(_inicioQuadro)}. '
+          'O atual termina na véspera.',
+          style: apoio,
+        ),
+      ],
+      if (recuou) ...[
+        const SizedBox(height: 8),
+        _AvisoQuadro(
+          'Depois de salvar, o lançamento mostra os dias de aula desde '
+          '${formatarDataBr(_inicioQuadro)}. Para marcar presenças antigas, a matrícula '
+          'do aluno também precisa começar nessa data.',
+        ),
+      ],
+    ];
+    final secaoLista = <Widget>[
+      _Caixa(
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            const Text('Frequentes: ao menos'),
+            _numero(_percentual, validar: (v) => _validarInteiro(v, 0, 100)),
+            const Text('% das últimas'),
+            _numero(_ultimasAulas, validar: (v) => _validarInteiro(v, 1, 52)),
+            const Text('aulas'),
+          ],
+        ),
+      ),
+      const SizedBox(height: 8),
+      _Caixa(
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 6,
+          children: [
+            const Text('Avisar sumidos após'),
+            _numero(_semanas, validar: (v) => _validarInteiro(v, 1, 52)),
+            const Text('semanas'),
+          ],
+        ),
+      ),
+    ];
+    final secaoAcessos = <Widget>[
+      for (final u in _acessos) ...[
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(
+            u.tipo == 'assistente' ? '${u.nome} (assistente)' : u.nome,
+          ),
+          trailing: _ehProfessor
+              ? IconButton(
+                  tooltip: 'Tirar acesso de ${u.nome}',
+                  icon: const Icon(Symbols.close),
+                  onPressed: () => setState(() => _acessos.remove(u)),
+                )
+              : null,
+        ),
+        const Divider(height: 1),
+      ],
+      if (_ehProfessor)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: OutlinedButton.icon(
+            onPressed: _adicionarAcesso,
+            icon: const Icon(Symbols.add),
+            label: const Text('Dar acesso'),
+          ),
+        ),
+      Text('Só professor altera os acessos', style: apoio),
+    ];
+    final excluir = <Widget>[
+      const SizedBox(height: 28),
+      OutlinedButton.icon(
+        style: estiloDestrutivo.copyWith(
+          minimumSize: const WidgetStatePropertyAll(Size.fromHeight(48)),
+        ),
+        onPressed: _excluindo ? null : _excluir,
+        icon: const Icon(Symbols.delete),
+        label: Text(_excluindo ? 'Excluindo…' : 'Excluir turma'),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        'Some do lançamento e dos relatórios. Pede confirmação.',
+        style: apoio,
+        textAlign: TextAlign.center,
+      ),
+    ];
+    final podeExcluir = _ehProfessor && _turma != null;
+    if (ehDesktop(context)) {
+      // PD4: cada seção num cartão; excluir fica fora, no fim.
+      Widget cartao(String nome, List<Widget> filhos) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Cartao(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [TituloSecao(nome), ...filhos],
+          ),
+        ),
+      );
+      return Form(
+        key: _formulario,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            cartao('Dados da turma', secaoDados),
+            cartao('Quadro de aulas', secaoQuadro),
+            cartao('Lista do lançamento', secaoLista),
+            if (_turma != null) cartao('Quem acessa', secaoAcessos),
+            if (podeExcluir) ...excluir,
+          ],
+        ),
+      );
+    }
     return Form(
       key: _formulario,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          TextFormField(
-            controller: _nome,
-            decoration: const InputDecoration(
-              labelText: 'Nome',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Informe o nome' : null,
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: _frequencia,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Frequência mínima (%)',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            validator: (v) => _validarInteiro(v, 0, 100, opcional: true),
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: _cabecalho,
-            decoration: const InputDecoration(
-              labelText: 'Cabeçalho de impressão (opcional)',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-          ),
+          ...secaoDados,
           const SizedBox(height: 16),
           Text('Quadro de aulas', style: titulo),
           const SizedBox(height: 8),
-          // A data em destaque (contorno azul e calendário): antes ela só mudava tocando no título.
-          _CampoValeDesde(data: _inicioQuadro, aoTocar: _escolherInicioQuadro),
-          if (!_podeRecuarInicio) ...[
-            const SizedBox(height: 4),
-            Text(
-              'O calendário só deixa escolher de ${formatarDataBr(quadro!.vigenciaInicio)} em diante: '
-              'antes disso valem os dias do quadro anterior.',
-              style: apoio,
-            ),
-          ],
-          const SizedBox(height: 10),
-          // A dica fica fixa acima dos dias e o aviso do quadro novo vai embaixo: assim os dias
-          // não mudam de lugar enquanto o usuário toca.
-          Text('Toque no dia: sem aula, regular, reposição', style: apoio),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (var i = 0; i < 7; i++)
-                _ChipDia(
-                  rotulo: _abreviados[i],
-                  valor: _dias[diasDoQuadro[i]] ?? 0,
-                  aoTocar: () => _alternarDia(diasDoQuadro[i]),
-                ),
-            ],
-          ),
-          if (quadro != null &&
-              _quadroMudou &&
-              _inicioQuadro.compareTo(quadro.vigenciaInicio) > 0) ...[
-            const SizedBox(height: 6),
-            Text(
-              'Quadro novo a partir de ${formatarDataBr(_inicioQuadro)}. '
-              'O atual termina na véspera.',
-              style: apoio,
-            ),
-          ],
-          if (recuou) ...[
-            const SizedBox(height: 8),
-            _AvisoQuadro(
-              'Depois de salvar, o lançamento mostra os dias de aula desde '
-              '${formatarDataBr(_inicioQuadro)}. Para marcar presenças antigas, a matrícula '
-              'do aluno também precisa começar nessa data.',
-            ),
-          ],
+          ...secaoQuadro,
           const SizedBox(height: 16),
           Text('Lista do lançamento', style: titulo),
           const SizedBox(height: 8),
-          _Caixa(
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                const Text('Frequentes: ao menos'),
-                _numero(
-                  _percentual,
-                  validar: (v) => _validarInteiro(v, 0, 100),
-                ),
-                const Text('% das últimas'),
-                _numero(
-                  _ultimasAulas,
-                  validar: (v) => _validarInteiro(v, 1, 52),
-                ),
-                const Text('aulas'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          _Caixa(
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 6,
-              children: [
-                const Text('Avisar sumidos após'),
-                _numero(_semanas, validar: (v) => _validarInteiro(v, 1, 52)),
-                const Text('semanas'),
-              ],
-            ),
-          ),
+          ...secaoLista,
           if (_turma != null) ...[
             const SizedBox(height: 16),
             Text('Quem acessa', style: titulo),
-            for (final u in _acessos) ...[
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  u.tipo == 'assistente' ? '${u.nome} (assistente)' : u.nome,
-                ),
-                trailing: _ehProfessor
-                    ? IconButton(
-                        tooltip: 'Tirar acesso de ${u.nome}',
-                        icon: const Icon(Symbols.close),
-                        onPressed: () => setState(() => _acessos.remove(u)),
-                      )
-                    : null,
-              ),
-              const Divider(height: 1),
-            ],
-            if (_ehProfessor)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: OutlinedButton.icon(
-                  onPressed: _adicionarAcesso,
-                  icon: const Icon(Symbols.add),
-                  label: const Text('Dar acesso'),
-                ),
-              ),
-            Text('Só professor altera os acessos', style: apoio),
+            ...secaoAcessos,
           ],
-          if (_ehProfessor && _turma != null) ...[
-            const SizedBox(height: 28),
-            OutlinedButton.icon(
-              style: estiloDestrutivo.copyWith(
-                minimumSize: const WidgetStatePropertyAll(Size.fromHeight(48)),
-              ),
-              onPressed: _excluindo ? null : _excluir,
-              icon: const Icon(Symbols.delete),
-              label: Text(_excluindo ? 'Excluindo…' : 'Excluir turma'),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Some do lançamento e dos relatórios. Pede confirmação.',
-              style: apoio,
-              textAlign: TextAlign.center,
-            ),
-          ],
+          if (podeExcluir) ...excluir,
         ],
       ),
     );

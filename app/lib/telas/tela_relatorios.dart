@@ -9,6 +9,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../dados/consulta_relatorios.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'relatorios/montar_relatorio.dart';
 import 'relatorios/partes_relatorio.dart';
 import 'relatorios/tabela_relatorio.dart';
@@ -114,6 +115,12 @@ class _TelaRelatoriosState extends State<TelaRelatorios> {
     final turmas = _turmas;
     if (turmas == null) return const Scaffold(body: Carregando());
     if (turmas.isEmpty) {
+      if (ehDesktop(context)) {
+        return const PaginaDesktop(
+          titulo: 'Relatórios',
+          corpo: Cartao(child: Text('Você ainda não tem turmas.')),
+        );
+      }
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: !ehDesktop(context),
@@ -239,128 +246,131 @@ class _TelaRelatoriosState extends State<TelaRelatorios> {
                   hoje: _hoje,
                   aluno: aluno,
                 );
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Relatórios',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+          final imprimir = BotaoPrincipal(
+            rotulo: 'Imprimir / PDF',
+            icone: Symbols.print,
+            aoTocar: turma == null || relatorio == null
+                ? null
+                : () => imprimirRelatorio(
+                    context,
+                    turma,
+                    montarRelatorio(
+                      turma,
+                      _tipo,
+                      inicio: _inicio,
+                      fim: _fim,
+                      hoje: _hoje,
+                      aluno: aluno,
+                    )!,
                   ),
-                  BotaoPrincipal(
-                    rotulo: 'Imprimir / PDF',
-                    icone: Symbols.print,
-                    aoTocar: turma == null || relatorio == null
-                        ? null
-                        : () => imprimirRelatorio(
-                            context,
-                            turma,
-                            montarRelatorio(
-                              turma,
-                              _tipo,
-                              inicio: _inicio,
-                              fim: _fim,
-                              hoje: _hoje,
-                              aluno: aluno,
-                            )!,
+          );
+          return PaginaDesktop(
+            titulo: 'Relatórios',
+            acoes: [imprimir],
+            corpo: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // PD6: os filtros num cartão.
+                Cartao(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const TituloSecao('Filtros'),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 220,
+                            child: EscolhaTurma(
+                              turmas: turmas,
+                              turmaId: turmaId,
+                              aoEscolher: (id) => setState(() => _turmaId = id),
+                            ),
                           ),
+                          SizedBox(
+                            width: 170,
+                            child: CampoData(
+                              rotulo: 'De',
+                              data: _inicio,
+                              aoEscolher: (d) => _definirPeriodo(inicio: d),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 170,
+                            child: CampoData(
+                              rotulo: 'Até',
+                              data: _fim,
+                              aoEscolher: (d) => _definirPeriodo(fim: d),
+                            ),
+                          ),
+                          EscolhaEmPilulas<AtalhoPeriodo>(
+                            opcoes: AtalhoPeriodo.values,
+                            escolhida: _atalho,
+                            rotular: (a) => a.rotulo,
+                            aoEscolher: _definirAtalho,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      EscolhaEmPilulas<TipoRelatorio>(
+                        opcoes: TipoRelatorio.values,
+                        escolhida: _tipo,
+                        rotular: (t) => t.rotuloCurto,
+                        icone: obterIconeDoRelatorio,
+                        aoEscolher: (t) => setState(() => _tipo = t),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 220,
-                    child: EscolhaTurma(
-                      turmas: turmas,
-                      turmaId: turmaId,
-                      aoEscolher: (id) => setState(() => _turmaId = id),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 170,
-                    child: CampoData(
-                      rotulo: 'De',
-                      data: _inicio,
-                      aoEscolher: (d) => _definirPeriodo(inicio: d),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 170,
-                    child: CampoData(
-                      rotulo: 'Até',
-                      data: _fim,
-                      aoEscolher: (d) => _definirPeriodo(fim: d),
-                    ),
-                  ),
-                  EscolhaEmPilulas<AtalhoPeriodo>(
-                    opcoes: AtalhoPeriodo.values,
-                    escolhida: _atalho,
-                    rotular: (a) => a.rotulo,
-                    aoEscolher: _definirAtalho,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              EscolhaEmPilulas<TipoRelatorio>(
-                opcoes: TipoRelatorio.values,
-                escolhida: _tipo,
-                rotular: (t) => t.rotuloCurto,
-                icone: obterIconeDoRelatorio,
-                aoEscolher: (t) => setState(() => _tipo = t),
-              ),
-              const SizedBox(height: 16),
-              if (turma == null)
-                const Padding(padding: EdgeInsets.all(24), child: Carregando())
-              else ...[
-                if (_tipo == TipoRelatorio.porAluno) ...[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: 380,
-                      child: EscolhaAluno(
-                        alunos: alunosDoPeriodo,
-                        alunoId: _alunoId,
-                        aoEscolher: (id) => setState(() => _alunoId = id),
+                ),
+                const SizedBox(height: 16),
+                if (turma == null)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Carregando(),
+                  )
+                else ...[
+                  if (_tipo == TipoRelatorio.porAluno) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: 380,
+                        child: EscolhaAluno(
+                          alunos: alunosDoPeriodo,
+                          alunoId: _alunoId,
+                          aoEscolher: (id) => setState(() => _alunoId = id),
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 12),
+                  ],
+                  Text(
+                    relatorio?.periodo ?? '',
+                    style: const TextStyle(color: CoresV2.nevoa, fontSize: 13),
                   ),
-                  const SizedBox(height: 12),
-                ],
-                Text(
-                  relatorio?.periodo ?? '',
-                  style: const TextStyle(color: CoresV2.nevoa, fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                if (relatorio == null)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text(
-                      'Escolha o aluno para ver as aulas do período.',
+                  const SizedBox(height: 8),
+                  if (relatorio == null)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        'Escolha o aluno para ver as aulas do período.',
+                      ),
+                    )
+                  else
+                    TabelaRelatorio(
+                      relatorio: relatorio,
+                      aoTocarLinha: _tipo == TipoRelatorio.mensal
+                          ? (i) => setState(() {
+                              _tipo = TipoRelatorio.porAluno;
+                              _alunoId = alunosDoPeriodo[i].id;
+                            })
+                          : null,
                     ),
-                  )
-                else
-                  TabelaRelatorio(
-                    relatorio: relatorio,
-                    aoTocarLinha: _tipo == TipoRelatorio.mensal
-                        ? (i) => setState(() {
-                            _tipo = TipoRelatorio.porAluno;
-                            _alunoId = alunosDoPeriodo[i].id;
-                          })
-                        : null,
-                  ),
+                ],
               ],
-            ],
+            ),
           );
         },
       ),

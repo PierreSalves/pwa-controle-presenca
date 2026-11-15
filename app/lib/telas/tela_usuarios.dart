@@ -10,6 +10,7 @@ import '../dados/repositorio_turmas.dart';
 import '../dados/repositorio_usuarios.dart';
 import '../estado/dependencias.dart';
 import 'componentes.dart';
+import 'pagina_desktop.dart';
 import 'tema.dart';
 import 'tela_alunos.dart' show descreverErroOnline;
 
@@ -86,6 +87,7 @@ class _TelaUsuariosState extends State<TelaUsuarios> {
     final cores = Theme.of(context).colorScheme;
     final usuarios = _usuarios;
     final euId = _dependencias.sessao.usuario?.id;
+    if (ehDesktop(context)) return _montarDesktop(cores, usuarios, euId);
     return Scaffold(
       appBar: AppBar(
         // No desktop o menu lateral faz o papel do voltar nas telas principais.
@@ -176,6 +178,113 @@ class _TelaUsuariosState extends State<TelaUsuarios> {
           ],
         ),
       ),
+    );
+  }
+
+  /// PD2: título à esquerda, "Novo usuário" à direita, a lista num cartão e o cadastro novo
+  /// num cartão acima dela.
+  Widget _montarDesktop(
+    ColorScheme cores,
+    List<UsuarioDaAcademia>? usuarios,
+    String? euId,
+  ) {
+    final Widget corpo;
+    if (_erro != null) {
+      corpo = Cartao(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_erro!, style: TextStyle(color: cores.error)),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _carregar,
+              child: const Text('Tentar de novo'),
+            ),
+          ],
+        ),
+      );
+    } else if (usuarios == null) {
+      corpo = const Cartao(
+        child: Padding(padding: EdgeInsets.all(24), child: Carregando()),
+      );
+    } else {
+      corpo = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_aberto == _novo) ...[
+            Cartao(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const TituloSecao('Novo usuário'),
+                  _FormularioUsuario(
+                    key: const ValueKey(_novo),
+                    usuario: null,
+                    ehVoce: false,
+                    turmas: _turmas,
+                    aoSalvar: _aoSalvar,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          ListaEmCartao(
+            itens: [
+              for (final u in usuarios)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      title: Text(
+                        u.nome,
+                        style: TextStyle(
+                          color: u.ativo ? null : cores.onSurfaceVariant,
+                        ),
+                      ),
+                      trailing: Text(
+                        u.ativo ? u.tipo : '${u.tipo} · inativo',
+                        style: TextStyle(
+                          color: cores.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                      onTap: () => _alternar(u.id),
+                    ),
+                    if (_aberto == u.id)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: _FormularioUsuario(
+                          key: ValueKey(u.id),
+                          usuario: u,
+                          ehVoce: u.id == euId,
+                          turmas: _turmas,
+                          aoSalvar: _aoSalvar,
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      );
+    }
+    return PaginaDesktop(
+      titulo: 'Usuários',
+      acoes: [
+        BotaoPrincipal(
+          rotulo: 'Novo usuário',
+          icone: Symbols.add,
+          aoTocar: usuarios == null
+              ? null
+              : () => setState(() => _aberto = _novo),
+        ),
+      ],
+      corpo: corpo,
     );
   }
 }

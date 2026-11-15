@@ -8,6 +8,8 @@ import '../dados/repositorio_presenca.dart';
 import '../estado/dependencias.dart';
 import '../regras/presenca.dart';
 import 'componentes.dart';
+import 'tema.dart';
+import 'pagina_desktop.dart';
 import 'formatacao.dart';
 
 const _nomesDia = {
@@ -90,6 +92,56 @@ class _TelaReposicaoAvulsaState extends State<TelaReposicaoAvulsa> {
   @override
   Widget build(BuildContext context) {
     final cores = Theme.of(context).colorScheme;
+    final campos = <Widget>[
+      Text(
+        'Aula extra fora do dia fixo de reposição. Conta na frequência.',
+        style: TextStyle(color: cores.onSurfaceVariant),
+      ),
+      const SizedBox(height: 12),
+      InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Turma',
+          border: OutlineInputBorder(),
+        ),
+        child: Text(widget.turmaNome),
+      ),
+      const SizedBox(height: 12),
+      InkWell(
+        onTap: _escolherData,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            labelText: 'Data',
+            border: OutlineInputBorder(),
+            suffixIcon: Icon(Symbols.calendar_month),
+          ),
+          child: Text(
+            '${formatarDataBr(_data)} (${_nomesDia[obterDiaDaSemana(_data)]})',
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      BotaoPrincipal(
+        rotulo: 'Criar e marcar presenças',
+        icone: Symbols.add,
+        largo: true,
+        carregando: _criando,
+        rotuloCarregando: 'Criando…',
+        aoTocar: _criar,
+      ),
+    ];
+    if (ehDesktop(context)) {
+      return PaginaDesktop(
+        titulo: 'Reposição avulsa',
+        voltar: true,
+        corpo: Cartao(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: campos,
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reposição avulsa'),
@@ -105,43 +157,7 @@ class _TelaReposicaoAvulsaState extends State<TelaReposicaoAvulsa> {
       body: LarguraCelular(
         child: ListView(
           padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              'Aula extra fora do dia fixo de reposição. Conta na frequência.',
-              style: TextStyle(color: cores.onSurfaceVariant),
-            ),
-            const SizedBox(height: 12),
-            InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Turma',
-                border: OutlineInputBorder(),
-              ),
-              child: Text(widget.turmaNome),
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: _escolherData,
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Data',
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(Symbols.calendar_month),
-                ),
-                child: Text(
-                  '${formatarDataBr(_data)} (${_nomesDia[obterDiaDaSemana(_data)]})',
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            BotaoPrincipal(
-              rotulo: 'Criar e marcar presenças',
-              icone: Symbols.add,
-              largo: true,
-              carregando: _criando,
-              rotuloCarregando: 'Criando…',
-              aoTocar: _criar,
-            ),
-          ],
+          children: [...campos],
         ),
       ),
     );

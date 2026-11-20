@@ -1,0 +1,8 @@
+# controlepresenca.tghservices.com.br
+# App privado das academias: só a tela de entrar (a raiz "/", que mostra o login para quem
+# não está logado) pode ser indexada. Todo o resto (telas internas e /api/) fica de fora.
+# "$" marca o fim do endereço: libera "/" e não "/alunos", "/turmas"...
+User-agent: *
+Allow: /$
+Allow: /favicon.png
+Disallow: /

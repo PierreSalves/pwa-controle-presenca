@@ -7,12 +7,10 @@ List<(int, String, String)> _ler(String texto) => [
 
 void main() {
   test('cópia de planilha separa por tab e ignora colunas a mais', () {
-    expect(
-      _ler(
-        '(01)\tAna P. Ribeiro\tAdulto\r\n10A\tCaio M. Duarte\r\n',
-      ),
-      [(1, '(01)', 'Ana P. Ribeiro'), (2, '10A', 'Caio M. Duarte')],
-    );
+    expect(_ler('(01)\tAna P. Ribeiro\tAdulto\r\n10A\tCaio M. Duarte\r\n'), [
+      (1, '(01)', 'Ana P. Ribeiro'),
+      (2, '10A', 'Caio M. Duarte'),
+    ]);
   });
 
   test('ponto e vírgula e espaço também separam', () {
